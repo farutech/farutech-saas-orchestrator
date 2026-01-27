@@ -1,0 +1,80 @@
+# ===================================================================
+# MONOREPO FARUTECH - .NET + NODE + GO
+# ===================================================================
+
+# .NET / C#
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+**/x64/
+**/x86/
+**/artifacts/
+**/TestResults/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# Visual Studio / Rider
+.vs/
+.vscode/
+.idea/
+.idea/**
+
+# Node / Frontend
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.vite/
+**/*.local
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# Bun
+**/.bun/
+
+# Go
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.test
+**/*.out
+**/go.work
+
+# Python (si aplica)
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/dist/
+**/build/
+
+# Logs
+**/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Secrets / Env
+**/.env
+**/.env.*
+**/*.secrets.json
+**/appsettings.json
+**/appsettings.*.json
+!**/appsettings.Development.json
+!**/appsettings.Example.json
+
+# Docker / Podman
+**/docker-compose.override.yml
+**/podman-volumes/
+
+# Temp / Backups
+**/*.tmp
+**/*.bak
+**/*.old
+**/*.swp
