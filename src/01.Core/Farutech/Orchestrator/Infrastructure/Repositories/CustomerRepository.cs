@@ -41,12 +41,14 @@ public class CustomerRepository : ICustomerRepository
     public async Task UpdateAsync(Customer customer, CancellationToken cancellationToken = default)
     {
         _dbContext.Customers.Update(customer);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(Customer customer, CancellationToken cancellationToken = default)
     {
         _dbContext.Customers.Remove(customer);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />

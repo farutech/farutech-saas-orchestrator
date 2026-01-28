@@ -68,7 +68,7 @@ public class PermissionService(
     {
         var cacheKey = $"user_permissions:{userId}:{tenantId}:{scopeId}";
 
-        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions))
+        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions) && cachedPermissions != null)
         {
             return cachedPermissions;
         }
@@ -108,7 +108,7 @@ public class PermissionService(
     {
         const string cacheKey = "all_permissions";
 
-        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions))
+        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions) && cachedPermissions != null)
         {
             return cachedPermissions;
         }
@@ -128,7 +128,7 @@ public class PermissionService(
     {
         var cacheKey = $"permissions_module:{module}";
 
-        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions))
+        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions) && cachedPermissions != null)
         {
             return cachedPermissions;
         }
@@ -147,7 +147,7 @@ public class PermissionService(
     {
         var cacheKey = $"permissions_role:{roleId}";
 
-        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions))
+        if (_cache.TryGetValue<IEnumerable<Permission>>(cacheKey, out var cachedPermissions) && cachedPermissions != null)
         {
             return cachedPermissions;
         }
@@ -215,7 +215,7 @@ public class PermissionService(
     {
         var cacheKey = $"roles_permission:{permissionId}";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles))
+        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
@@ -293,7 +293,7 @@ public class PermissionService(
     {
         var cacheKey = $"user_roles:{userId}:{tenantId}";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles))
+        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
@@ -421,7 +421,7 @@ public class PermissionService(
     {
         const string cacheKey = "all_roles";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles))
+        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
@@ -440,6 +440,7 @@ public class PermissionService(
     private async Task InvalidateUserCachesAsync(Guid userId)
     {
         // Simplified cache invalidation for user-related caches
+        await Task.CompletedTask;
     }
 
     private async Task InvalidatePermissionCachesAsync()
@@ -448,6 +449,6 @@ public class PermissionService(
         // In a production system, you might want more granular invalidation
         // For now, we'll clear all permission-related caches
         // Note: IMemoryCache doesn't have a way to clear by pattern, so we skip this for simplicity
-        // In Redis or other distributed cache, you could use key patterns
+        await Task.CompletedTask;
     }
 }

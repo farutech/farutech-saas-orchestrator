@@ -37,7 +37,7 @@ public static class DbSeeder
         
         foreach (var schema in schemas)
         {
-            await context.Database.ExecuteSqlRawAsync($"CREATE SCHEMA IF NOT EXISTS {schema};");
+            await context.Database.ExecuteSqlAsync($"CREATE SCHEMA IF NOT EXISTS {schema}");
         }
     }
 

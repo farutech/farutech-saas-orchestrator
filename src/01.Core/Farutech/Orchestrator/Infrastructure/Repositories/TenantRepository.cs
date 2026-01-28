@@ -41,12 +41,14 @@ public class TenantRepository : ITenantRepository
     public async Task UpdateAsync(TenantInstance tenant, CancellationToken cancellationToken = default)
     {
         _dbContext.TenantInstances.Update(tenant);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(TenantInstance tenant, CancellationToken cancellationToken = default)
     {
         _dbContext.TenantInstances.Remove(tenant);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />

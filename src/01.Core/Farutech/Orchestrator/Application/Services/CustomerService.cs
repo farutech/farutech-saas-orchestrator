@@ -29,8 +29,8 @@ public class CustomerService : ICustomerService
         {
             Code = request.Code,
             CompanyName = request.CompanyName,
-            TaxId = request.TaxId,
-            Email = request.Email,
+            TaxId = request.TaxId!,
+            Email = request.Email!,
             Phone = request.Phone,
             Address = request.Address
         };

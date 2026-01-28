@@ -28,8 +28,8 @@ public class TenantService : ITenantService
             throw new KeyNotFoundException($"Customer with ID {request.CustomerId} not found.");
         }
 
-        // Validate code uniqueness
-        if (!await IsCodeAvailableAsync(request.Code, cancellationToken: cancellationToken))
+        // Validate code uniqueness (only if code is provided)
+        if (request.Code != null && !await IsCodeAvailableAsync(request.Code, cancellationToken: cancellationToken))
         {
             throw new InvalidOperationException($"Tenant code '{request.Code}' is already in use.");
         }

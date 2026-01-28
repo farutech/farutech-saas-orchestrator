@@ -488,6 +488,7 @@ public class AuthController(IAuthService authService) : ControllerBase
             "pos:close_session"
         };
 
+        await Task.CompletedTask;
         return Ok(permissions);
     }
 

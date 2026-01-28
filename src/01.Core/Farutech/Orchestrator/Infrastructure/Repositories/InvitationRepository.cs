@@ -42,12 +42,14 @@ public class InvitationRepository : IInvitationRepository
     public async Task UpdateAsync(UserInvitation invitation, CancellationToken cancellationToken = default)
     {
         _dbContext.UserInvitations.Update(invitation);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(UserInvitation invitation, CancellationToken cancellationToken = default)
     {
         _dbContext.UserInvitations.Remove(invitation);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
