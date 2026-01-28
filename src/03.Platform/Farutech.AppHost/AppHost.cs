@@ -1,5 +1,9 @@
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
+// ===================== ENTORNO =====================
 var environment = builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production";
 var isDev = environment == "Development";
 var isProd = environment == "Production";
@@ -23,20 +27,24 @@ if (isDev)
     builder.Configuration["Parameters:jwt-secret"] ??= "DevOnly_JWT_Secret_Min32Chars_Long";
 }
 
-// ===================== POSTGRES =====================
+// ====================================================
+// INFRAESTRUCTURA
+// ====================================================
+
+// --------------------- POSTGRES ----------------------
 IResourceBuilder<IResourceWithConnectionString>? postgres = null;
 
 if (isDev)
 {
     postgres = builder
         .AddPostgres("postgres", password: postgresPassword)
-        .WithPgAdmin()
         .WithDataVolume("farutech-postgres-data")
         .WithEnvironment("POSTGRES_DB", "farutec_db")
+        .WithPgAdmin()
         .AddDatabase("DefaultConnection", "farutec_db");
 }
 
-// ===================== NATS =====================
+// ----------------------- NATS ------------------------
 IResourceBuilder<IResourceWithConnectionString>? nats = null;
 
 if (isDev)
@@ -47,14 +55,17 @@ if (isDev)
         .WithEnvironment("NATS_JETSTREAM", "enabled");
 }
 
-// ===================== ORCHESTRATOR API =====================
+// ====================================================
+// API (NÚCLEO DEL SISTEMA)
+// ====================================================
 var api = builder
     .AddProject<Projects.Farutech_Orchestrator_API>(
         "orchestrator-api",
         launchProfileName: "https")
-    .WithEnvironment("Jwt__SecretKey", jwtSecret);
+    .WithEnvironment("Jwt__SecretKey", jwtSecret)
+    .WithHttpHealthCheck("/health");
 
-// ---- Database
+// ---- Database dependency
 if (postgres is not null)
 {
     api = api.WithReference(postgres);
@@ -66,7 +77,7 @@ else if (isProd)
         builder.Configuration["Parameters:postgres-conn-string"]);
 }
 
-// ---- NATS
+// ---- NATS dependency
 if (nats is not null)
 {
     api = api
@@ -80,13 +91,19 @@ else if (isProd)
         .WithEnvironment("Nats__Url", builder.Configuration["Parameters:nats-url"]);
 }
 
-// ===================== FRONTEND =====================
+// ====================================================
+// FRONTEND (CONSUMIDOR FINAL)
+// ====================================================
 builder
-    .AddNpmApp("frontend", "../../01.Core/Farutech/Frontend/Dashboard", "dev")
+    .AddNpmApp(
+        "frontend",
+        "../../01.Core/Farutech/Frontend/Dashboard",
+        "dev")
     .WithReference(api)
     .WithEnvironment("VITE_API_URL", api.GetEndpoint("https"))
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
+// ====================================================
 builder.Build().Run();

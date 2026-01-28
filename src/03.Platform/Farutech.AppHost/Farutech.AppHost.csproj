@@ -1,6 +1,7 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\01.Core\Farutech\Frontend\Dashboard\Farutech.Frontend.Dashboard.esproj" />
     <ProjectReference Include="..\..\01.Core\Farutech\Orchestrator\API\Farutech.Orchestrator.API.csproj" />
     <ProjectReference Include="..\Farutech.ServiceDefaults\Farutech.ServiceDefaults.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
