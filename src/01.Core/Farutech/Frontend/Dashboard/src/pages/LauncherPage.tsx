@@ -88,21 +88,11 @@ export default function LauncherPage() {
   const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Debug logs (remove after fixing)
-  console.log('[LauncherPage] requiresContextSelection:', requiresContextSelection);
-  console.log('[LauncherPage] availableTenants count:', availableTenants?.length || 0);
-
   // Transform data based on authentication state
   const organizations = useMemo(() => {
     // When user needs to select context, use availableTenants from login response
     if (requiresContextSelection) {
       const tenantOrgs = availableTenants || [];
-      console.log('[LauncherPage] Using availableTenants, count:', tenantOrgs.length);
-      
-      // Debug first tenant to see structure
-      if (tenantOrgs.length > 0) {
-        console.log('[LauncherPage] First tenant structure:', JSON.stringify(tenantOrgs[0], null, 2));
-      }
 
       return tenantOrgs.map(t => ({
         organizationId: t.tenantId,
@@ -126,7 +116,6 @@ export default function LauncherPage() {
 
     // When user has selected context, use customers API data
     const customerOrgs = customers || [];
-    console.log('[LauncherPage] Using customers API, count:', customerOrgs.length);
 
     if (customerOrgs && customerOrgs.length > 0) {
       return customerOrgs.map(c => {
@@ -191,15 +180,11 @@ export default function LauncherPage() {
 
   // Handle Create Instance - Open modal instead of navigating
   const handleCreateInstance = (organizationId: string) => {
-    console.log('[LauncherPage] handleCreateInstance called with:', organizationId);
-    console.log('[LauncherPage] requiresContextSelection:', requiresContextSelection);
-    
     // Find organization from correct data source
     let orgData;
     if (requiresContextSelection) {
       // In context selection mode, search in availableTenants
       const tenant = availableTenants?.find(t => t.tenantId === organizationId);
-      console.log('[LauncherPage] Found tenant:', tenant);
       if (tenant) {
         // Create a Customer-like object from TenantOptionDto
         orgData = {
@@ -220,11 +205,9 @@ export default function LauncherPage() {
     } else {
       // In authenticated mode, search in customers
       orgData = customers?.find(c => c.id === organizationId);
-      console.log('[LauncherPage] Found customer:', orgData);
     }
 
     if (orgData) {
-      console.log('[LauncherPage] Opening modal with organization:', orgData);
       setSelectedOrganization(orgData);
       setCreateInstanceModalOpen(true);
     } else {

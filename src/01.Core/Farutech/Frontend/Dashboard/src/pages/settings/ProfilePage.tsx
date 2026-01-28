@@ -50,21 +50,11 @@ export default function ProfilePage() {
     
     const loadProfile = async () => {
       try {
-        console.log('[ProfilePage] === STARTING PROFILE LOAD ===');
-        
         // Check token
         const token = localStorage.getItem('farutech_access_token');
-        console.log('[ProfilePage] Token exists:', !!token);
-        if (token) {
-          console.log('[ProfilePage] Token length:', token.length);
-          console.log('[ProfilePage] Token preview:', token.substring(0, 50) + '...');
-        }
         
         setLoading(true);
-        console.log('[ProfilePage] Making request to /api/Auth/me...');
         const response = await apiClient.get<UserProfileDto>('/api/Auth/me');
-        console.log('[ProfilePage] Response received!');
-        console.log('[ProfilePage] Profile loaded:', response.data);
         
         if (!mounted) return;
         

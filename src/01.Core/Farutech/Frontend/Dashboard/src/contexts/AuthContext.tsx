@@ -129,9 +129,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Caso 1: Usuario tiene un token completo (ya seleccionó contexto)
       // PRIORIDAD: Si hay accessToken, ignorar intermediateToken residual
       if (token && tenantContext) {
-        const userInfo = localStorage.getItem('farutech_user_info');
-        if (userInfo) {
-          setUser(JSON.parse(userInfo));
+        try {
+          const userInfo = localStorage.getItem('farutech_user_info');
+          if (userInfo) {
+            const parsedUser = JSON.parse(userInfo);
+            setUser(parsedUser);
+          }
+        } catch (parseError) {
+          console.error('[AuthContext] Failed to parse user info:', parseError);
+          localStorage.removeItem('farutech_user_info');
         }
         setRequiresContextSelection(false);
         setAvailableTenants([]);
@@ -143,13 +149,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       // Caso 2: Usuario tiene token intermedio (debe seleccionar contexto)
       else if (intermediateToken && !token) {
-        const storedTenants = sessionStorage.getItem('farutech_available_tenants');
-        if (storedTenants) {
-          setAvailableTenants(JSON.parse(storedTenants));
-          setRequiresContextSelection(true);
-        } else {
-          // Intermediate token sin tenants = estado corrupto, limpiar
+        try {
+          const storedTenants = sessionStorage.getItem('farutech_available_tenants');
+          if (storedTenants) {
+            const parsedTenants = JSON.parse(storedTenants);
+            setAvailableTenants(parsedTenants);
+            setRequiresContextSelection(true);
+          } else {
+            // Intermediate token sin tenants = estado corrupto, limpiar
+            TokenManager.clearIntermediateToken();
+            setRequiresContextSelection(false);
+          }
+        } catch (parseError) {
+          console.error('[AuthContext] Failed to parse tenants:', parseError);
           TokenManager.clearIntermediateToken();
+          sessionStorage.removeItem('farutech_available_tenants');
           setRequiresContextSelection(false);
         }
       }

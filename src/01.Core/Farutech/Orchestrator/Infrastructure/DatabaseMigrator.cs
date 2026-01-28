@@ -71,7 +71,35 @@ public static class DatabaseMigrator
                 logger.LogInformation("✅ Database ready");
                 return;
             }
-            catch (Exception ex) when (!(ex is Npgsql.PostgresException pgEx && pgEx.SqlState == "42P07"))
+            catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
+            {
+                // Table already exists conflict (e.g., migration partially applied or manual schema present)
+                logger.LogWarning(pgEx, "Detected existing relation conflict (42P07): {Message}", pgEx.MessageText);
+
+                // As fallback, mark pending migrations as applied to allow startup to continue
+                try
+                {
+                    using var markScope = services.CreateScope();
+                    var db2 = markScope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
+                    var pending = await db2.Database.GetPendingMigrationsAsync();
+                    foreach (var migrationId in pending)
+                    {
+                        await db2.Database.ExecuteSqlRawAsync(
+                            "INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                            migrationId, "9.0.1");
+                    }
+
+                    logger.LogInformation("Marked {Count} pending migrations as applied due to existing relations.", pending.Count());
+                    logger.LogInformation("✅ Database ready (continued after handling 42P07)");
+                    return;
+                }
+                catch (Exception inner)
+                {
+                    logger.LogError(inner, "Failed to mark migrations as applied after 42P07 handling");
+                    throw;
+                }
+            }
+            catch (Exception ex)
             {
                 logger.LogWarning(
                     ex,

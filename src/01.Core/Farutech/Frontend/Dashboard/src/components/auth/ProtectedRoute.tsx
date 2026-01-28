@@ -20,13 +20,20 @@ export function ProtectedRoute({ children, requiresOrchestrator = false }: Prote
   console.log('[ProtectedRoute] requiresContextSelection:', requiresContextSelection);
   console.log('[ProtectedRoute] isLoading:', isLoading);
 
+  // For debugging: temporarily disable loading check
   if (isLoading) {
+    console.log('[ProtectedRoute] Still loading, showing loader');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
         <GlobalLoader fullScreen={false} />
       </div>
     );
   }
+  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
+  //       <GlobalLoader fullScreen={false} />
+  //     </div>
+  //   );
+  // }
 
   if (!isAuthenticated) {
     // Redirect to login and save the intended destination

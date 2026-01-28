@@ -101,9 +101,9 @@ builder
         "dev")
     .WithReference(api)
     .WithEnvironment("VITE_API_URL", api.GetEndpoint("https"))
+    .WithEnvironment("HOST", "0.0.0.0") // Forzar Vite a escuchar en todas las interfaces
     .WithHttpEndpoint(env: "PORT")
-    .WithExternalHttpEndpoints()
-    .PublishAsDockerFile();
+    .WithExternalHttpEndpoints();
 
 // ====================================================
 builder.Build().Run();

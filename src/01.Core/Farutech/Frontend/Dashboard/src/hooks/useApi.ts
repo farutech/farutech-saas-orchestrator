@@ -4,6 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query';
 import { catalogService } from '@/services/catalog.service';
+import { authService } from '@/services/auth.service';
 import { customersService } from '@/services/customers.service';
 import { provisioningService } from '@/services/provisioning.service';
 import { instancesService } from '@/services/instances.service';
