@@ -11,6 +11,7 @@ using Farutech.Orchestrator.Infrastructure.Messaging;
 using Farutech.Orchestrator.Infrastructure.Persistence;
 using Farutech.Orchestrator.Infrastructure.Repositories;
 using Farutech.Orchestrator.Infrastructure.Services;
+using Farutech.Orchestrator.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -188,8 +189,8 @@ builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFact
 builder.Services.AddMemoryCache(); // Required for PermissionService caching
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 
-// ========== DATABASE BOOTSTRAP SERVICE (SMART INITIALIZATION) ==========
-builder.Services.AddScoped<DatabaseBootstrapService>();
+// ========== DATABASE POST-MIGRATION SERVICE ==========
+builder.Services.AddScoped<DatabasePostMigrationService>();
 
 // ========== SECURITY SERVICES (Intermediate Token Pattern) ==========
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -266,43 +267,62 @@ var app = builder.Build();
 
 Console.WriteLine("Starting application build...");
 
-// ========== DATABASE BOOTSTRAP (SMART INITIALIZATION) ==========
+// ========== EF CORE MIGRATIONS (OBLIGATORIO PRIMERO) ==========
 try
 {
-    Console.WriteLine("🚀 Ejecutando bootstrap inteligente de base de datos...");
+    Console.WriteLine("🔄 Aplicando migraciones EF Core...");
 
-    // Usar el DatabaseBootstrapService para inicialización completa y ordenada
     using (var scope = app.Services.CreateScope())
     {
-        var bootstrapService = scope.ServiceProvider.GetRequiredService<DatabaseBootstrapService>();
-        await bootstrapService.BootstrapDatabaseAsync();
+        var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
+        await context.Database.MigrateAsync();
     }
 
-    Console.WriteLine("✅ Bootstrap de base de datos completado exitosamente");
+    Console.WriteLine("✅ Migraciones EF Core aplicadas exitosamente");
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"❌ Error crítico durante el bootstrap de base de datos: {ex.Message}");
-    Console.WriteLine("La aplicación no puede iniciar sin una base de datos funcional.");
-    throw; // Detener si el bootstrap falla
+    Console.WriteLine($"❌ ERROR CRÍTICO: Fallaron las migraciones EF Core: {ex.Message}");
+    Console.WriteLine("La aplicación no puede iniciar sin migraciones aplicadas.");
+    throw; // FAIL-FAST: Detener aplicación si migraciones fallan
 }
 
-// ========== AUTO-SEED DATA ON STARTUP (DESPUÉS DE MIGRACIONES) ==========
+// ========== DATABASE POST-MIGRATION BOOTSTRAP ==========
+try
+{
+    Console.WriteLine("🚀 Ejecutando bootstrap post-migración...");
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var bootstrapService = scope.ServiceProvider.GetRequiredService<DatabasePostMigrationService>();
+        await bootstrapService.ExecutePostMigrationSetupAsync();
+    }
+
+    Console.WriteLine("✅ Bootstrap post-migración completado exitosamente");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ Error crítico durante el bootstrap post-migración: {ex.Message}");
+    Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
+    throw; // FAIL-FAST: Detener aplicación si bootstrap falla
+}
+
+// ========== IDEMPOTENT DATA SEEDING ==========
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<Farutech.Orchestrator.Infrastructure.Seeding.FarutechDataSeeder>>();
+        var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
-        var seeder = new Farutech.Orchestrator.Infrastructure.Seeding.FarutechDataSeeder(context, userManager, seederLogger);
+        var seeder = new FarutechDataSeeder(context, userManager, seederLogger);
         await seeder.SeedAsync();
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"⚠️  Error durante auto-seeding: {ex.Message}");
-        // No detenemos la aplicación si falla el seeding (datos ya pueden existir)
+        Console.WriteLine($"⚠️  Error durante seeding (no crítico): {ex.Message}");
+        // NO detener aplicación - seeding debe ser tolerante a fallos
     }
 }
 
@@ -358,39 +378,7 @@ if (app.Environment.IsDevelopment())
 
 Console.WriteLine("Application configured successfully, starting...");
 
-// Check for migration or seed command
-if (args.Length > 0 && (args[0] == "--migrate" || args[0] == "--seed"))
-{
-    Console.WriteLine($"Running database {args[0].Replace("--", "")} operation...");
-    try
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
-            
-            // Always run migrations first
-            await Farutech.Orchestrator.Infrastructure.Seeding.DbSeeder.ApplySchemaMigrationsAsync(context);
-            Console.WriteLine("✅ Schema migrations applied successfully");
-            
-            // Seed data is now handled by migrations (AddCatalogSeedData)
-            // Comment out DbSeeder to avoid duplicates
-            // await Farutech.Orchestrator.Infrastructure.Seeding.DbSeeder.SeedAsync(context);
-            Console.WriteLine("✅ Database seeded successfully via migrations");
-        }
-        Console.WriteLine($"Database {args[0].Replace("--", "")} completed successfully!");
-        return;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Operation failed: {ex.Message}");
-        Console.WriteLine(ex.StackTrace);
-        throw;
-    }
-}
-
 // ========== INICIO DE LA APLICACIÓN ==========
-// Las migraciones ya se ejecutaron arriba (después de app.Build(), antes del seeder)
-
 try
 {
     app.Run();
