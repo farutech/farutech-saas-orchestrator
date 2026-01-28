@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCustomers, useProducts, useProvisionTenant } from '@/hooks/useApi';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -28,6 +29,7 @@ export default function ProvisioningPage() {
   const { data: customers } = useCustomers();
   const { data: products } = useProducts();
   const provisionMutation = useProvisionTenant();
+  const { refreshAvailableTenants } = useAuth();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,6 +56,8 @@ export default function ProvisioningPage() {
     setIsSubmitting(true);
     try {
       await provisionMutation.mutateAsync(formData);
+      // Refresh available tenants to update the context
+      await refreshAvailableTenants();
       // Reset and navigate back
       setStep(1);
       setFormData({ customerId: '', productId: '', environment: 'Production', moduleIds: [] });

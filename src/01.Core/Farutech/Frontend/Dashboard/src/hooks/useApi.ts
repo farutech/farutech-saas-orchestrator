@@ -27,6 +27,7 @@ export const queryKeys = {
   customer: (id: string) => ['customers', id] as const,
   instances: ['instances'] as const,
   instance: (id: string) => ['instances', id] as const,
+  availableTenants: ['available-tenants'] as const,
 };
 
 // ============================================================================
@@ -333,8 +334,16 @@ export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, stri
 };
 
 // ============================================================================
-// PROVISIONING
+// AUTH
 // ============================================================================
+
+export const useAvailableTenants = (options?: UseQueryOptions<API.TenantOptionDto[]>) => {
+  return useQuery({
+    queryKey: queryKeys.availableTenants,
+    queryFn: authService.getAvailableTenants,
+    ...options,
+  });
+};
 
 export const useProvisionTenant = (options?: UseMutationOptions<API.ProvisionTenantResponse, Error, API.ProvisionTenantRequest>) => {
   const queryClient = useQueryClient();
@@ -342,7 +351,9 @@ export const useProvisionTenant = (options?: UseMutationOptions<API.ProvisionTen
   return useMutation({
     mutationFn: provisioningService.provisionTenant,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers });
       queryClient.invalidateQueries({ queryKey: queryKeys.instances });
+      // Note: refreshAvailableTenants will be called from the component
       toast.success('Tenant provisionado exitosamente');
     },
     onError: (error: unknown) => {

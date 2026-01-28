@@ -16,6 +16,7 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
   PermissionDto,
+  TenantOptionDto,
 } from '@/types/api';
 
 // ============================================================================
@@ -78,6 +79,17 @@ export const authService = {
    */
   assignUser: async (request: AssignUserRequest): Promise<void> => {
     await apiClient.post('/api/Auth/assign-user', request);
+  },
+
+  /**
+   * GET /api/Auth/available-tenants
+   * Get available tenants for current user
+   */
+  getAvailableTenants: async (): Promise<TenantOptionDto[]> => {
+    const { data } = await apiClient.get<TenantOptionDto[]>(
+      '/api/Auth/available-tenants'
+    );
+    return data;
   },
 
   /**

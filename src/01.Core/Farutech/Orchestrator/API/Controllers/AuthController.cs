@@ -86,21 +86,21 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
-    /// Registrar nuevo usuario (con opción de crear organización por defecto).
+    /// Obtener tenants disponibles para el usuario actual.
     /// </summary>
-    [HttpPost("register")]
-    [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    [HttpGet("available-tenants")]
+    [ProducesResponseType(typeof(List<TenantOptionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAvailableTenants()
     {
-        var result = await _authService.RegisterAsync(request);
-        
-        if (result == null)
+        var userIdClaim = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
-            return BadRequest(new { message = "El email ya está registrado o los datos son inválidos" });
+            return Unauthorized(new { message = "Usuario no autenticado" });
         }
 
-        return CreatedAtAction(nameof(Register), new { id = result.UserId }, result);
+        var tenants = await _authService.GetAvailableTenantsAsync(userId);
+        return Ok(tenants);
     }
 
     /// <summary>

@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TokenManager } from '@/lib/api-client';
+import { useAvailableTenants } from '@/hooks/useApi';
 import type {
   LoginRequest,
   SecureLoginResponse,
@@ -51,6 +52,7 @@ interface AuthContextType {
   selectInstance: (instanceId: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  refreshAvailableTenants: () => Promise<void>;
 
   // Utilities
   hasRole: (role: string) => boolean;
@@ -106,6 +108,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [requiresInstanceSelection, setRequiresInstanceSelection] = useState(false);
 
   const navigate = useNavigate();
+  const { data: freshTenants, refetch: refetchTenants } = useAvailableTenants({
+    enabled: false // Only fetch when explicitly called
+  });
 
   // ============================================================================
   // Initialize - Check existing session
@@ -532,6 +537,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // ============================================================================
+  // Refresh Available Tenants
+  // ============================================================================
+
+  const refreshAvailableTenants = async () => {
+    try {
+      const result = await refetchTenants();
+      if (result.data) {
+        setAvailableTenants(result.data);
+        sessionStorage.setItem('farutech_available_tenants', JSON.stringify(result.data));
+      }
+    } catch (error) {
+      console.error('Error refreshing available tenants:', error);
+    }
+  };
+
+  // ============================================================================
   // Context Value
   // ============================================================================
 
@@ -555,6 +576,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     selectInstance,
     register,
     logout,
+    refreshAvailableTenants,
     hasRole,
     isOrchestrator,
   };

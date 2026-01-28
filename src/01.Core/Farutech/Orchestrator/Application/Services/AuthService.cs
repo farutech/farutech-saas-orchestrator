@@ -65,36 +65,7 @@ public class AuthService(
         Console.WriteLine($"[AuthService] Getting memberships for user {user.Id}");
         var memberships = await _authRepository.GetUserMembershipsAsync(user.Id);
         Console.WriteLine($"[AuthService] Found {memberships.Count()} memberships for user {user.Id}");
-        var activeMemberships = new List<TenantOptionDto>();
-
-        foreach (var membership in memberships.Where(m => m.IsActive))
-        {
-            var customer = await _authRepository.GetCustomerByIdAsync(membership.CustomerId);
-            if (customer != null && customer.IsActive)
-            {
-                // Obtener instancias de la empresa
-                var instances = await _authRepository.GetTenantInstancesAsync(customer.Id);
-                var instanceDtos = instances.Select(i => new InstanceDto(
-                    i.Id,
-                    !string.IsNullOrEmpty(i.Name) ? i.Name : i.TenantCode, // Fallback
-                    !string.IsNullOrEmpty(i.ApplicationType) ? i.ApplicationType : "Generic",
-                    !string.IsNullOrEmpty(i.TenantCode) ? i.TenantCode : i.Id.ToString().Substring(0,8),
-                    i.Status,
-                    i.ApiBaseUrl ?? ""
-                )).ToList();
-
-                activeMemberships.Add(new TenantOptionDto(
-                    customer.Id,
-                    customer.CompanyName,
-                    customer.Code,
-                    customer.TaxId ?? "",
-                    membership.Role.ToString(),
-                    membership.Role == FarutechRole.Owner,
-                    customer.IsActive,
-                    instanceDtos
-                ));
-            }
-        }
+        var activeMemberships = await GetAvailableTenantsForUserAsync(user.Id);
 
         // CASO 1: Usuario SIN tenants → Retornar token limpio para ONBOARDING
         if (activeMemberships.Count == 0)
@@ -734,5 +705,53 @@ public class AuthService(
             user.FullName,
             organizations
         );
+    }
+
+    /// <summary>
+    /// Obtiene los tenants disponibles para un usuario específico.
+    /// </summary>
+    public async Task<List<TenantOptionDto>?> GetAvailableTenantsAsync(Guid userId)
+    {
+        return await GetAvailableTenantsForUserAsync(userId);
+    }
+
+    /// <summary>
+    /// Método privado para obtener tenants disponibles para un usuario.
+    /// </summary>
+    private async Task<List<TenantOptionDto>> GetAvailableTenantsForUserAsync(Guid userId)
+    {
+        var memberships = await _authRepository.GetUserMembershipsAsync(userId);
+        var activeMemberships = new List<TenantOptionDto>();
+
+        foreach (var membership in memberships.Where(m => m.IsActive))
+        {
+            var customer = await _authRepository.GetCustomerByIdAsync(membership.CustomerId);
+            if (customer != null && customer.IsActive)
+            {
+                // Obtener instancias de la empresa
+                var instances = await _authRepository.GetTenantInstancesAsync(customer.Id);
+                var instanceDtos = instances.Select(i => new InstanceDto(
+                    i.Id,
+                    !string.IsNullOrEmpty(i.Name) ? i.Name : i.TenantCode, // Fallback
+                    !string.IsNullOrEmpty(i.ApplicationType) ? i.ApplicationType : "Generic",
+                    !string.IsNullOrEmpty(i.TenantCode) ? i.TenantCode : i.Id.ToString().Substring(0,8),
+                    i.Status,
+                    i.ApiBaseUrl ?? ""
+                )).ToList();
+
+                activeMemberships.Add(new TenantOptionDto(
+                    customer.Id,
+                    customer.CompanyName,
+                    customer.Code,
+                    customer.TaxId ?? "",
+                    membership.Role.ToString(),
+                    membership.Role == FarutechRole.Owner,
+                    customer.IsActive,
+                    instanceDtos
+                ));
+            }
+        }
+
+        return activeMemberships;
     }
 }

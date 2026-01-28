@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useProducts, useProductManifest, useProvisionTenant } from '@/hooks/useApi';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +24,7 @@ interface CreateInstanceModalProps {
 export function CreateInstanceModal({ isOpen, onClose, organization }: CreateInstanceModalProps) {
   const { data: products, isLoading: productsLoading } = useProducts();
   const provisionMutation = useProvisionTenant();
+  const { refreshAvailableTenants } = useAuth();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ProvisionTenantRequest>({
@@ -50,6 +52,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
   const handleProvision = async () => {
     try {
       await provisionMutation.mutateAsync(formData);
+      // Refresh available tenants to update the context
+      await refreshAvailableTenants();
       toast.success('Aplicación creada exitosamente');
       onClose();
       setStep(1);
@@ -63,7 +67,6 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
         code: '',
         name: '',
       });
-      window.location.reload(); // TODO: Refresh the organizations data
     } catch (error) {
       toast.error('Error al crear la aplicación');
       console.error('Provision error:', error);

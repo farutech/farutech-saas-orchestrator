@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Deshabilitar advertencia de browserslist desactualizada
+  logLevel: 'warn',
   build: {
     rollupOptions: {
       output: {

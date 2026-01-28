@@ -19,6 +19,11 @@ public interface IAuthService
     Task<SelectContextResponse?> SelectContextAsync(string intermediateToken, Guid tenantId);
 
     /// <summary>
+    /// Obtiene los tenants disponibles para el usuario actual (basado en JWT token).
+    /// </summary>
+    Task<List<TenantOptionDto>?> GetAvailableTenantsAsync(Guid userId);
+
+    /// <summary>
     /// Registra nuevo usuario (con opción de crear organización por defecto).
     /// </summary>
     Task<RegisterResponse?> RegisterAsync(RegisterRequest request);
