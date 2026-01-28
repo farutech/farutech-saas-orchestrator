@@ -19,20 +19,28 @@ public class CustomerService : ICustomerService
     /// <inheritdoc />
     public async Task<Customer> CreateCustomerAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
+        // Validate required fields
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.CompanyName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.TaxId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Email);
+
         // Validate code uniqueness
         if (!await IsCodeAvailableAsync(request.Code, cancellationToken: cancellationToken))
         {
             throw new InvalidOperationException($"Customer code '{request.Code}' is already in use.");
         }
 
+        // Create customer with validated data
         var customer = new Customer
         {
             Code = request.Code,
             CompanyName = request.CompanyName,
-            TaxId = request.TaxId!,
-            Email = request.Email!,
-            Phone = request.Phone,
-            Address = request.Address
+            TaxId = request.TaxId,
+            Email = request.Email,
+            Phone = request.Phone ?? string.Empty,
+            Address = request.Address ?? string.Empty
         };
 
         await _customerRepository.AddAsync(customer, cancellationToken);
