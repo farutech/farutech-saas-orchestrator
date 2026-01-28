@@ -5,6 +5,7 @@ using Farutech.Orchestrator.API.Services;
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Application.Services;
 using Farutech.Orchestrator.Domain.Entities.Identity;
+using Farutech.Orchestrator.Infrastructure;
 using Farutech.Orchestrator.Infrastructure.Auth;
 using Farutech.Orchestrator.Infrastructure.Extensions;
 using Farutech.Orchestrator.Infrastructure.Messaging;
@@ -267,24 +268,30 @@ var app = builder.Build();
 
 Console.WriteLine("Starting application build...");
 
-// ========== EF CORE MIGRATIONS (OBLIGATORIO PRIMERO) ==========
-try
+// ========== EF CORE MIGRATIONS (CON RETRY PARA RESILIENCIA) ==========
+if (app.Environment.IsDevelopment())
 {
-    Console.WriteLine("🔄 Aplicando migraciones EF Core...");
-
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
-        await context.Database.MigrateAsync();
-    }
+        Console.WriteLine("🔄 Aplicando migraciones EF Core con retry...");
 
-    Console.WriteLine("✅ Migraciones EF Core aplicadas exitosamente");
+        await DatabaseMigrator.MigrateAsync(
+            app.Services,
+            app.Logger
+        );
+
+        Console.WriteLine("✅ Migraciones EF Core aplicadas exitosamente");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ERROR CRÍTICO: Fallaron las migraciones EF Core: {ex.Message}");
+        Console.WriteLine("La aplicación no puede iniciar sin migraciones aplicadas.");
+        throw; // FAIL-FAST: Detener aplicación si migraciones fallan
+    }
 }
-catch (Exception ex)
+else
 {
-    Console.WriteLine($"❌ ERROR CRÍTICO: Fallaron las migraciones EF Core: {ex.Message}");
-    Console.WriteLine("La aplicación no puede iniciar sin migraciones aplicadas.");
-    throw; // FAIL-FAST: Detener aplicación si migraciones fallan
+    Console.WriteLine("ℹ️  Ambiente de producción: migraciones deben ejecutarse externamente");
 }
 
 // ========== DATABASE POST-MIGRATION BOOTSTRAP ==========

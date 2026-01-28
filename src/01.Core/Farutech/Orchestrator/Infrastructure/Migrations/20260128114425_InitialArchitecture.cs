@@ -540,6 +540,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     ScopeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ScopeType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
