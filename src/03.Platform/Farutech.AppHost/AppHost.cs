@@ -1,7 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var isDev = builder.Environment.IsDevelopment();
-var isProd = builder.Environment.IsProduction();
+var environment = builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production";
+var isDev = environment == "Development";
+var isProd = environment == "Production";
 
 // ===================== PARÁMETROS =====================
 var postgresPassword = builder.AddParameter("postgres-password", secret: true);
@@ -81,7 +82,7 @@ else if (isProd)
 
 // ===================== FRONTEND =====================
 builder
-    .AddNpmApp("frontend", "../../01.Core/Farutech/Frontend", "dev")
+    .AddNpmApp("frontend", "../../01.Core/Farutech/Frontend/Dashboard", "dev")
     .WithReference(api)
     .WithEnvironment("VITE_API_URL", api.GetEndpoint("https"))
     .WithHttpEndpoint(env: "PORT")

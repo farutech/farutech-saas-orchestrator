@@ -17,13 +17,18 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         builder.HasOne(ur => ur.User)
             .WithMany()
             .HasForeignKey(ur => ur.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false); // Make navigation optional to avoid filter conflicts
 
         // Relationship: Role -> UserRoles
         builder.HasOne(ur => ur.Role)
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false); // Make navigation optional to avoid filter conflicts
+
+        // Add matching query filter to avoid conflicts with Role filter
+        builder.HasQueryFilter(ur => ur.Role != null && !ur.Role.IsDeleted);
 
         builder.Property(ur => ur.AssignedAt)
             .IsRequired()

@@ -17,13 +17,20 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
         builder.HasOne(rp => rp.Role)
             .WithMany(r => r.RolePermissions)
             .HasForeignKey(rp => rp.RoleId)
-            .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade to Restrict
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false); // Make navigation optional to avoid filter conflicts
 
         // Relationship: Permission -> RolePermissions
         builder.HasOne(rp => rp.Permission)
             .WithMany(p => p.RolePermissions)
             .HasForeignKey(rp => rp.PermissionId)
-            .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade to Restrict
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false); // Make navigation optional to avoid filter conflicts
+
+        // Add matching query filters to avoid conflicts with parent entity filters
+        builder.HasQueryFilter(rp =>
+            rp.Role != null && !rp.Role.IsDeleted &&
+            rp.Permission != null && !rp.Permission.IsDeleted);
 
         builder.Property(rp => rp.GrantedAt)
             .IsRequired()

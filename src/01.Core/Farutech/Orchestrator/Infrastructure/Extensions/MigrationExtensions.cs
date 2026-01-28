@@ -29,14 +29,9 @@ public static class MigrationExtensions
             
             var context = services.GetRequiredService<OrchestratorDbContext>();
             
-            // Forzar search_path a public para migraciones (evita errores de esquema)
-            await context.Database.ExecuteSqlRawAsync("SET search_path TO public;");
-
-            // Asegurar que el esquema y la tabla de historial existan (evita 42P01)
-            await context.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS public;");
-            await context.Database.ExecuteSqlRawAsync(
-                "CREATE TABLE IF NOT EXISTS public.\"__EFMigrationsHistory\" (\"MigrationId\" character varying(150) NOT NULL, \"ProductVersion\" character varying(32) NOT NULL, CONSTRAINT \"PK___EFMigrationsHistory\" PRIMARY KEY (\"MigrationId\"));");
-
+            // Ensure we're in the correct schema context for migrations
+            await context.Database.ExecuteSqlRawAsync("SET search_path TO public, identity, tenants, catalog, core;");
+            
             // Aplicar migraciones
             await context.Database.MigrateAsync();
             logger.LogInformation("✅ Migraciones aplicadas exitosamente");
