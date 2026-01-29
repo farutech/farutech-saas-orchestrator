@@ -511,7 +511,7 @@ Write-Success "Rama $Branch creada"
 
 Write-Info "Configurando usuario Git..."
 git config user.name "Farid Maloof"
-git config user.email "faridmaloof@gmail.com"
+git config user.email "webmaster@farutech.com"
 Write-Success "Usuario configurado"
 
 # ===================================================================
