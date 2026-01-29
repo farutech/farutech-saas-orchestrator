@@ -352,6 +352,7 @@ export interface UpdateCustomerRequest {
   phone?: string;
   address?: string;
   taxId?: string;
+  isActive?: boolean;
 }
 
 // ============================================================================

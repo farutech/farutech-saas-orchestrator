@@ -47,7 +47,7 @@ public class NatsMessageBus : IMessageBus
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error publicando a NATS ({Subject}). Mensaje: {Message}", 
+            _logger.LogWarning(ex, "NATS no disponible o rechazo de conexión ({Subject}). Operando en modo degradado (Fallback a DB). Mensaje: {Message}", 
                 subject, 
                 JsonSerializer.Serialize(message));
             

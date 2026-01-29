@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useCustomers } from '@/hooks/useApi';
+import { useCustomers, useUpdateCustomer } from '@/hooks/useApi';
 import { useQueryModal } from '@/hooks/useQueryModal';
 
 // UI Components
@@ -22,6 +22,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { CreateInstanceModal } from '@/components/CreateInstanceModal';
 import { OrganizationCard } from '@/components/home/OrganizationCard';
 import { CreateOrganizationModal } from '@/components/modals/CreateOrganizationModal';
+import { EditOrganizationModal } from '@/components/modals/EditOrganizationModal';
 
 // Helper Functions
 // ============================================================================
@@ -210,6 +211,34 @@ export default function HomePage() {
     }
   };
 
+  // Handle Edit Organization
+  const handleEditOrganization = (organizationId: string) => {
+    let orgData;
+    if (requiresContextSelection) {
+      const tenant = availableTenants?.find(t => t.tenantId === organizationId);
+      if (tenant) {
+        orgData = {
+          id: tenant.tenantId,
+          companyName: tenant.companyName || '',
+          taxId: tenant.taxId || '',
+          email: '', // Not available in tenant options
+          phone: '',
+          address: '',
+        } as any;
+      }
+    } else {
+      orgData = customersData?.organizations?.find(c => c.id === organizationId);
+    }
+
+    if (orgData) {
+      setSelectedOrganization(orgData);
+      modal.open('edit-org');
+    } else {
+      console.error('[HomePage] Organization not found for ID:', organizationId);
+    }
+  };
+
+
   // ============================================================================
   // Filtrado Simple y Eficiente
   // ============================================================================
@@ -245,10 +274,29 @@ export default function HomePage() {
     setExpandedOrgId(prev => prev === orgId ? null : orgId);
   };
 
+  // Handle Toggle Status (Activate/Deactivate)
+  const { mutate: updateCustomerStatus } = useUpdateCustomer();
+
+  const handleToggleStatus = (organizationId: string, currentIsActive: boolean) => {
+    // If we are deactivating, collapse the card
+    if (currentIsActive && expandedOrgId === organizationId) {
+      setExpandedOrgId(null);
+    }
+
+    updateCustomerStatus({
+      id: organizationId,
+      data: {
+        isActive: !currentIsActive
+      }
+    });
+  };
+
+
   // Handle View All Apps
   const handleViewAll = (orgId: string) => {
     navigate(`/organizations/${orgId}/apps`);
   };
+
 
   // Handle Create Organization
   const handleCreateOrganization = () => {
@@ -292,7 +340,7 @@ export default function HomePage() {
         <Separator className="bg-slate-200" />
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-full">
             {customersLoading && !requiresContextSelection ? (
                 // Loading Skeletons
                 [1,2,3].map(i => (
@@ -343,6 +391,8 @@ export default function HomePage() {
                       onToggle={() => toggleOrg(org.organizationId)}
                       onLaunchInstance={handleInstanceClick}
                       onCreateInstance={handleCreateInstance}
+                      onEditOrganization={handleEditOrganization}
+                      onToggleStatus={handleToggleStatus}
                       limitApps={3}
                       onViewAll={handleViewAll}
                     />
@@ -378,6 +428,18 @@ export default function HomePage() {
             setSelectedOrganization(null);
           }}
           organization={selectedOrganization || filteredOrgs[0]} 
+        />
+      )}
+
+      {/* Edit Organization Modal */}
+      {selectedOrganization && (
+        <EditOrganizationModal
+          isOpen={modal.isOpen('edit-org')}
+          onClose={() => {
+            modal.close();
+            setSelectedOrganization(null);
+          }}
+          organization={selectedOrganization}
         />
       )}
     </div>

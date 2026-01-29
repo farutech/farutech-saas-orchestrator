@@ -60,8 +60,8 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (!token && !intermediateToken) {
         setUser(null);
         localStorage.removeItem('farutech_session_user');
-      } else if (token && (!user || !user.id)) {
-        // We have a token but no full user info (especially missing ID)
+      } else if ((token || intermediateToken) && (!user || !user.id || user.id === '')) {
+        // We have a token (full or intermediate) but no full user info (especially missing ID)
         try {
           const response = await apiClient.get<any>('/api/Auth/me');
           if (response.data) {

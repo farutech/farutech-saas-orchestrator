@@ -2,7 +2,7 @@
 // CREATE APPLICATION MODAL - Modal for provisioning new applications
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProducts, useProductManifest, useProvisionTenant, queryKeys } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +46,13 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
   const selectedProduct = products?.find((p) => p.id === formData.productId);
   const selectedPlan = productManifest?.subscriptionPlans?.find((p) => p.id === formData.subscriptionPlanId);
   
+  // Sync customerId when organization or isOpen changes
+  useEffect(() => {
+    if (isOpen && organization?.id) {
+      setFormData(prev => ({ ...prev, customerId: organization.id }));
+    }
+  }, [isOpen, organization?.id]);
+
   // Filtrar productos: si hay filtro, buscar; si no, mostrar primeros 10
   const filteredProducts = productFilter
     ? products?.filter(p => p.name?.toLowerCase().includes(productFilter.toLowerCase()))
@@ -53,6 +60,7 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
 
   const handleProvision = async () => {
     try {
+      console.log('[CreateInstanceModal] Provisioning with data:', formData);
       await provisionMutation.mutateAsync(formData);
       
       // Invalidar caches para forzar refetch de datos actualizados
@@ -159,9 +167,9 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                         }}
                         className="w-full px-4 py-2 text-left hover:bg-slate-100 focus:bg-slate-100 focus:outline-none border-b border-slate-100 last:border-b-0"
                       >
-                        <div className="font-medium">{product.name}</div>
+                        <div className="font-medium truncate">{product.name}</div>
                         {product.description && (
-                          <div className="text-xs text-slate-500">{product.description}</div>
+                          <div className="text-xs text-slate-500 truncate">{product.description}</div>
                         )}
                       </button>
                     ))}
@@ -175,10 +183,10 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                 {formData.productId && selectedProduct && (
                   <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-sm">{selectedProduct.name}</div>
+                      <div className="min-w-0 flex-1 mr-4">
+                        <div className="font-medium text-sm truncate">{selectedProduct.name}</div>
                         {selectedProduct.description && (
-                          <div className="text-xs text-slate-600 mt-0.5">{selectedProduct.description}</div>
+                          <div className="text-xs text-slate-600 mt-0.5 truncate">{selectedProduct.description}</div>
                         )}
                       </div>
                       <Badge variant="highlight">Seleccionado</Badge>
