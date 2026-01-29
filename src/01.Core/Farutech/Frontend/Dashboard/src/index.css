@@ -16,29 +16,30 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Default Primary - Farutech Brand */
-    --primary: 250 89% 60%;
+    /* Default Primary - Farutech Blue (Tech Blue) */
+    --primary: 215 90% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    /* Accent - Tech Teal */
+    --accent: 170 80% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 250 89% 60%;
+    --ring: 215 90% 52%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem; /* Clean 8px radius */
 
-    /* Module-specific colors */
+    /* Module-specific colors - Refined */
     --medical-primary: 174 72% 46%;
     --medical-secondary: 168 76% 42%;
     --medical-accent: 180 68% 52%;
@@ -51,11 +52,11 @@
     --vet-gradient-from: 25 95% 53%;
     --vet-gradient-to: 142 69% 45%;
 
-    --erp-primary: 221 83% 53%;
-    --erp-secondary: 224 76% 48%;
-    --erp-accent: 217 91% 60%;
-    --erp-gradient-from: 221 83% 53%;
-    --erp-gradient-to: 224 76% 48%;
+    --erp-primary: 215 90% 52%; /* Aligned with Brand */
+    --erp-secondary: 222 47% 11%;
+    --erp-accent: 170 80% 45%;
+    --erp-gradient-from: 215 90% 52%;
+    --erp-gradient-to: 222 47% 11%;
 
     --pos-primary: 280 87% 57%;
     --pos-secondary: 292 84% 52%;
@@ -76,15 +77,15 @@
     --priority-medium: 38 92% 50%;
     --priority-low: 142 76% 36%;
 
-    /* Sidebar */
+    /* Sidebar - Deep Navy */
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 250 89% 60%;
+    --sidebar-primary: 215 90% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 18%;
-    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-accent: 215 90% 52%; /* Active item highlight */
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 250 89% 60%;
+    --sidebar-ring: 215 90% 52%;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
@@ -103,7 +104,7 @@
     --popover: 222 47% 9%;
     --popover-foreground: 220 14% 96%;
 
-    --primary: 250 89% 65%;
+    --primary: 215 90% 60%; /* Slightly lighter for dark mode */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 222 30% 18%;
@@ -112,24 +113,24 @@
     --muted: 222 30% 18%;
     --muted-foreground: 220 9% 64%;
 
-    --accent: 222 30% 18%;
-    --accent-foreground: 220 14% 96%;
+    --accent: 170 80% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 222 30% 18%;
     --input: 222 30% 18%;
-    --ring: 250 89% 65%;
+    --ring: 215 90% 60%;
 
     --sidebar-background: 222 47% 6%;
     --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 250 89% 65%;
+    --sidebar-primary: 215 90% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 14%;
-    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-accent: 215 90% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 30% 14%;
-    --sidebar-ring: 250 89% 65%;
+    --sidebar-ring: 215 90% 60%;
   }
 
   /* Module Mode Overrides */

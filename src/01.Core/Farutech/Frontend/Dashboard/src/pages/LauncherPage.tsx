@@ -35,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { OrganizationCard } from '@/components/launcher/OrganizationCard';
 
 // ============================================================================
 // Helper Functions
@@ -242,6 +243,14 @@ export default function LauncherPage() {
     });
   }, [organizations, searchTerm]);
 
+  // State for Accordion
+  const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
+
+  // Handle Accordion Toggle
+  const toggleOrg = (orgId: string) => {
+    setExpandedOrgId(prev => prev === orgId ? null : orgId);
+  };
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -250,7 +259,7 @@ export default function LauncherPage() {
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       
       {/* 1. Global Header */}
-      <AppHeader title="Universal Launcher" />
+      <AppHeader title="Launcher" />
 
       {/* 2. Main Workspace */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10 space-y-8">
@@ -258,16 +267,16 @@ export default function LauncherPage() {
         {/* Action Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Instancias Activas</h1>
-            <p className="text-slate-500 text-sm mt-1">Selecciona un entorno para comenzar a trabajar</p>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Mis Organizaciones</h1>
+            <p className="text-slate-500 mt-1">Gestiona tus empresas y accede a sus aplicaciones</p>
           </div>
           
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative group w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-[#8B5CF6] transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
               <Input 
-                placeholder="Buscar por nombre, código o tipo..." 
-                className="pl-10 bg-white border-slate-200 focus-visible:ring-[#8B5CF6] shadow-sm rounded-lg"
+                placeholder="Buscar organización..." 
+                className="pl-10 bg-white border-slate-200 focus-visible:ring-primary shadow-sm rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -278,192 +287,84 @@ export default function LauncherPage() {
         <Separator className="bg-slate-200" />
 
         {/* Content Grid */}
-        <div className="space-y-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {customersLoading && !requiresContextSelection ? (
                 // Loading Skeletons
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[1,2,3].map(i => (
-                        <div key={i} className="h-48 bg-slate-100 rounded-xl animate-pulse" />
-                    ))}
-                </div>
+                [1,2,3].map(i => (
+                    <div key={i} className="h-48 bg-white rounded-xl border border-slate-200 shadow-sm animate-pulse" />
+                ))
             ) : filteredOrgs.length === 0 ? (
                 // Empty State
-                <div className="text-center py-20">
-                    <div className="bg-slate-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <div className="col-span-full text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200">
+                    <div className="bg-slate-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
                         <Box className="h-10 w-10 text-slate-400" />
                     </div>
                     <h3 className="text-lg font-medium text-slate-900">
                         {requiresContextSelection
                           ? 'No tienes acceso a organizaciones'
-                          : 'No se encontraron instancias'
+                          : 'No se encontraron organizaciones'
                         }
                     </h3>
-                    <p className="text-slate-500 mt-2 mb-4">
+                    <p className="text-slate-500 mt-2 mb-6 max-w-md mx-auto">
                         {requiresContextSelection
-                          ? 'Necesitas iniciar sesión con credenciales válidas para acceder a organizaciones.'
-                          : 'Intenta ajustar los filtros de búsqueda'
+                          ? 'Contacta al administrador para que te asigne a una.'
+                          : 'Intenta ajustar los términos de búsqueda.'
                         }
                     </p>
-                    {requiresContextSelection ? (
+                    {requiresContextSelection && (
                         <Button
                             onClick={() => navigate('/login')}
-                            className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white"
+                            className="bg-primary hover:bg-primary/90 text-white"
                         >
                             Ir al Login
-                        </Button>
-                    ) : (
-                        <Button variant="link" onClick={() => setSearchTerm('')} className="text-[#8B5CF6] mt-2">
-                            Limpiar filtros
                         </Button>
                     )}
                 </div>
             ) : (
-                // Organizations & Instances
-                filteredOrgs.map(org => {
-                    return (
-                    <div key={org.organizationId} className="space-y-4">
-                        {/* Org Title con Badge de Owner y TaxId */}
-                        <div className="flex items-center gap-3 px-1">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                                <Building2 className="h-4 w-4" />
-                                {org.organizationName}
-                            </div>
-                                
-                            {/* Badge de OWNER */}
-                            {org.isOwner && (
-                                <Badge className="bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[10px] font-bold uppercase tracking-wider border-none shadow-sm">
-                                    👑 Owner
-                                </Badge>
-                            )}
-                            
-                            {/* Identificación Fiscal - Solo si existe */}
-                            {org.taxId && org.taxId.trim() !== '' && (
-                                <span className="text-xs text-slate-400 font-mono">
-                                    <span className="text-slate-500 mr-1">ID Fiscal:</span>
-                                    <span className="text-slate-700 font-semibold">{org.taxId}</span>
-                                </span>
-                            )}
+                // Organization Cards
+                <>
+                  {filteredOrgs.map(org => (
+                    <OrganizationCard
+                      key={org.organizationId}
+                      organization={org}
+                      isExpanded={expandedOrgId === org.organizationId}
+                      onToggle={() => toggleOrg(org.organizationId)}
+                      onLaunchInstance={handleInstanceClick}
+                      onCreateInstance={handleCreateInstance}
+                    />
+                  ))}
 
-                            {/* Badge de Inactiva */}
-                            {!org.isActive && (
-                                <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50 text-[10px] font-bold uppercase tracking-wider">
-                                    Inactiva
-                                </Badge>
-                            )}
-                        </div>
-
-                        {/* Instances Grid */}
-                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${!org.isActive ? 'opacity-60' : ''}`}>
-                            {org.instances && org.instances.length > 0 ? (
-                                org.instances.map(instance => {
-                                const config = getInstanceConfig(instance.applicationType || instance.name);
-                                const isDisabled = !org.isActive;
-                                
-                                return (
-                                    <div
-                                        key={instance.instanceId}
-                                        className="relative"
-                                        title={isDisabled ? 'Organización inactiva - Contacta al administrador' : ''}
-                                    >
-                                        <Card 
-                                            className={`group relative overflow-hidden border-slate-200 bg-white transition-all duration-300 ${
-                                                isDisabled 
-                                                    ? 'grayscale cursor-not-allowed pointer-events-none' 
-                                                    : 'cursor-pointer hover:border-[#8B5CF6]/50 hover:shadow-lg'
-                                            }`}
-                                            onClick={() => !isDisabled && handleInstanceClick(org.organizationId, instance.instanceId, org.isActive)}
-                                        >
-                                        <div className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#8B5CF6] to-[#7C3AED] opacity-0 transition-opacity ${
-                                            !isDisabled && 'group-hover:opacity-100'
-                                        }`} />
-                                        
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                            <Badge variant="secondary" className={`${config.color} border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md`}>
-                                                {config.label}
-                                            </Badge>
-                                            
-                                            {!isDisabled && (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700">
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem>Configuración</DropdownMenuItem>
-                                                        <DropdownMenuItem>Ver Logs</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
-                                        </CardHeader>
-
-                                        <CardContent className="pt-2 pb-6">
-                                            <div className="flex items-start justify-between">
-                                                <div className="space-y-1">
-                                                    <h3 className={`font-bold text-lg text-slate-900 transition-colors ${
-                                                        !isDisabled && 'group-hover:text-[#8B5CF6]'
-                                                    }`}>
-                                                        {instance.name}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-400 font-mono">
-                                                        ID: <span className="text-slate-500">{instance.code || 'N/A'}</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-
-                                        <CardFooter className="pt-0 border-t border-slate-50 bg-slate-50/50 p-4 flex items-center justify-between group-hover:bg-white transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`relative flex h-2.5 w-2.5`}>
-                                                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${getStatusColor(instance.status)}`}></span>
-                                                  <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${getStatusColor(instance.status)}`}></span>
-                                                </span>
-                                                <span className="text-xs font-medium text-slate-600 capitalize">
-                                                    {instance.status === 'suspended' ? 'Offline' : 'Online'}
-                                                </span>
-                                            </div>
-                                            
-                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                                                <ChevronRight className="h-5 w-5 text-[#8B5CF6]" />
-                                            </div>
-                                        </CardFooter>
-                                    </Card>
-                                    </div>
-                                );
-                            })
-                            ) : (
-                                <div className="col-span-full text-center py-10">
-                                    <p className="text-slate-400 text-sm">No hay instancias disponibles para esta organización</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Add Application Button */}
-                        {org.isActive && (
-                            <div className="flex justify-center mt-6">
-                                <Button
-                                    onClick={() => handleCreateInstance(org.organizationId)}
-                                    className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-md shadow-violet-200 border-2 border-dashed border-slate-300 hover:border-[#8B5CF6] transition-all duration-200"
-                                    variant="outline"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Añadir Aplicación
-                                </Button>
-                            </div>
-                        )}
+                  {/* 'Create New' Placeholder Card - Only shown if active */}
+                  <div 
+                    className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 hover:bg-slate-50 transition-colors cursor-pointer group min-h-[240px]"
+                    onClick={() => setCreateInstanceModalOpen(true)} // Or handle logic
+                  >
+                    <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors mb-3">
+                      <Plus className="h-6 w-6" />
                     </div>
-                );
-                })
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary">Nueva Organización</h3>
+                    <p className="text-sm text-slate-500 mt-1">Registrar una nueva empresa</p>
+                  </div>
+                </>
             )}
         </div>
       </main>
 
       {/* Create Instance Modal */}
-      {selectedOrganization && (
+      {/* Note: This modal logic might need adjustment if users want to create ORGS vs APPS. 
+          Currently it creates APPS within an Org. 
+          Assuming 'Create New' card creates APPS for now or triggers a different flow. 
+          For now, linking to CreateInstanceModal which requires an ORG context. 
+          Will adjust to just show modal if needed. 
+      */}
+      {(selectedOrganization || createInstanceModalOpen) && (
         <CreateInstanceModal
           isOpen={createInstanceModalOpen}
-          onClose={() => setCreateInstanceModalOpen(false)}
-          organization={selectedOrganization}
+          onClose={() => {
+            setCreateInstanceModalOpen(false);
+            setSelectedOrganization(null);
+          }}
+          organization={selectedOrganization || filteredOrgs[0]} // Fallback or handle differently logic for new org
         />
       )}
     </div>

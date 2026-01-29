@@ -1,4 +1,5 @@
 import { useIndustry } from '@/contexts/IndustryContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,17 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, Bell, Moon, Sun, User, Settings, LogOut } from 'lucide-react';
+import { Search, Bell, Moon, Sun, User as UserIcon, Settings, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-const industryTitles = {
-  erp: 'Panel de Control - ERP',
-  health: 'Panel de Control - Clínica',
-  vet: 'Panel de Control - Veterinaria',
-};
-
 export function DashboardHeader() {
-  const { industry } = useIndustry();
+  const { user, logout } = useAuth();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -31,16 +26,19 @@ export function DashboardHeader() {
     }
   }, [isDark]);
 
+  const userInitials = user?.fullName 
+    ? user.fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'U';
+
   return (
-    <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between sticky top-0 z-40">
-      {/* Title & Search */}
-      <div className="flex items-center gap-6">
-        <h1 className="text-xl font-semibold">{industryTitles[industry]}</h1>
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <header className="h-16 bg-white border-b border-border px-6 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+      {/* Search - Global */}
+      <div className="flex items-center gap-6 flex-1">
+        <div className="relative hidden md:block w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input 
-            placeholder="Buscar..." 
-            className="w-64 pl-9 bg-muted/50 border-0 focus-visible:ring-1"
+            placeholder="Buscar en todo..." 
+            className="w-full pl-9 bg-slate-50 border-slate-200 focus-visible:ring-primary"
           />
         </div>
       </div>
@@ -52,7 +50,7 @@ export function DashboardHeader() {
           variant="ghost"
           size="icon"
           onClick={() => setIsDark(!isDark)}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-slate-500 hover:text-slate-900"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
@@ -61,10 +59,10 @@ export function DashboardHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-muted-foreground hover:text-foreground"
+          className="relative text-slate-500 hover:text-slate-900"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
             3
           </span>
         </Button>
@@ -72,19 +70,22 @@ export function DashboardHeader() {
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 ml-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
+            <Button variant="ghost" className="gap-2 ml-2 pl-0 hover:bg-transparent">
+              <Avatar className="h-8 w-8 border border-slate-200">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">{userInitials}</AvatarFallback>
               </Avatar>
-              <span className="hidden md:inline font-medium">John Doe</span>
+              <div className="hidden md:flex flex-col items-start text-sm">
+                 <span className="font-semibold text-slate-700 leading-none">{user?.fullName || 'Usuario'}</span>
+                 <span className="text-xs text-slate-500 leading-none mt-1">{user?.email || ''}</span>
+              </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-popover">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
+              <UserIcon className="mr-2 h-4 w-4" />
               Perfil
             </DropdownMenuItem>
             <DropdownMenuItem>
@@ -92,7 +93,7 @@ export function DashboardHeader() {
               Configuración
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
             </DropdownMenuItem>
