@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TokenManager } from '@/lib/api-client';
+import { TokenManager, apiClient } from '@/lib/api-client';
 import { authService } from '@/services/auth.service';
 import { LoginRequest, RegisterRequest } from '@/types/api';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 // ============================================================================
 
 export interface SessionUser {
+  id: string;
   email: string;
   fullName?: string;
   role?: string;
@@ -52,22 +53,36 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // Initialize session from tokens
   useEffect(() => {
-    const initializeSession = () => {
+    const initializeSession = async () => {
       const token = TokenManager.getAccessToken();
       const intermediateToken = TokenManager.getIntermediateToken();
 
       if (!token && !intermediateToken) {
         setUser(null);
         localStorage.removeItem('farutech_session_user');
-      } 
-      // Note: We blindly trust the stored user if tokens exist for now, 
-      // or we could decode the token. Sticking to localStorage for persistence consistency.
+      } else if (token && (!user || !user.id)) {
+        // We have a token but no full user info (especially missing ID)
+        try {
+          const response = await apiClient.get<any>('/api/Auth/me');
+          if (response.data) {
+            const userData: SessionUser = {
+              id: response.data.userId || response.data.id,
+              email: response.data.email,
+              fullName: response.data.fullName || `${response.data.firstName} ${response.data.lastName}`,
+              role: user?.role || response.data.role
+            };
+            setUser(userData);
+          }
+        } catch (e) {
+          console.error('[SessionContext] Error loading user profile:', e);
+        }
+      }
       
       setIsLoading(false);
     };
 
     initializeSession();
-  }, []);
+  }, [user?.id]);
 
   // Update storage when user changes
   useEffect(() => {
@@ -84,21 +99,17 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const response = await authService.login(credentials);
       
-      // We don't set user here fully yet, because we might not know the context.
-      // However, we can set the basic identity if available.
       if (response.accessToken || response.intermediateToken) {
-        // Basic identity established
         const baseUser: SessionUser = {
+          id: '', // Will be updated by initializeSession once token is stored
           email: credentials.email || '',
-          fullName: response.companyName || credentials.email || '', // Fallback to provided credentials since response lacks email/name
+          fullName: response.companyName || credentials.email || '', 
           role: response.role,
         };
-        // Only set user if we have a full token OR if we want to show identity during selection
-        // For now, let's allow it.
         setUser(baseUser);
       }
       
-      return response; // Pass to consumer (AppContext) to handle routing/tokens
+      return response; 
     } catch (error: any) {
       toast.error(error.message || 'Error al iniciar sesión');
       throw error;

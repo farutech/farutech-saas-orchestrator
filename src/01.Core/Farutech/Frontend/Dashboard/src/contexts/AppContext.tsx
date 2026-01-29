@@ -172,9 +172,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         // Update User in Session with Context Details
         setUser({
-            ...user!, // Existing session info
-            role: response.role, // Update role
-            // Add mixin properties (SessionContext types might need extending or we cast)
+            id: '', // Will be updated by profile fetch
+            email: credentials.email || '',
+            role: response.role,
+            fullName: response.companyName || credentials.email,
             ...({
                 tenantId: response.selectedTenantId,
                 companyName: response.companyName
@@ -244,6 +245,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       // Update User
       setUser({
+          id: user?.id || '',
           email: user?.email || '', // Keep email
           fullName: response.companyName, // Update name to context
           role: response.role,
@@ -304,6 +306,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       // Update User
        setUser({
+          id: user?.id || '',
           email: user?.email || '',
           fullName: response.companyName,
           role: response.role,

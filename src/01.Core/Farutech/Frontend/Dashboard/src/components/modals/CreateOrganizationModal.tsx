@@ -57,8 +57,25 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('[CreateOrganizationModal] Submitting with user:', user);
+
     if (!user?.id) {
-      toast.error('No se pudo identificar el usuario actual');
+       // Try to find ID in mixin if it's string-based
+       const userId = (user as any)?.userId || user?.id;
+       if (!userId) {
+         toast.error('No se pudo identificar el usuario actual (ID faltante)');
+         console.error('[CreateOrganizationModal] User ID missing in user object:', user);
+         return;
+       }
+       
+       createCustomer({
+        companyName: formData.name,
+        taxId: formData.taxId,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        adminUserId: userId
+      });
       return;
     }
 
@@ -85,7 +102,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
           <div className="grid gap-4 py-4">
             
             {/* Basic Info */}
-            {/* <div className="grid grid-cols-2 gap-4"> */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre Organización *</Label>
                 <Input
@@ -93,6 +110,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ej. Mi Empresa S.A."
+                  autoComplete="organization"
                   required
                 />
               </div>
@@ -103,9 +121,10 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                   value={formData.taxId}
                   onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
                   placeholder="Ej. 12345678-9"
+                  autoComplete="off"
                 />
               </div>
-            {/* </div> */}
+            </div>
 
             {/* Contact Info */}
             <div className="space-y-2">
@@ -116,11 +135,12 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="contacto@empresa.com"
+                autoComplete="email"
                 required
               />
             </div>
 
-            {/* <div className="grid grid-cols-2 gap-4"> */}
+            <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="phone">Teléfono</Label>
                     <Input
@@ -128,6 +148,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+57 300 123 4567"
+                        autoComplete="tel"
                     />
                 </div>
                 <div className="space-y-2">
@@ -137,9 +158,10 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Calle 123 # 45-67"
+                        autoComplete="street-address"
                     />
                 </div>
-            {/* </div> */}
+            </div>
 
           </div>
           <DialogFooter>

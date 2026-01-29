@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 
 export default function Login() {
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,6 +84,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -99,6 +100,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10"
+                    autoComplete="current-password"
                   />
                   <Button
                     type="button"
