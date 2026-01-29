@@ -18,6 +18,8 @@ public sealed class UnitOfMeasure : Entity
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
         if (string.IsNullOrWhiteSpace(symbol)) throw new ArgumentException("Symbol is required");
-        return new UnitOfMeasure(name, symbol);
+        if (symbol.Length > 10) throw new ArgumentException("Symbol cannot exceed 10 characters");
+        
+        return new UnitOfMeasure(name, symbol.ToUpperInvariant());
     }
 }

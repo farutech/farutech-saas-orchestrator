@@ -11,23 +11,22 @@ public sealed class CashRegister : Entity, IAggregateRoot
     public string Name { get; private set; }
     public string Code { get; private set; }
     public Guid WarehouseId { get; private set; } // Ubicación física
-    public Guid TenantId { get; private set; }
     public bool IsActive { get; private set; }
 
-    private CashRegister(string name, string code, Guid warehouseId, Guid tenantId)
+    private CashRegister(string name, string code, Guid warehouseId)
     {
         Name = name;
         Code = code.ToUpperInvariant();
         WarehouseId = warehouseId;
-        TenantId = tenantId;
         IsActive = true;
     }
 
-    public static CashRegister Create(string name, string code, Guid warehouseId, Guid tenantId)
+    public static CashRegister Create(string name, string code, Guid warehouseId)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
         if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required");
+        if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters");
 
-        return new CashRegister(name, code, warehouseId, tenantId);
+        return new CashRegister(name, code, warehouseId);
     }
 }

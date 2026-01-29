@@ -32,9 +32,9 @@ public class CashierConfigurationController : ControllerBase
 
     [HttpPost]
     [RequirePermission(Permissions.POS.Configuration.Manage)]
-    public async Task<IActionResult> CreateCashier([FromBody] CreateCashierRequest request, [FromHeader(Name = "X-Tenant-ID")] Guid tenantId)
+    public async Task<IActionResult> CreateCashier([FromBody] CreateCashierRequest request)
     {
-        var cashier = Cashier.Create(request.UserId, request.Name, tenantId);
+        var cashier = Cashier.Create(request.UserId, request.Name);
         if (request.DefaultCashRegisterId.HasValue)
         {
             cashier.AssignDefaultRegister(request.DefaultCashRegisterId.Value);
@@ -56,9 +56,9 @@ public class CashierConfigurationController : ControllerBase
 
     [HttpPost("registers")]
     [RequirePermission(Permissions.POS.Configuration.Manage)]
-    public async Task<IActionResult> CreateRegister([FromBody] CreateRegisterRequest request, [FromHeader(Name = "X-Tenant-ID")] Guid tenantId)
+    public async Task<IActionResult> CreateRegister([FromBody] CreateRegisterRequest request)
     {
-        var register = CashRegister.Create(request.Name, request.Code, request.WarehouseId, tenantId);
+        var register = CashRegister.Create(request.Name, request.Code, request.WarehouseId);
         _context.CashRegisters.Add(register);
         await _context.SaveChangesAsync();
 

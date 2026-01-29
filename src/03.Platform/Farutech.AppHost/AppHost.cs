@@ -92,6 +92,19 @@ else if (isProd)
 }
 
 // ====================================================
+// ORDEON (APLICACIÓN DE NEGOCIO)
+// ====================================================
+var ordeonApi = builder
+    .AddProject<Projects.Ordeon_API>("ordeon-api")
+    .WithReference(api) // Dependencia de Orchestrator para registro de capacidades
+    .WithEnvironment("Orchestrator__BaseUrl", api.GetEndpoint("https"));
+
+if (postgres is not null)
+{
+    ordeonApi = ordeonApi.WithReference(postgres, "CustomerDatabase");
+}
+
+// ====================================================
 // FRONTEND (CONSUMIDOR FINAL)
 // ====================================================
 builder

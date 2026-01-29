@@ -13,11 +13,11 @@ namespace Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ItemsController : ControllerBase
+public class CategoriesController : ControllerBase
 {
     private readonly OrdeonDbContext _context;
 
-    public ItemsController(OrdeonDbContext context)
+    public CategoriesController(OrdeonDbContext context)
     {
         _context = context;
     }
@@ -26,39 +26,28 @@ public class ItemsController : ControllerBase
     [RequirePermission(Permissions.Inventory.Read)]
     public async Task<IActionResult> GetAll()
     {
-        var items = await _context.Items.ToListAsync();
-        return Ok(items);
+        return Ok(await _context.Categories.ToListAsync());
     }
 
     [HttpPost]
     [RequirePermission(Permissions.Inventory.Create)]
-    public async Task<IActionResult> Create([FromBody] CreateItemRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
     {
-        var item = Item.Create(
+        var category = Category.Create(
             request.Code,
             request.Name,
             request.Description,
-            request.Type,
-            request.CategoryId,
-            request.BaseUnitOfMeasureId);
+            request.ParentCategoryId);
 
-        if (!string.IsNullOrEmpty(request.MetadataJson))
-        {
-            item.UpdateMetadata(request.MetadataJson);
-        }
-
-        _context.Items.Add(item);
+        _context.Categories.Add(category);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetAll), new { id = item.Id }, item);
+        return CreatedAtAction(nameof(GetAll), new { id = category.Id }, category);
     }
 }
 
-public record CreateItemRequest(
+public record CreateCategoryRequest(
     string Code,
     string Name,
     string Description,
-    ItemType Type,
-    Guid CategoryId,
-    Guid BaseUnitOfMeasureId,
-    string MetadataJson = "{}");
+    Guid? ParentCategoryId);

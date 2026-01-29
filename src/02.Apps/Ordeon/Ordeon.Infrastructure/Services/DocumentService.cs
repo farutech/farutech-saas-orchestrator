@@ -48,7 +48,6 @@ public sealed class DocumentService : IDocumentService
                 line.Total,
                 txType,
                 header.Date,
-                header.TenantId,
                 header.WarehouseId
             );
 

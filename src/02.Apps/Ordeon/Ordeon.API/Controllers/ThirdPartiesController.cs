@@ -29,14 +29,13 @@ public class ThirdPartiesController : ControllerBase
 
     [HttpPost]
     [RequirePermission("mst.trc.crt")]
-    public async Task<IActionResult> Create([FromBody] CreateThirdPartyRequest request, [FromHeader(Name = "X-Tenant-ID")] Guid tenantId)
+    public async Task<IActionResult> Create([FromBody] CreateThirdPartyRequest request)
     {
         var thirdParty = ThirdParty.Create(
             request.Identification,
             request.Name,
             request.Email,
-            request.Type,
-            tenantId);
+            request.Type);
             
         thirdParty.UpdateContactInfo(request.Email, request.Phone, request.Address);
 

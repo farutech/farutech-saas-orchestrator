@@ -12,20 +12,18 @@ public sealed class Cashier : Entity, IAggregateRoot
     public Guid UserId { get; private set; }
     public string Name { get; private set; }
     public Guid? DefaultCashRegisterId { get; private set; }
-    public Guid TenantId { get; private set; }
     public bool IsActive { get; private set; }
 
-    private Cashier(Guid userId, string name, Guid tenantId)
+    private Cashier(Guid userId, string name)
     {
         UserId = userId;
         Name = name;
-        TenantId = tenantId;
         IsActive = true;
     }
 
-    public static Cashier Create(Guid userId, string name, Guid tenantId)
+    public static Cashier Create(Guid userId, string name)
     {
-        return new Cashier(userId, name, tenantId);
+        return new Cashier(userId, name);
     }
 
     public void AssignDefaultRegister(Guid registerId)

@@ -8,6 +8,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -20,13 +22,25 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IPermissionProvider, PermissionProvider>();
 builder.Services.AddScoped<ICashierContext, CashierContext>();
 builder.Services.AddScoped<ITenantProvisioningService, TenantProvisioningService>();
+builder.Services.AddHttpClient<IOrchestratorClient, OrchestratorClient>(client => 
+{
+    client.BaseAddress = new Uri(builder.Configuration["Orchestrator:BaseUrl"] ?? "https://orchestrator.farutech.com");
+});
+
+// Hardening & Auditing
+builder.Services.AddExceptionHandler<Ordeon.API.Middleware.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+builder.Services.AddScoped<Ordeon.Infrastructure.Persistence.Interceptors.AuditInterceptor>();
 
 // Database
 builder.Services.AddDbContext<OrdeonDbContext>((sp, options) =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
+    var auditInterceptor = sp.GetRequiredService<Ordeon.Infrastructure.Persistence.Interceptors.AuditInterceptor>();
+    
     options.UseNpgsql(configuration.GetConnectionString("CustomerDatabase"))
-           .ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCacheKeyFactory, TenantModelCacheKeyFactory>();
+           .ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCacheKeyFactory, TenantModelCacheKeyFactory>()
+           .AddInterceptors(auditInterceptor);
 });
 
 // Authentication
@@ -49,6 +63,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -74,6 +90,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseAuthorization();
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();

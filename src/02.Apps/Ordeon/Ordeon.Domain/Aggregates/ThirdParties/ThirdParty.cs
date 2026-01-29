@@ -20,26 +20,25 @@ public sealed class ThirdParty : Entity, IAggregateRoot
     public string Email { get; private set; }
     public string Phone { get; private set; }
     public string Address { get; private set; }
+    public Guid? WarehouseId { get; private set; }
     public ThirdPartyType Type { get; private set; }
-    public Guid TenantId { get; private set; }
     public bool IsActive { get; private set; }
 
-    private ThirdParty(string identification, string name, string email, ThirdPartyType type, Guid tenantId)
+    private ThirdParty(string identification, string name, string email, ThirdPartyType type)
     {
         Identification = identification;
         Name = name;
         Email = email?.ToLowerInvariant();
         Type = type;
-        TenantId = tenantId;
         IsActive = true;
     }
 
-    public static ThirdParty Create(string identification, string name, string email, ThirdPartyType type, Guid tenantId)
+    public static ThirdParty Create(string identification, string name, string email, ThirdPartyType type)
     {
         if (string.IsNullOrWhiteSpace(identification)) throw new ArgumentException("Identification is required");
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
 
-        return new ThirdParty(identification, name, email, type, tenantId);
+        return new ThirdParty(identification, name, email, type);
     }
 
     public void UpdateContactInfo(string email, string phone, string address)

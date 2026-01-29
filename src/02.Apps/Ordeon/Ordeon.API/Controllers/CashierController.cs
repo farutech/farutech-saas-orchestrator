@@ -41,8 +41,7 @@ public class CashierController : ControllerBase
         var session = CashSession.Open(
             command.CashRegisterId, 
             cashierId, 
-            command.OpeningBalance, 
-            command.TenantId);
+            command.OpeningBalance);
 
         _context.CashSessions.Add(session);
         await _context.SaveChangesAsync();

@@ -23,28 +23,28 @@ public sealed class DocumentDefinition : Entity, IAggregateRoot
     public int NextNumber { get; private set; }
     public DocumentModule Module { get; private set; }
     public bool IsActive { get; private set; }
-    public Guid TenantId { get; private set; }
     
     // Configuración adicional (ej: resolución DIAN, formato de impresión)
     public string ConfigurationJson { get; private set; } = "{}";
 
-    private DocumentDefinition(string name, string code, string prefix, DocumentModule module, Guid tenantId)
+    private DocumentDefinition(string name, string code, string prefix, DocumentModule module)
     {
         Name = name;
         Code = code.ToUpperInvariant();
         Prefix = prefix?.ToUpperInvariant() ?? "";
         NextNumber = 1;
         Module = module;
-        TenantId = tenantId;
         IsActive = true;
     }
 
-    public static DocumentDefinition Create(string name, string code, string prefix, DocumentModule module, Guid tenantId)
+    public static DocumentDefinition Create(string name, string code, string prefix, DocumentModule module)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
         if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required");
+        if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters");
+        if (prefix?.Length > 10) throw new ArgumentException("Prefix cannot exceed 10 characters");
         
-        return new DocumentDefinition(name, code, prefix, module, tenantId);
+        return new DocumentDefinition(name, code, prefix, module);
     }
 
     public string GenerateNextNumber()

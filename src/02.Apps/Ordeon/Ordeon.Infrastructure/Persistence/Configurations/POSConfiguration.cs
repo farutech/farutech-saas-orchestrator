@@ -6,16 +6,18 @@ namespace Ordeon.Infrastructure.Persistence.Configurations;
 
 public sealed class POSConfiguration : 
     IEntityTypeConfiguration<CashRegister>,
+    IEntityTypeConfiguration<Cashier>,
     IEntityTypeConfiguration<CashSession>,
     IEntityTypeConfiguration<CashMovement>
 {
     public void Configure(EntityTypeBuilder<CashRegister> builder)
     {
         builder.HasKey(c => c.Id);
-        builder.Property(c => c.Code).IsRequired().HasMaxLength(20);
+        builder.Property(c => c.Code).IsRequired().HasMaxLength(10);
         builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
         
-        builder.HasIndex(c => new { c.Code, c.TenantId }).IsUnique();
+        builder.HasIndex(c => c.Code).IsUnique();
+        builder.HasIndex(c => c.WarehouseId);
     }
 
     public void Configure(EntityTypeBuilder<Cashier> builder)
@@ -23,7 +25,7 @@ public sealed class POSConfiguration :
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Name).IsRequired().HasMaxLength(150);
         
-        builder.HasIndex(c => new { c.UserId, c.TenantId }).IsUnique();
+        builder.HasIndex(c => c.UserId).IsUnique();
     }
 
     public void Configure(EntityTypeBuilder<CashSession> builder)

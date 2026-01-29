@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
     <ProjectReference Include="..\Ordeon.Application\Ordeon.Application.csproj" />
     <ProjectReference Include="..\Ordeon.Infrastructure\Ordeon.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\03.Platform\Farutech.ServiceDefaults\Farutech.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,11 +13,11 @@ public sealed class DocumentConfiguration :
     public void Configure(EntityTypeBuilder<DocumentDefinition> builder)
     {
         builder.HasKey(d => d.Id);
-        builder.Property(d => d.Code).IsRequired().HasMaxLength(15);
+        builder.Property(d => d.Code).IsRequired().HasMaxLength(10);
         builder.Property(d => d.Name).IsRequired().HasMaxLength(100);
         builder.Property(d => d.Prefix).HasMaxLength(10);
         
-        builder.HasIndex(d => new { d.Code, d.TenantId }).IsUnique();
+        builder.HasIndex(d => d.Code).IsUnique();
         
         builder.Property(d => d.ConfigurationJson).HasColumnType("jsonb").HasDefaultValue("{}");
     }
@@ -25,9 +25,9 @@ public sealed class DocumentConfiguration :
     public void Configure(EntityTypeBuilder<DocumentHeader> builder)
     {
         builder.HasKey(h => h.Id);
-        builder.Property(h => h.DocumentNumber).IsRequired().HasMaxLength(50);
+        builder.Property(h => h.DocumentNumber).IsRequired().HasMaxLength(20);
         
-        builder.HasIndex(h => new { h.DocumentNumber, h.TenantId }).IsUnique();
+        builder.HasIndex(h => h.DocumentNumber).IsUnique();
 
         builder.HasMany(h => h.Lines)
             .WithOne()
@@ -46,14 +46,17 @@ public sealed class DocumentConfiguration :
         
         builder.Property(l => l.Quantity).HasPrecision(18, 4);
         builder.Property(l => l.UnitPrice).HasPrecision(18, 4);
+
+        builder.HasIndex(l => l.ItemId);
     }
 
     public void Configure(EntityTypeBuilder<TransactionRegistry> builder)
     {
         builder.HasKey(t => t.Id);
         
-        builder.HasIndex(t => new { t.TransactionDate, t.TenantId });
+        builder.HasIndex(t => t.TransactionDate);
         builder.HasIndex(t => t.DocumentHeaderId);
+        builder.HasIndex(t => new { t.ItemId, t.WarehouseId, t.Type }); 
         
         builder.Property(t => t.Quantity).HasPrecision(18, 4);
         builder.Property(t => t.Value).HasPrecision(18, 4);

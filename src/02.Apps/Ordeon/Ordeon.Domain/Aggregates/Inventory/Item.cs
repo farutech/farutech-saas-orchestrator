@@ -38,9 +38,10 @@ public sealed class Item : Entity, IAggregateRoot
     public static Item Create(string code, string name, string description, ItemType type, Guid categoryId, Guid uomId)
     {
         if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required");
+        if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters");
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
 
-        return new Item(code, name, description, type, categoryId, uomId);
+        return new Item(code.ToUpperInvariant(), name, description, type, categoryId, uomId);
     }
 
     public void UpdateBasicInfo(string name, string description)

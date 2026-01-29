@@ -7,6 +7,7 @@ using Ordeon.Domain.Aggregates.Documents;
 using Ordeon.Domain.Aggregates.ThirdParties;
 using Ordeon.Domain.Aggregates.Financial;
 using Ordeon.Domain.Aggregates.POS;
+using Ordeon.Domain.Aggregates.Audit;
 using Ordeon.Domain.Common;
 using System.Reflection;
 
@@ -54,6 +55,9 @@ public sealed class OrdeonDbContext : DbContext
     public DbSet<Cashier> Cashiers => Set<Cashier>();
     public DbSet<CashSession> CashSessions => Set<CashSession>();
     public DbSet<CashMovement> CashMovements => Set<CashMovement>();
+
+    // Audit
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

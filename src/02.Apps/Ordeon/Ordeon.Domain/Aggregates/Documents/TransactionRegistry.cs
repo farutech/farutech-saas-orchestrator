@@ -24,10 +24,9 @@ public sealed class TransactionRegistry : Entity
     public decimal Value { get; private set; }
     public TransactionType Type { get; private set; }
     public DateTime TransactionDate { get; private set; }
-    public Guid TenantId { get; private set; }
     public Guid? WarehouseId { get; private set; }
 
-    private TransactionRegistry(Guid documentId, Guid? itemId, decimal quantity, decimal value, TransactionType type, DateTime date, Guid tenantId, Guid? warehouseId)
+    private TransactionRegistry(Guid documentId, Guid? itemId, decimal quantity, decimal value, TransactionType type, DateTime date, Guid? warehouseId)
     {
         DocumentHeaderId = documentId;
         ItemId = itemId;
@@ -35,12 +34,11 @@ public sealed class TransactionRegistry : Entity
         Value = value;
         Type = type;
         TransactionDate = date;
-        TenantId = tenantId;
         WarehouseId = warehouseId;
     }
 
-    public static TransactionRegistry Create(Guid documentId, Guid? itemId, decimal quantity, decimal value, TransactionType type, DateTime date, Guid tenantId, Guid? warehouseId)
+    public static TransactionRegistry Create(Guid documentId, Guid? itemId, decimal quantity, decimal value, TransactionType type, DateTime date, Guid? warehouseId)
     {
-        return new TransactionRegistry(documentId, itemId, quantity, value, type, date, tenantId, warehouseId);
+        return new TransactionRegistry(documentId, itemId, quantity, value, type, date, warehouseId);
     }
 }

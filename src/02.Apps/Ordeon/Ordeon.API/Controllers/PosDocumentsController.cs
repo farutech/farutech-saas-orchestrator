@@ -38,11 +38,9 @@ public class PosDocumentsController : ControllerBase
     [RequirePermission(Permissions.POS.WithdrawCash)]
     public async Task<IActionResult> CreateWithdrawal([FromBody] WithdrawalRequest request)
     {
-        var tenantId = _tenantService.TenantId ?? throw new UnauthorizedAccessException();
-        
         // 1. Obtener definición de documento para Sangría
         var definition = await _context.DocumentDefinitions
-            .FirstOrDefaultAsync(d => d.Code == "WDR" && d.TenantId == tenantId);
+            .FirstOrDefaultAsync(d => d.Code == "WDR");
 
         if (definition == null) return BadRequest("Withdrawal document definition not found.");
 
@@ -51,7 +49,7 @@ public class PosDocumentsController : ControllerBase
         var userId = Guid.TryParse(userIdStr, out var uid) ? uid : Guid.Empty;
 
         var number = definition.GenerateNextNumber();
-        var header = DocumentHeader.Create(definition.Id, number, tenantId, request.WarehouseId, null, userId); 
+        var header = DocumentHeader.Create(definition.Id, number, request.WarehouseId, null, userId); 
         
         // 3. Agregar cuerpo (sangría es un "item" genérico de efectivo)
         // Usamos un Guid específico de sistema para 'Efectivo' o el ItemId enviado

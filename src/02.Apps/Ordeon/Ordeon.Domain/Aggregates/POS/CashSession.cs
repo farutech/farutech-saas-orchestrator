@@ -27,11 +27,10 @@ public sealed class CashSession : Entity, IAggregateRoot
     public decimal? DeclaredBalance { get; private set; } // Arqueo ciego
     public decimal CalculatedBalance { get; private set; } // Balance según sistema
     public SessionStatus Status { get; private set; }
-    public Guid TenantId { get; private set; }
 
     public IReadOnlyCollection<CashMovement> Movements => _movements.AsReadOnly();
 
-    private CashSession(Guid registerId, Guid cashierId, decimal openingBalance, Guid tenantId)
+    private CashSession(Guid registerId, Guid cashierId, decimal openingBalance)
     {
         CashRegisterId = registerId;
         CashierId = cashierId;
@@ -39,19 +38,18 @@ public sealed class CashSession : Entity, IAggregateRoot
         CalculatedBalance = openingBalance;
         OpenDate = DateTime.UtcNow;
         Status = SessionStatus.Open;
-        TenantId = tenantId;
     }
 
-    public static CashSession Open(Guid registerId, Guid cashierId, decimal openingBalance, Guid tenantId)
+    public static CashSession Open(Guid registerId, Guid cashierId, decimal openingBalance)
     {
-        return new CashSession(registerId, cashierId, openingBalance, tenantId);
+        return new CashSession(registerId, cashierId, openingBalance);
     }
 
     public void AddMovement(decimal amount, string concept, bool isIncome)
     {
         if (Status != SessionStatus.Open) throw new InvalidOperationException("Session is not open");
         
-        var movement = CashMovement.Create(Id, amount, concept, isIncome, TenantId);
+        var movement = CashMovement.Create(Id, amount, concept, isIncome);
         _movements.Add(movement);
         
         if (isIncome) CalculatedBalance += amount;

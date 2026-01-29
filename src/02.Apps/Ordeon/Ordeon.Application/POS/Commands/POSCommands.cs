@@ -4,15 +4,13 @@ namespace Ordeon.Application.POS.Commands;
 
 public record OpenSessionCommand(
     Guid CashRegisterId,
-    decimal OpeningBalance,
-    Guid TenantId);
+    decimal OpeningBalance);
 
 public record RegisterCashMovementCommand(
     Guid CashSessionId,
     decimal Amount,
     string Concept,
-    bool IsIncome,
-    Guid TenantId);
+    bool IsIncome);
 
 public record CloseSessionRequest(
     Guid CashSessionId,

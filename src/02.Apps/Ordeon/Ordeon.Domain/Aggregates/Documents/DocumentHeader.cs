@@ -23,7 +23,6 @@ public sealed class DocumentHeader : Entity, IAggregateRoot
     public string DocumentNumber { get; private set; }
     public DateTime Date { get; private set; }
     public DocumentStatus Status { get; private set; }
-    public Guid TenantId { get; private set; }
     public Guid? WarehouseId { get; private set; }
     public Guid? ThirdPartyId { get; private set; } // Cliente o Proveedor
     public Guid CreatedBy { get; private set; }
@@ -34,21 +33,21 @@ public sealed class DocumentHeader : Entity, IAggregateRoot
 
     public IReadOnlyCollection<DocumentLine> Lines => _lines.AsReadOnly();
 
-    private DocumentHeader(Guid definitionId, string number, Guid tenantId, Guid? warehouseId, Guid? thirdPartyId, Guid createdBy)
+    private DocumentHeader(Guid definitionId, string number, Guid? warehouseId, Guid? thirdPartyId, Guid createdBy)
     {
         DocumentDefinitionId = definitionId;
-        DocumentNumber = number;
+        DocumentNumber = number.ToUpperInvariant();
         Date = DateTime.UtcNow;
         Status = DocumentStatus.Draft;
-        TenantId = tenantId;
         WarehouseId = warehouseId;
         ThirdPartyId = thirdPartyId;
         CreatedBy = createdBy;
     }
 
-    public static DocumentHeader Create(Guid definitionId, string number, Guid tenantId, Guid? warehouseId, Guid? thirdPartyId, Guid createdBy)
+    public static DocumentHeader Create(Guid definitionId, string number, Guid? warehouseId, Guid? thirdPartyId, Guid createdBy)
     {
-        return new DocumentHeader(definitionId, number, tenantId, warehouseId, thirdPartyId, createdBy);
+        if (string.IsNullOrWhiteSpace(number)) throw new ArgumentException("Number is required");
+        return new DocumentHeader(definitionId, number, warehouseId, thirdPartyId, createdBy);
     }
 
     public void AddLine(Guid itemId, string itemName, decimal quantity, decimal unitPrice, decimal taxRate = 0, decimal discountAmount = 0)
