@@ -38,7 +38,7 @@ public sealed class DocumentService : IDocumentService
             {
                 DocumentModule.Sales => TransactionType.StockOut,
                 DocumentModule.Purchases => TransactionType.StockIn,
-                _ => TransactionType.Inventory
+                _ => TransactionType.Accounting
             };
 
             var transaction = TransactionRegistry.Create(

@@ -12,8 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddHttpContextAccessor();
+
 // Core Services
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IPermissionProvider, PermissionProvider>();
+builder.Services.AddScoped<ICashierContext, CashierContext>();
 
 // Database
 builder.Services.AddDbContext<OrdeonDbContext>((sp, options) =>
