@@ -87,20 +87,47 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     /// <summary>
     /// Obtener tenants disponibles para el usuario actual.
+    /// Acepta tanto accessToken como intermediateToken en el header Authorization.
     /// </summary>
     [HttpGet("available-tenants")]
+    [AllowAnonymous] // Validación manual para soportar ambos tipos de token
     [ProducesResponseType(typeof(List<TenantOptionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAvailableTenants()
+    public async Task<IActionResult> GetAvailableTenants([FromServices] ITokenService tokenService)
     {
+        Guid userId;
+        
+        // 1. Primero intentar con User claims (si el middleware JWT ya autenticó)
         var userIdClaim = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out userId))
         {
+            Console.WriteLine($"[GetAvailableTenants] Authenticated via JWT middleware - UserId: {userId}");
+            var tenants = await _authService.GetAvailableTenantsAsync(userId);
+            return Ok(tenants);
+        }
+        
+        // 2. Fallback: Validar manualmente el token del header (para intermediateToken)
+        var authHeader = Request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        {
+            Console.WriteLine("[GetAvailableTenants] No Authorization header found");
             return Unauthorized(new { message = "Usuario no autenticado" });
         }
-
-        var tenants = await _authService.GetAvailableTenantsAsync(userId);
-        return Ok(tenants);
+        
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+        Console.WriteLine($"[GetAvailableTenants] Attempting manual token validation - Token length: {token.Length}");
+        
+        // Validar como intermediateToken
+        var validationResult = tokenService.ValidateIntermediateToken(token);
+        if (validationResult != null)
+        {
+            Console.WriteLine($"[GetAvailableTenants] Valid intermediate token - UserId: {validationResult.Value.userId}");
+            var tenants = await _authService.GetAvailableTenantsAsync(validationResult.Value.userId);
+            return Ok(tenants);
+        }
+        
+        Console.WriteLine("[GetAvailableTenants] Token validation failed");
+        return Unauthorized(new { message = "Token inválido o expirado" });
     }
 
     /// <summary>

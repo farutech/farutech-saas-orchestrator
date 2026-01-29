@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { apiClient } from '@/lib/api-client';
+import { API_CONFIG } from '@/config/app.config';
 import type {
   LoginRequest,
   SecureLoginResponse,
@@ -45,7 +46,7 @@ export const authService = {
     request: SelectContextRequest
   ): Promise<SelectContextResponse> => {
     // No usar apiClient que agrega el header Authorization automáticamente
-    const response = await fetch('http://localhost:5098/api/Auth/select-context', {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Auth/select-context`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

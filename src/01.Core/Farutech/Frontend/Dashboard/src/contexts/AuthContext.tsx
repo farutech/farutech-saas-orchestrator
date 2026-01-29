@@ -487,11 +487,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         window.location.href = instance.url;
       } else {
         // Local/same-domain URL: Navigate to /dashboard within this app
-        // In development, the instance.url is localhost:port but we stay in this frontend
         navigate('/dashboard');
       }
     } else {
-      navigate('/launcher');
+      // Fallback: Si no hay URL configurada, asumir que es single-page app local
+      // y navegar al dashboard en lugar de recargar el launcher
+      navigate('/dashboard');
     }
   };
 

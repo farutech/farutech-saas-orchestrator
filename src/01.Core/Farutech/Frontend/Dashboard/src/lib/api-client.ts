@@ -79,10 +79,12 @@ const createApiClient = (): AxiosInstance => {
       let token = TokenManager.getAccessToken();
       
       // Endpoints que aceptan intermediate token (gestión sin contexto seleccionado)
+      // Estos endpoints requieren usuario autenticado pero NO requieren contexto de tenant
       const managementEndpoints = [
         '/api/Auth/me',
         '/api/Auth/profile',
         '/api/Auth/context',
+        '/api/Auth/available-tenants', // Listar tenants disponibles (requiere usuario, no tenant)
         '/api/Customers',  // Gestión de organizaciones
         '/api/Catalog',     // Catálogo de productos para provisioning
         '/api/Provisioning' // Provisioning de instancias
@@ -159,9 +161,15 @@ const createApiClient = (): AxiosInstance => {
           case 401:
             apiError.message = 'Unauthorized. Please login again.';
             // Clear tokens and redirect to login
-            TokenManager.clearAllTokens();
-            if (!window.location.pathname.includes('/login')) {
-              window.location.href = '/login';
+            // EXCEPT for available-tenants which can fail during refresh without meaning session expired
+            const isAvailableTenantsEndpoint = error.config?.url?.includes('/api/Auth/available-tenants');
+            if (!isAvailableTenantsEndpoint) {
+              TokenManager.clearAllTokens();
+              if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+              }
+            } else {
+              console.warn('[API-Client] 401 on available-tenants - not clearing session (may be normal during context selection)');
             }
             break;
 

@@ -3,7 +3,8 @@
 // ============================================================================
 
 import { useState } from 'react';
-import { useProducts, useProductManifest, useProvisionTenant } from '@/hooks/useApi';
+import { useQueryClient } from '@tanstack/react-query';
+import { useProducts, useProductManifest, useProvisionTenant, queryKeys } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ interface CreateInstanceModalProps {
 }
 
 export function CreateInstanceModal({ isOpen, onClose, organization }: CreateInstanceModalProps) {
+  const queryClient = useQueryClient();
   const { data: products, isLoading: productsLoading } = useProducts();
   const provisionMutation = useProvisionTenant();
   const { refreshAvailableTenants } = useAuth();
@@ -52,8 +54,14 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
   const handleProvision = async () => {
     try {
       await provisionMutation.mutateAsync(formData);
-      // Refresh available tenants to update the context
+      
+      // Invalidar caches para forzar refetch de datos actualizados
+      await queryClient.invalidateQueries({ queryKey: queryKeys.customers });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.availableTenants });
+      
+      // Refresh available tenants to update the context (para intermediate token)
       await refreshAvailableTenants();
+      
       toast.success('Aplicación creada exitosamente');
       onClose();
       setStep(1);

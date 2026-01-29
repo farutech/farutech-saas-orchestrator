@@ -1,5 +1,5 @@
 # REPORTE DE ESTADO INICIAL Y BRECHAS
-## App01: Farutech POS & Services - Integración con Orchestrator
+## Ordeon: Farutech POS & Services - Integración con Orchestrator
 
 **Fecha:** 25 de Enero, 2026  
 **Versión:** 1.0  
@@ -10,13 +10,13 @@
 
 ## EXECUTIVE SUMMARY
 
-Este documento presenta un análisis arquitectónico exhaustivo del **Farutech SaaS Orchestrator** existente y evalúa su preparación para soportar la **App01: Farutech POS & Services**, un sistema de punto de venta y gestión de servicios empresariales multi-tenant. El análisis identifica fortalezas significativas en la arquitectura fundacional (Clean Architecture, DDD, Event Sourcing parcial) así como brechas críticas en tres áreas principales: **gestión de datos maestros**, **seguridad granular (RBAC)** y **control de efectivo/caja**.
+Este documento presenta un análisis arquitectónico exhaustivo del **Farutech SaaS Orchestrator** existente y evalúa su preparación para soportar la **Ordeon: Farutech POS & Services**, un sistema de punto de venta y gestión de servicios empresariales multi-tenant. El análisis identifica fortalezas significativas en la arquitectura fundacional (Clean Architecture, DDD, Event Sourcing parcial) así como brechas críticas en tres áreas principales: **gestión de datos maestros**, **seguridad granular (RBAC)** y **control de efectivo/caja**.
 
 **Hallazgos Clave:**
 - ✅ **Orchestrator sólido:** La infraestructura actual (.NET 9, PostgreSQL, NATS, Workers Go) proporciona una base escalable y resiliente.
 - ⚠️ **Brecha Crítica:** El catálogo de Features existente (Product → Module → Feature) no incluye módulos específicos para POS, maestros de inventario, o control de caja.
 - 🚨 **Riesgo Alto:** Sin un modelo de seguridad granular (RBAC nivel ERP), el sistema no puede controlar acceso a operaciones sensibles como retiros de caja o anulaciones.
-- 💡 **Oportunidad:** La arquitectura permite extensión sin modificar el Core. App01 puede consumir el SDK existente y extender el catálogo de Features mediante configuración.
+- 💡 **Oportunidad:** La arquitectura permite extensión sin modificar el Core. Ordeon puede consumir el SDK existente y extender el catálogo de Features mediante configuración.
 
 ---
 
@@ -42,11 +42,11 @@ public interface IFarutechClient
 - ✅ **Caché inteligente:** `TenantConfigurationDto` se cachea por 10 minutos (configurable), reduciendo latencia.
 - ✅ **Logging estructurado:** Integración con `ILogger<T>` de Microsoft.
 
-### 1.2 Flujo de Autenticación para App01
+### 1.2 Flujo de Autenticación para Ordeon
 
 ```mermaid
 sequenceDiagram
-    participant POS as App01 POS
+    participant POS as Ordeon POS
     participant SDK as Farutech SDK
     participant API as Orchestrator API
     participant DB as PostgreSQL
@@ -73,7 +73,7 @@ sequenceDiagram
     SDK-->>POS: Configuración cacheada
 ```
 
-### 1.3 Endpoints del Orchestrator Requeridos por App01
+### 1.3 Endpoints del Orchestrator Requeridos por Ordeon
 
 | Endpoint | Método | Propósito | Estado Actual |
 |----------|--------|-----------|---------------|
@@ -96,7 +96,7 @@ app.UseAuthorization();
 // TenantMiddleware extrae tenant_id del JWT y lo inyecta en HttpContext
 ```
 
-**Recomendación para App01:**
+**Recomendación para Ordeon:**
 - Registrar el SDK en `Startup.cs`:
 ```csharp
 services.AddFarutechOrchestrator(options =>
@@ -116,7 +116,7 @@ app.UseFarutechTenantContext(); // Inyecta ITenantContext en cada request
 **Propuesta de Implementación:**
 
 ```csharp
-// App01: Controllers/SalesController.cs
+// Ordeon: Controllers/SalesController.cs
 [ApiController]
 [Route("api/[controller]")]
 public class SalesController : ControllerBase
@@ -353,7 +353,7 @@ Según el documento "Definición Producto Farutech.md", el sistema legacy incluy
 ### 3.2 Propuesta de Arquitectura Limpia (.NET 9)
 
 ```
-App01.POS/
+Ordeon.POS/
 ├── Domain/                          # Lógica de negocio pura
 │   ├── Aggregates/
 │   │   ├── Sale/
@@ -716,7 +716,7 @@ posProduct.AddModule(reportsModule);
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |--------|--------------|---------|------------|
-| **Latencia en validación de features** | Alta | Medio | Implementar caché local en App01 con TTL de 5 minutos |
+| **Latencia en validación de features** | Alta | Medio | Implementar caché local en Ordeon con TTL de 5 minutos |
 | **Sincronización offline** | Media | Alto | Implementar IndexedDB en frontend + sincronización eventual |
 | **Concurrencia en sesiones de caja** | Alta | Crítico | Usar optimistic locking (`RowVersion`) + transacciones SERIALIZABLE |
 | **Desconexión del Orchestrator** | Baja | Crítico | Modo degradado: validar features contra snapshot local |
@@ -1740,7 +1740,7 @@ public class GetCashSessionReportQueryHandler : IRequestHandler<GetCashSessionRe
 **FASE 1: Fundamentos (Sprint 1-2, 4 semanas)**
 - [ ] Extender catálogo del Orchestrator con módulos POS (Product, Modules, Features)
 - [ ] Implementar endpoint `/api/Features/evaluate` en Core
-- [ ] Crear proyecto App01 con Clean Architecture base
+- [ ] Crear proyecto Ordeon con Clean Architecture base
 - [ ] Implementar integración con SDK (autenticación + configuración)
 - [ ] Setup de base de datos multi-tenant (row-level con `tenant_id` para MVP)
 
@@ -1801,8 +1801,8 @@ public class GetCashSessionReportQueryHandler : IRequestHandler<GetCashSessionRe
 | Equipo | Miembros | Responsabilidad |
 |--------|----------|-----------------|
 | **Core/Orchestrator** | 2 Backend (.NET) | Extender catálogo, nuevos endpoints, Feature Management |
-| **App01 Backend** | 3 Backend (.NET) | Domain, Application, Infrastructure, APIs |
-| **App01 Frontend** | 2 Frontend (React) | UI de POS, Caja, Inventario, Reportes |
+| **Ordeon Backend** | 3 Backend (.NET) | Domain, Application, Infrastructure, APIs |
+| **Ordeon Frontend** | 2 Frontend (React) | UI de POS, Caja, Inventario, Reportes |
 | **Integraciones** | 1 Backend + 1 DevOps | Facturación electrónica, impresoras, pasarelas |
 | **QA/Testing** | 2 QA | Pruebas funcionales, pruebas de carga, auditoría de seguridad |
 | **DevOps** | 1 DevOps | CI/CD, Kubernetes, monitoreo |
@@ -1813,7 +1813,7 @@ public class GetCashSessionReportQueryHandler : IRequestHandler<GetCashSessionRe
 
 | Riesgo Original | Mitigación Propuesta |
 |-----------------|----------------------|
-| Latencia en validación de features | Caché de 5-10 minutos en App01 + snapshot local |
+| Latencia en validación de features | Caché de 5-10 minutos en Ordeon + snapshot local |
 | Concurrencia en caja | Optimistic locking con `RowVersion` + transacciones SERIALIZABLE |
 | Desconexión del Orchestrator | Modo degradado con validación contra snapshot local |
 | Fuga de datos entre tenants | Auditoría automática + query filters + revisión de código |
@@ -1835,7 +1835,7 @@ public class GetCashSessionReportQueryHandler : IRequestHandler<GetCashSessionRe
 
 ### 8.5 Decisiones Arquitectónicas Pendientes (ADRs a Crear)
 
-1. **ADR-004:** Estrategia de multi-tenancy para App01 (Row-level vs Schema-per-tenant)
+1. **ADR-004:** Estrategia de multi-tenancy para Ordeon (Row-level vs Schema-per-tenant)
 2. **ADR-005:** Patrón de sincronización offline para POS (Event Sourcing vs Snapshot + Delta)
 3. **ADR-006:** Modelo de autorización (RBAC vs ABAC vs híbrido)
 4. **ADR-007:** Estrategia de caché distribuido (Redis vs Memcached vs Hazelcast)
@@ -1860,7 +1860,7 @@ public class GetCashSessionReportQueryHandler : IRequestHandler<GetCashSessionRe
 **Ruta Recomendada:**
 1. **Extender Orchestrator** con catálogo POS (2 semanas)
 2. **Implementar RBAC** como componente transversal (4 semanas)
-3. **Desarrollar App01** en paralelo con foco en MVP (20 semanas)
+3. **Desarrollar Ordeon** en paralelo con foco en MVP (20 semanas)
 4. **Iteración y optimización** basada en métricas reales (continuo)
 
 **Viabilidad Técnica:** **ALTA**  
