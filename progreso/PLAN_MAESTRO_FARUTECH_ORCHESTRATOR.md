@@ -485,7 +485,7 @@
 ## 📞 **CONTACTOS DE EMERGENCIA**
 
 - **Arquitecto:** copilot@github.com
-- **Product Owner:** faridmaloof@gmail.com
+- **Product Owner:** webmaster@farutech.com
 - **DevOps:** devops@farutech.com
 
 ---

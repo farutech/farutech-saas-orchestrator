@@ -444,7 +444,7 @@ public class FarutechDataSeeder
 
     private async Task SeedSuperAdminUserAsync()
     {
-        const string superAdminEmail = "faridmaloof@gmail.com";
+        const string superAdminEmail = "webmaster@farutech.com";
         const string superAdminPassword = "Holamundo1*";
 
         var existingUser = await _userManager.FindByEmailAsync(superAdminEmail);

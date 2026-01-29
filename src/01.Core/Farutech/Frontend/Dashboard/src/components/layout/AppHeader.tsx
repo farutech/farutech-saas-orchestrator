@@ -85,13 +85,9 @@ export function AppHeader({ title = "Universal Launcher", showBackToLauncher = f
                 <User className="mr-2 h-4 w-4 text-slate-500" />
                 <span>Mi Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/organizations')} className="cursor-pointer">
-                <Building2 className="mr-2 h-4 w-4 text-slate-500" />
-                <span>Administrar Organizaciones</span>
-              </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4 text-slate-500" />
-                <span>Preferencias</span>
+                <span>Configuración</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer">

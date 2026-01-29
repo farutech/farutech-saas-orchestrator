@@ -1,5 +1,5 @@
 @host = http://localhost:5098
-@email = faridmaloof@gmail.com
+@email = webmaster@farutech.com
 @password = Holamundo1*
 @admin_token = ...
 # Variables que se llenarán automáticamente

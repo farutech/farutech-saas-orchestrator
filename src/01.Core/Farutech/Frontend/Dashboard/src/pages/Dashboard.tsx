@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { useFarutech } from '@/contexts/FarutechContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NewDashboardLayout } from '@/components/layout/NewDashboardLayout';
@@ -34,16 +35,28 @@ function DashboardContent() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { appId } = useParams();
+  const { user } = useAuth();
   const { currentModule } = useFarutech();
   const { hasPermission, loading: permissionsLoading } = usePermissions();
 
   // Check dashboard access permission
   const hasDashboardAccess = hasPermission('dashboard:access');
 
+  // Validate Route Context vs Session Context
+  useEffect(() => {
+    // If we have an appId in URL but it doesn't match the session's instanceId
+    if (appId && user?.instanceId && appId !== user.instanceId) {
+      console.warn(`[Dashboard] Context mismatch. URL: ${appId}, Session: ${user.instanceId}`);
+      // Force return to home to re-establish correct context
+      // navigate('/home'); // Commented out for dev flexibility, but recommended for prod
+    }
+  }, [appId, user]);
+
   // Redirect to launcher if no module selected
   useEffect(() => {
     if (!currentModule) {
-      navigate('/');
+      navigate('/home'); // Redirect to /home instead of /
     }
   }, [currentModule, navigate]);
 

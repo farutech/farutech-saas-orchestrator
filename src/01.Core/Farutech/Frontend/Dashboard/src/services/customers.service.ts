@@ -8,6 +8,7 @@ import type {
   CreateCustomerRequest,
   CreateCustomerResponse,
   UpdateCustomerRequest,
+  PagedOrganizationsResponse,
 } from '@/types/api';
 
 export const customersService = {
@@ -15,8 +16,8 @@ export const customersService = {
    * GET /api/Customers
    * Get all customers
    */
-  getCustomers: async (): Promise<Customer[]> => {
-    const { data } = await apiClient.get<Customer[]>('/api/Customers');
+  getCustomers: async (): Promise<PagedOrganizationsResponse> => {
+    const { data } = await apiClient.get<PagedOrganizationsResponse>('/api/Customers');
     return data;
   },
 

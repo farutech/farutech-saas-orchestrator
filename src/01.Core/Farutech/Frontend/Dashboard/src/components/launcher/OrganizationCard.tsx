@@ -34,6 +34,7 @@ interface Organization {
   isOwner: boolean;
   isActive: boolean;
   taxId?: string;
+  role?: string;
   instances: Instance[];
 }
 
@@ -43,6 +44,8 @@ interface OrganizationCardProps {
   onToggle: () => void;
   onLaunchInstance: (tenantId: string, instanceId: string, isActive: boolean) => void;
   onCreateInstance: (tenantId: string) => void;
+  limitApps?: number;
+  onViewAll?: (tenantId: string) => void;
 }
 
 export function OrganizationCard({ 
@@ -50,10 +53,19 @@ export function OrganizationCard({
   isExpanded, 
   onToggle,
   onLaunchInstance,
-  onCreateInstance
+  onCreateInstance,
+  limitApps = 3,
+  onViewAll
 }: OrganizationCardProps) {
   
   const instanceCount = organization.instances.length;
+  // If limitApps is 0 or negative, show all. Otherwise slice.
+  const displayInstances = (limitApps > 0 && instanceCount > limitApps) 
+    ? organization.instances.slice(0, limitApps) 
+    : organization.instances;
+  
+  const hasMore = instanceCount > displayInstances.length;
+  const remainingCount = instanceCount - displayInstances.length;
 
   return (
     <Card className={cn(
@@ -73,6 +85,9 @@ export function OrganizationCard({
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-slate-500 font-medium">
                   {instanceCount} {instanceCount === 1 ? 'Aplicación' : 'Aplicaciones'}
+                  {hasMore && isExpanded && (
+                    <span className="ml-1 text-slate-400">({remainingCount} más)</span>
+                  )}
                 </span>
                 {organization.isActive ? (
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -105,6 +120,11 @@ export function OrganizationCard({
                Owner
              </Badge>
            )}
+           {!organization.isOwner && organization.role === 'Admin' && (
+             <Badge variant="secondary" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100">
+               Admin
+             </Badge>
+           )}
            {organization.taxId && (
              <Badge variant="outline" className="text-[10px] h-5 text-slate-400 border-slate-200">
                {organization.taxId}
@@ -133,7 +153,7 @@ export function OrganizationCard({
           <div className="min-h-0 space-y-2">
             
             {/* Instance List */}
-            {organization.instances.map(instance => (
+            {displayInstances.map(instance => (
               <div 
                 key={instance.instanceId}
                 onClick={() => onLaunchInstance(organization.organizationId, instance.instanceId, organization.isActive)}
@@ -155,6 +175,20 @@ export function OrganizationCard({
                 <ExternalLink className="h-4 w-4 text-slate-300 group-hover/item:text-primary" />
               </div>
             ))}
+            
+            {/* View All Action - Only works if limiting is active and there are more items */}
+            {hasMore && onViewAll && (
+               <Button 
+                  variant="ghost" 
+                  className="w-full text-slate-500 text-xs h-8 hover:text-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewAll(organization.organizationId);
+                  }}
+               >
+                  Ver las {remainingCount} aplicaciones restantes...
+               </Button>
+            )}
 
             {/* Create New Instance Action */}
             <Button 

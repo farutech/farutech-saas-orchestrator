@@ -7,37 +7,22 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Plus, 
-  MoreVertical, 
-  Building2, 
-  LogOut, 
-  User, 
-  Settings,
-  ChevronRight,
   Box
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomers } from '@/hooks/useApi';
-import apiClient from '@/lib/api-client';
-import { UserContextResponse, OrganizationContextDto } from '@/types/api';
+import { useQueryModal } from '@/hooks/useQueryModal';
 
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { CreateInstanceModal } from '@/components/CreateInstanceModal';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { OrganizationCard } from '@/components/launcher/OrganizationCard';
+import { CreateOrganizationModal } from '@/components/modals/CreateOrganizationModal';
 
-// ============================================================================
 // Helper Functions
 // ============================================================================
 
@@ -79,14 +64,18 @@ const getStatusColor = (status: string) => {
 // Main Component
 // ============================================================================
 
-export default function LauncherPage() {
-  const { selectContext, availableTenants, requiresContextSelection } = useAuth();
-  const { data: customers, isLoading: customersLoading } = useCustomers({
-    enabled: !requiresContextSelection // Only fetch customers when not in context selection mode
+export default function HomePage() {
+  const { selectContext, availableTenants, requiresContextSelection, user } = useAuth();
+  const { data: customersData, isLoading: customersLoading } = useCustomers({
+    enabled: !requiresContextSelection 
   });
   const [searchTerm, setSearchTerm] = useState('');
-  const [createInstanceModalOpen, setCreateInstanceModalOpen] = useState(false);
+  
+  // Modal State Management via URL
+  const modal = useQueryModal();
+  
   const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
+  
   const navigate = useNavigate();
 
   // Transform data based on authentication state
@@ -116,7 +105,7 @@ export default function LauncherPage() {
     }
 
     // When user has selected context, use customers API data
-    const customerOrgs = customers || [];
+    const customerOrgs = customersData?.organizations || [];
 
     if (customerOrgs && customerOrgs.length > 0) {
       return customerOrgs.map(c => {
@@ -130,13 +119,18 @@ export default function LauncherPage() {
           hasDirectAssignment: false
         }));
 
+        // Find user's membership to determine role
+        const membership = c.userMemberships?.find(m => m.user?.id === user?.id || m.userId === user?.id);
+        const role = membership?.role || 'User';
+        const isOwner = role === 'Owner' || role === 'Admin';
+
         return {
           organizationId: c.id,
           organizationName: c.companyName || 'Organización',
           organizationCode: c.code || '',
           taxId: c.taxId || '',
-          role: '', // Role comes from tenant context when selected
-          isOwner: false, // This would need to be determined differently
+          role: role,
+          isOwner: isOwner,
           isActive: c.isActive,
           instances: instances
         };
@@ -144,7 +138,7 @@ export default function LauncherPage() {
     }
 
     return [];
-  }, [customers, availableTenants, requiresContextSelection]);
+  }, [customersData, availableTenants, requiresContextSelection, user]);
 
   // Handle Selection
   const handleInstanceClick = async (tenantId: string, instanceId: string, isActive: boolean) => {
@@ -157,8 +151,8 @@ export default function LauncherPage() {
       const targetOrg = organizations.find(o => o.organizationId === tenantId);
       const targetInstance = targetOrg?.instances.find(i => i.instanceId === instanceId);
       
-      // Default to /dashboard or the instance URL
-      const url = targetInstance?.url || '/dashboard';
+      // Default to /app/:instanceId or the instance URL
+      const url = targetInstance?.url || `/app/${instanceId}`;
       
       // Check if URL is external (different domain/origin)
       const isExternalUrl = url.startsWith('http') && 
@@ -175,7 +169,7 @@ export default function LauncherPage() {
           window.location.href = url;
       } else {
           // Local URL or relative path: Navigate within this app
-          await selectContext(tenantId, '/dashboard');
+          await selectContext(tenantId, `/app/${instanceId}`);
       }
   };
 
@@ -205,12 +199,12 @@ export default function LauncherPage() {
       }
     } else {
       // In authenticated mode, search in customers
-      orgData = customers?.find(c => c.id === organizationId);
+      orgData = customersData?.organizations?.find(c => c.id === organizationId);
     }
 
     if (orgData) {
       setSelectedOrganization(orgData);
-      setCreateInstanceModalOpen(true);
+      modal.open('new-instance'); // Open modal via URL
     } else {
       console.error('[LauncherPage] Organization not found for ID:', organizationId);
     }
@@ -251,6 +245,16 @@ export default function LauncherPage() {
     setExpandedOrgId(prev => prev === orgId ? null : orgId);
   };
 
+  // Handle View All Apps
+  const handleViewAll = (orgId: string) => {
+    navigate(`/organizations/${orgId}/apps`);
+  };
+
+  // Handle Create Organization
+  const handleCreateOrganization = () => {
+    modal.open('new-org');
+  };
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -258,9 +262,6 @@ export default function LauncherPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
       
-      {/* 1. Global Header */}
-      <AppHeader title="Launcher" />
-
       {/* 2. Main Workspace */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10 space-y-8">
         
@@ -281,6 +282,10 @@ export default function LauncherPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <Button onClick={handleCreateOrganization} className="flex-shrink-0">
+               <Plus className="mr-2 h-4 w-4" />
+               Nueva Organización
+            </Button>
           </div>
         </div>
 
@@ -308,17 +313,24 @@ export default function LauncherPage() {
                     <p className="text-slate-500 mt-2 mb-6 max-w-md mx-auto">
                         {requiresContextSelection
                           ? 'Contacta al administrador para que te asigne a una.'
-                          : 'Intenta ajustar los términos de búsqueda.'
+                          : 'Crea una nueva organización o ajusta tu búsqueda.'
                         }
                     </p>
-                    {requiresContextSelection && (
-                        <Button
-                            onClick={() => navigate('/login')}
-                            className="bg-primary hover:bg-primary/90 text-white"
-                        >
-                            Ir al Login
-                        </Button>
-                    )}
+                    <div className="flex justify-center gap-4">
+                        {requiresContextSelection ? (
+                            <Button
+                                onClick={() => navigate('/login')}
+                                variant="outline"
+                            >
+                                Ir al Login
+                            </Button>
+                        ) : (
+                             <Button onClick={handleCreateOrganization}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nueva Organización
+                             </Button>
+                        )}
+                    </div>
                 </div>
             ) : (
                 // Organization Cards
@@ -331,13 +343,15 @@ export default function LauncherPage() {
                       onToggle={() => toggleOrg(org.organizationId)}
                       onLaunchInstance={handleInstanceClick}
                       onCreateInstance={handleCreateInstance}
+                      limitApps={3}
+                      onViewAll={handleViewAll}
                     />
                   ))}
 
-                  {/* 'Create New' Placeholder Card - Only shown if active */}
+                  {/* 'Create New' Placeholder Card */}
                   <div 
                     className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 hover:bg-slate-50 transition-colors cursor-pointer group min-h-[240px]"
-                    onClick={() => setCreateInstanceModalOpen(true)} // Or handle logic
+                    onClick={handleCreateOrganization}
                   >
                     <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors mb-3">
                       <Plus className="h-6 w-6" />
@@ -350,21 +364,20 @@ export default function LauncherPage() {
         </div>
       </main>
 
+      <CreateOrganizationModal 
+        isOpen={modal.isOpen('new-org')}
+        onClose={modal.close}
+      />
+
       {/* Create Instance Modal */}
-      {/* Note: This modal logic might need adjustment if users want to create ORGS vs APPS. 
-          Currently it creates APPS within an Org. 
-          Assuming 'Create New' card creates APPS for now or triggers a different flow. 
-          For now, linking to CreateInstanceModal which requires an ORG context. 
-          Will adjust to just show modal if needed. 
-      */}
-      {(selectedOrganization || createInstanceModalOpen) && (
+      {(selectedOrganization || modal.isOpen('new-instance')) && (
         <CreateInstanceModal
-          isOpen={createInstanceModalOpen}
+          isOpen={modal.isOpen('new-instance')}
           onClose={() => {
-            setCreateInstanceModalOpen(false);
+            modal.close();
             setSelectedOrganization(null);
           }}
-          organization={selectedOrganization || filteredOrgs[0]} // Fallback or handle differently logic for new org
+          organization={selectedOrganization || filteredOrgs[0]} 
         />
       )}
     </div>

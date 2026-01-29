@@ -265,7 +265,7 @@ export const useDeleteFeature = (options?: UseMutationOptions<void, Error, { id:
 // CUSTOMERS
 // ============================================================================
 
-export const useCustomers = (options?: UseQueryOptions<API.Customer[]>) => {
+export const useCustomers = (options?: Omit<UseQueryOptions<API.PagedOrganizationsResponse>, 'queryKey'>) => {
   return useQuery({
     queryKey: queryKeys.customers,
     queryFn: customersService.getCustomers,
@@ -338,7 +338,7 @@ export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, stri
 // AUTH
 // ============================================================================
 
-export const useAvailableTenants = (options?: UseQueryOptions<API.TenantOptionDto[]>) => {
+export const useAvailableTenants = (options?: Omit<UseQueryOptions<API.TenantOptionDto[]>, 'queryKey'>) => {
   return useQuery({
     queryKey: queryKeys.availableTenants,
     queryFn: authService.getAvailableTenants,

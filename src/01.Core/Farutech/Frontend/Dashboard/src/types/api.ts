@@ -336,6 +336,7 @@ export interface CreateCustomerRequest {
   phone?: string;
   address?: string;
   taxId?: string;
+  adminUserId: string;
 }
 
 export interface CreateCustomerResponse {
@@ -356,6 +357,16 @@ export interface UpdateCustomerRequest {
 // ============================================================================
 // Tenant Instance Types
 // ============================================================================
+
+export interface PagedOrganizationsResponse {
+  organizations: Customer[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export type OrganizationDto = Customer; // Alias for consistency if needed
 
 export interface TenantInstance {
   id: string;
