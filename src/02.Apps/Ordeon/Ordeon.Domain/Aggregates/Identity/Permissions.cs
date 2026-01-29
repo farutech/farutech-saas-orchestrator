@@ -34,5 +34,11 @@ public static class Permissions
         public const string OpenSession = "pos.ses.opn";
         public const string CloseSession = "pos.ses.cls";
         public const string WithdrawCash = "pos.csh.wdr"; // Sangrías
+
+        public static class Configuration
+        {
+            public const string Read = "pos.cfg.read";
+            public const string Manage = "pos.cfg.mng";
+        }
     }
 }

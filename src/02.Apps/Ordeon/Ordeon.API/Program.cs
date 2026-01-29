@@ -19,12 +19,14 @@ builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IPermissionProvider, PermissionProvider>();
 builder.Services.AddScoped<ICashierContext, CashierContext>();
+builder.Services.AddScoped<ITenantProvisioningService, TenantProvisioningService>();
 
 // Database
 builder.Services.AddDbContext<OrdeonDbContext>((sp, options) =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(configuration.GetConnectionString("CustomerDatabase"))
+           .ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCacheKeyFactory, TenantModelCacheKeyFactory>();
 });
 
 // Authentication

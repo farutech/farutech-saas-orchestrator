@@ -21,6 +21,8 @@ public sealed class PermissionProvider : IPermissionProvider
             new(Permissions.POS.OpenSession, "Abrir Caja", "Permite iniciar turnos de venta", "Punto de Venta"),
             new(Permissions.POS.CloseSession, "Cerrar Caja", "Permite finalizar turnos y arqueo", "Punto de Venta"),
             new(Permissions.POS.WithdrawCash, "Realizar Sangrías", "Permite retiros de efectivo", "Punto de Venta"),
+            new(Permissions.POS.Configuration.Read, "Ver Configuración POS", "Ver cajeros y cajas", "Punto de Venta"),
+            new(Permissions.POS.Configuration.Manage, "Administrar POS", "Crear cajeros y cajas", "Punto de Venta"),
             
             // Documents
             new(Permissions.Documents.ManageDefinitions, "Configurar Documentos", "Configurar prefijos y numeración", "Documentos")

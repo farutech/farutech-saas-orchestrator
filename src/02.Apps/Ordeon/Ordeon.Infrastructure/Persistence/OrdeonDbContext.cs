@@ -15,12 +15,16 @@ namespace Ordeon.Infrastructure.Persistence;
 public sealed class OrdeonDbContext : DbContext
 {
     private readonly ITenantService _tenantService;
+    public string Schema { get; }
 
     public OrdeonDbContext(
         DbContextOptions<OrdeonDbContext> options,
         ITenantService tenantService) : base(options)
     {
         _tenantService = tenantService;
+        Schema = _tenantService.TenantId.HasValue 
+            ? $"t_{_tenantService.TenantId.Value:N}" 
+            : "public";
     }
 
     public DbSet<User> Users => Set<User>();
@@ -53,11 +57,8 @@ public sealed class OrdeonDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-        // Configuración de Multi-tenancy para User
-        // En una implementación real, podríamos usar una interfaz IHasTenant
-        modelBuilder.Entity<User>().HasQueryFilter(u => u.TenantId == _tenantService.TenantId);
 
         base.OnModelCreating(modelBuilder);
     }

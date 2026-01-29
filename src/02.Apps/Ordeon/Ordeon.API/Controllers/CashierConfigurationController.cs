@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ordeon.API.Authorization;
+using Ordeon.Domain.Aggregates.Identity;
 using Ordeon.Domain.Aggregates.POS;
 using Ordeon.Infrastructure.Persistence;
 using System;
@@ -22,7 +23,7 @@ public class CashierConfigurationController : ControllerBase
     }
 
     [HttpGet]
-    [RequirePermission("pos.cfg.read")]
+    [RequirePermission(Permissions.POS.Configuration.Read)]
     public async Task<IActionResult> GetCashiers()
     {
         var cashiers = await _context.Cashiers.ToListAsync();
@@ -30,7 +31,7 @@ public class CashierConfigurationController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission("pos.cfg.mng")]
+    [RequirePermission(Permissions.POS.Configuration.Manage)]
     public async Task<IActionResult> CreateCashier([FromBody] CreateCashierRequest request, [FromHeader(Name = "X-Tenant-ID")] Guid tenantId)
     {
         var cashier = Cashier.Create(request.UserId, request.Name, tenantId);
@@ -46,7 +47,7 @@ public class CashierConfigurationController : ControllerBase
     }
 
     [HttpGet("registers")]
-    [RequirePermission("pos.cfg.read")]
+    [RequirePermission(Permissions.POS.Configuration.Read)]
     public async Task<IActionResult> GetRegisters()
     {
         var registers = await _context.CashRegisters.ToListAsync();
@@ -54,7 +55,7 @@ public class CashierConfigurationController : ControllerBase
     }
 
     [HttpPost("registers")]
-    [RequirePermission("pos.cfg.mng")]
+    [RequirePermission(Permissions.POS.Configuration.Manage)]
     public async Task<IActionResult> CreateRegister([FromBody] CreateRegisterRequest request, [FromHeader(Name = "X-Tenant-ID")] Guid tenantId)
     {
         var register = CashRegister.Create(request.Name, request.Code, request.WarehouseId, tenantId);
