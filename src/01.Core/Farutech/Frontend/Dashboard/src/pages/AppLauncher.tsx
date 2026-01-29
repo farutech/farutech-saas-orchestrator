@@ -17,7 +17,7 @@ import {
 import { ModuleType, moduleConfigs } from '@/types/farutech';
 import { Moon, Sun, User, Settings, LogOut } from 'lucide-react';
 
-export default function AppLauncher() {
+export default function AppHome() {
   const navigate = useNavigate();
   const { 
     setCurrentModule, 

@@ -89,11 +89,11 @@ export function DashboardSidebar() {
   const navItems = getNavItems(industry);
   const IndustryIcon = industryConfig[industry].icon;
 
-  const handleBackToLauncher = () => {
-    // Navigate to launcher. 
+  const handleBackToHome = () => {
+    // Navigate to home. 
     // Ideally we might want to clear the 'current context' in state if needed, 
-    // but navigating to /launcher usually resets the view.
-    navigate('/launcher');
+    // but navigating to /home usually resets the view.
+    navigate('/home');
   };
 
   return (
@@ -200,9 +200,9 @@ export function DashboardSidebar() {
 
       {/* Footer Controls */}
       <div className="p-3 border-t border-sidebar-border bg-black/20 space-y-2">
-        {/* Back to Launcher */}
+        {/* Back to Home */}
         <Button
-          onClick={handleBackToLauncher}
+          onClick={handleBackToHome}
           variant="secondary"
           className={cn(
             "w-full justify-start gap-3 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-100 border border-indigo-500/30 transition-all group",
@@ -210,7 +210,7 @@ export function DashboardSidebar() {
           )}
         >
           <LayoutGrid className="h-5 w-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-          {!isCollapsed && <span>Volver al Launcher</span>}
+          {!isCollapsed && <span>Volver al Home</span>}
         </Button>
 
         {/* User / Logout */}

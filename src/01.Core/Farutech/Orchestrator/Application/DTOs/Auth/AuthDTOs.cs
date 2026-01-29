@@ -194,7 +194,7 @@ public record OrganizationContextDto(
 );
 
 /// <summary>
-/// DTO de instancia con información relevante para el launcher.
+/// DTO de instancia con información relevante para el home.
 /// </summary>
 public record InstanceContextDto(
     Guid InstanceId,

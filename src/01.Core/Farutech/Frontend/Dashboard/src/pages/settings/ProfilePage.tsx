@@ -234,8 +234,8 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
-      {/* Header - Same as Launcher Page */}
-      <AppHeader title="Mi Perfil" showBackToLauncher={true} />
+      {/* Header - Same as Home Page */}
+      <AppHeader title="Mi Perfil" showBackToHome={true} />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10 space-y-8">
@@ -248,11 +248,11 @@ export default function ProfilePage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/launcher')}
+            onClick={() => navigate('/home')}
             className="gap-2 w-full md:w-auto"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver al Launcher
+            Volver al Home
           </Button>
         </div>
 

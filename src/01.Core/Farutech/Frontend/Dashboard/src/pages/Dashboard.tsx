@@ -53,7 +53,7 @@ export default function Dashboard() {
     }
   }, [appId, user]);
 
-  // Redirect to launcher if no module selected
+  // Redirect to home if no module selected
   useEffect(() => {
     if (!currentModule) {
       navigate('/home'); // Redirect to /home instead of /

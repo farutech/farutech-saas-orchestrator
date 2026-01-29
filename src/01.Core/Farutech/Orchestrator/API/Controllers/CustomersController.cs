@@ -87,7 +87,30 @@ public class CustomersController(
                 Code = c.Code,
                 IsActive = c.IsActive,
                 CreatedAt = c.CreatedAt,
-                InstanceCount = _context.TenantInstances.Count(t => t.CustomerId == c.Id && !t.IsDeleted)
+                TenantInstances = _context.TenantInstances
+                    .Where(t => t.CustomerId == c.Id && !t.IsDeleted)
+                    .Select(t => new TenantInstanceDto {
+                        Id = t.Id,
+                        TenantCode = t.TenantCode,
+                        ProductId = t.ApplicationType,
+                        Status = t.Status,
+                        Url = t.ApiBaseUrl,
+                        CustomerId = t.CustomerId
+                    }).ToList(),
+                UserMemberships = _context.UserCompanyMemberships
+                    .Where(m => m.CustomerId == c.Id && m.IsActive)
+                    .Select(m => new UserMembershipDto {
+                        UserId = m.UserId,
+                        Role = m.Role.ToString(),
+                        IsActive = m.IsActive,
+                        User = _context.Users
+                            .Where(u => u.Id == m.UserId)
+                            .Select(u => new UserProfileDto {
+                                Id = u.Id,
+                                Email = u.Email,
+                                FullName = u.FirstName + " " + u.LastName
+                            }).FirstOrDefault()
+                    }).ToList()
             })
             .ToListAsync();
 
@@ -482,7 +505,33 @@ public record OrganizationDto
     public string? Code { get; init; }
     public required bool IsActive { get; init; }
     public required DateTime CreatedAt { get; init; }
-    public required int InstanceCount { get; init; }
+    public List<TenantInstanceDto> TenantInstances { get; init; } = new();
+    public List<UserMembershipDto> UserMemberships { get; init; } = new();
+}
+
+public record TenantInstanceDto
+{
+    public Guid Id { get; init; }
+    public string? TenantCode { get; init; }
+    public string? ProductId { get; init; }
+    public string? Status { get; init; }
+    public string? Url { get; init; }
+    public Guid CustomerId { get; init; }
+}
+
+public record UserMembershipDto
+{
+    public Guid UserId { get; init; }
+    public string? Role { get; init; }
+    public bool IsActive { get; init; }
+    public UserProfileDto? User { get; init; }
+}
+
+public record UserProfileDto
+{
+    public Guid Id { get; init; }
+    public string? Email { get; init; }
+    public string? FullName { get; init; }
 }
 
 /// <summary>

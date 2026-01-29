@@ -91,7 +91,7 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
     navigate('/login');
   };
 
-  const handleBackToLauncher = () => {
+  const handleBackToHome = () => {
     setCurrentModule(null);
     navigate('/');
   };
@@ -106,7 +106,7 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
         {/* Left: Logo + Module Title */}
         <div className="flex items-center gap-4">
           <button 
-            onClick={handleBackToLauncher}
+            onClick={handleBackToHome}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <FarutechLogo size="sm" showText={false} />
@@ -177,7 +177,7 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
                 );
               })}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleBackToLauncher} className="gap-2">
+              <DropdownMenuItem onClick={handleBackToHome} className="gap-2">
                 <LayoutGrid className="h-4 w-4" />
                 Ver todos los módulos
               </DropdownMenuItem>
@@ -296,9 +296,9 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
               <Settings className="mr-2 h-4 w-4" />
               Configuración
             </CommandItem>
-            <CommandItem onSelect={() => { handleBackToLauncher(); setCommandOpen(false); }}>
+            <CommandItem onSelect={() => { handleBackToHome(); setCommandOpen(false); }}>
               <LayoutGrid className="mr-2 h-4 w-4" />
-              Ir al Launcher
+              Ir al Home
             </CommandItem>
           </CommandGroup>
         </CommandList>

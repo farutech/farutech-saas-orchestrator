@@ -98,7 +98,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         Guid userId;
         
         // 1. Primero intentar con User claims (si el middleware JWT ya autenticó)
-        var userIdClaim = User.FindFirst("sub")?.Value;
+        var userIdClaim = User.FindFirst("sub")?.Value 
+            ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
         if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out userId))
         {
             Console.WriteLine($"[GetAvailableTenants] Authenticated via JWT middleware - UserId: {userId}");

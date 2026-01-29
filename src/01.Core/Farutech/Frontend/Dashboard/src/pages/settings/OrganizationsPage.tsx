@@ -78,7 +78,7 @@ export default function OrganizationsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans">
-      <AppHeader title="Administración de Organizaciones" showBackToLauncher={true} />
+      <AppHeader title="Administración de Organizaciones" showBackToHome={true} />
 
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10 space-y-8">
         {/* Page Header */}

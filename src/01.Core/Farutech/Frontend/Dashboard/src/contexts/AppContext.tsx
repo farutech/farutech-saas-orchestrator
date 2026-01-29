@@ -153,7 +153,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         sessionStorage.setItem('farutech_available_tenants', JSON.stringify(tenants));
         setRequiresContextSelection(true);
         
-        navigate('/home'); // Corrected from /launcher
+        navigate('/home'); // Corrected from /home
         toast.info('Por favor, selecciona tu organización');
         return;
     } 

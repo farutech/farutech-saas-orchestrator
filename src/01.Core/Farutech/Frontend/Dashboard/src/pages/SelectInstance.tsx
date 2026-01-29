@@ -58,7 +58,7 @@ export default function SelectInstance() {
   useEffect(() => {
     // Si no hay instancias disponibles o no hay tenant seleccionado, redirigir
     if (!requiresInstanceSelection || availableInstances.length === 0) {
-      navigate('/launcher');
+      navigate('/home');
     }
   }, [requiresInstanceSelection, availableInstances, navigate]);
 
@@ -72,7 +72,7 @@ export default function SelectInstance() {
 
   const handleBack = () => {
     // Volver a la selección de organización
-    navigate('/launcher');
+    navigate('/home');
   };
 
   if (isLoading) {

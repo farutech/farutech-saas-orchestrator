@@ -11,9 +11,9 @@ export default function SelectContext() {
   const { availableTenants, selectContext, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect to launcher since context selection is now integrated there
+  // Redirect to home since context selection is now integrated there
   useEffect(() => {
-    navigate('/launcher');
+    navigate('/home');
   }, [navigate]);
 
   return (

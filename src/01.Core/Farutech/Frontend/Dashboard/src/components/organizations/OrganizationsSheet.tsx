@@ -76,7 +76,7 @@ export function OrganizationsSheet({
 
       toast({
         title: 'Éxito',
-        description: 'Organización creada correctamente. Refresca para verla en el launcher.',
+        description: 'Organización creada correctamente. Refresca para verla en el home.',
       });
 
       // Limpiar formulario

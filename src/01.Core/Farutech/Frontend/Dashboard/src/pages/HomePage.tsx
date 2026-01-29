@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { CreateInstanceModal } from '@/components/CreateInstanceModal';
-import { OrganizationCard } from '@/components/launcher/OrganizationCard';
+import { OrganizationCard } from '@/components/home/OrganizationCard';
 import { CreateOrganizationModal } from '@/components/modals/CreateOrganizationModal';
 
 // Helper Functions
@@ -206,7 +206,7 @@ export default function HomePage() {
       setSelectedOrganization(orgData);
       modal.open('new-instance'); // Open modal via URL
     } else {
-      console.error('[LauncherPage] Organization not found for ID:', organizationId);
+      console.error('[HomePage] Organization not found for ID:', organizationId);
     }
   };
 

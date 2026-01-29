@@ -181,7 +181,7 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                           <div className="text-xs text-slate-600 mt-0.5">{selectedProduct.description}</div>
                         )}
                       </div>
-                      <Badge variant="secondary">Seleccionado</Badge>
+                      <Badge variant="highlight">Seleccionado</Badge>
                     </div>
                   </div>
                 )}

@@ -45,19 +45,19 @@ export function ProtectedRoute({ children, requiresOrchestrator = false }: Prote
   // These are management pages that don't require a selected tenant context
   const isManagementPage = ['/profile', '/settings', '/organizations'].includes(location.pathname);
   
-  // If user needs to select context (has intermediate token) but is trying to access protected routes other than launcher/management
+  // If user needs to select context (has intermediate token) but is trying to access protected routes other than home/management
   if (requiresContextSelection && !isManagementPage) {
-    // Allow access to launcher to complete context selection
-    if (location.pathname !== '/launcher') {
-      console.warn('[ProtectedRoute] User needs to select context, redirecting to launcher');
-      return <Navigate to="/launcher" state={{ from: location }} replace />;
+    // Allow access to home to complete context selection
+    if (location.pathname !== '/home') {
+      console.warn('[ProtectedRoute] User needs to select context, redirecting to home');
+      return <Navigate to="/home" state={{ from: location }} replace />;
     }
   }
 
   if (requiresOrchestrator && !isOrchestrator()) {
-    // Redirect to launcher if user doesn't have orchestrator access
+    // Redirect to home if user doesn't have orchestrator access
     console.log('[ProtectedRoute] User does not have orchestrator access');
-    return <Navigate to="/launcher" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   console.log('[ProtectedRoute] Access granted to:', location.pathname);

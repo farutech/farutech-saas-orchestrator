@@ -19,16 +19,16 @@ import { FarutechLogo } from '@/components/farutech/FarutechLogo';
 
 interface AppHeaderProps {
   title?: string;
-  showBackToLauncher?: boolean;
+  showBackToHome?: boolean;
 }
 
-export function AppHeader({ title = "Universal Launcher", showBackToLauncher = false }: AppHeaderProps) {
+export function AppHeader({ title = "Universal Home", showBackToHome = false }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
     if (user) {
-      navigate('/launcher');
+      navigate('/home');
     } else {
       navigate('/login');
     }
@@ -39,7 +39,7 @@ export function AppHeader({ title = "Universal Launcher", showBackToLauncher = f
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link 
-            to={user ? '/launcher' : '/login'} 
+            to={user ? '/home' : '/login'} 
             className="cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleLogoClick}
           >
@@ -71,11 +71,11 @@ export function AppHeader({ title = "Universal Launcher", showBackToLauncher = f
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               
-              {showBackToLauncher && (
+              {showBackToHome && (
                 <>
-                  <DropdownMenuItem onClick={() => navigate('/launcher')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4 text-slate-500" />
-                    <span>Volver al Launcher</span>
+                    <span>Volver al home</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>

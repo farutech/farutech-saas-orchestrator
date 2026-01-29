@@ -79,7 +79,7 @@ const App = () => (
                     <Route path="/organizations" element={<OrganizationsManagementPage />} />
                     <Route path="/organizations/:orgId/apps" element={<OrganizationAppsPage />} />
                   </Route>
-                  {/* AppLauncher route removed */}
+                  {/* AppHome route removed */}
                   <Route
                     path="/app/:appId/*"
                     element={
