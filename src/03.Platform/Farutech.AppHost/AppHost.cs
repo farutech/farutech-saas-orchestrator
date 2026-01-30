@@ -96,7 +96,7 @@ else if (isProd)
 // ORDEON (APLICACIÓN DE NEGOCIO)
 // ====================================================
 var ordeonApi = builder
-    .AddProject<Projects.Ordeon_API>("ordeon-api", launchProfileName: "http")
+    .AddProject<Projects.Farutech_Apps_Ordeon_API>("ordeon-api", launchProfileName: "http")
     .WithReference(api) // Dependencia de Orchestrator para registro de capacidades
     .WithEnvironment("Orchestrator__BaseUrl", api.GetEndpoint("https"));
 

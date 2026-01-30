@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Farutech.Orchestrator.Infrastructure.Persistence;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -109,6 +110,44 @@ public class DatabaseBootstrapService
                     _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
                 }
 
+                // Asegurar que exista la base de datos para customers (farutech_db_custs)
+                try
+                {
+                    var connStringBuilder = new NpgsqlConnectionStringBuilder(connection.ConnectionString)
+                    {
+                        Database = "postgres"
+                    };
+
+                    await using var adminConn = new NpgsqlConnection(connStringBuilder.ConnectionString);
+                    await adminConn.OpenAsync();
+
+                    try
+                    {
+                        await using var checkCmd = adminConn.CreateCommand();
+                        checkCmd.CommandText = "SELECT 1 FROM pg_database WHERE datname = 'farutech_db_custs'";
+                        var exists = await checkCmd.ExecuteScalarAsync();
+                        if (exists == null)
+                        {
+                            await using var createCmd = adminConn.CreateCommand();
+                            createCmd.CommandText = "CREATE DATABASE \"farutech_db_custs\"";
+                            await createCmd.ExecuteNonQueryAsync();
+                            _logger.LogInformation("✅ Database 'farutech_db_custs' creada");
+                        }
+                        else
+                        {
+                            _logger.LogInformation("✅ Database 'farutech_db_custs' ya existe");
+                        }
+                    }
+                    finally
+                    {
+                        await adminConn.CloseAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "No se pudo crear/verificar la base 'farutech_db_custs' -- continuando");
+                }
+
                 _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
                 return true; // Retornar algo para que el método funcione
             }
@@ -142,28 +181,20 @@ public class DatabaseBootstrapService
     private async Task SeedInitialDataAsync()
     {
         _logger.LogInformation("🌱 Verificando necesidad de seeding inicial...");
+        // Ejecutar el seeder idempotente siempre para garantizar que los datos críticos
+        // (producto 'ordeon', roles, SuperAdmin, etc.) existan después de reinicios
+        // o recreaciones del servicio en Aspire/Podman.
+        _logger.LogInformation("📝 Ejecutando seeding idempotente (asegura datos críticos)...");
 
-        // Verificar si ya hay datos (productos como indicador)
-        var hasData = await _context.Products.AnyAsync();
+        // Crear scope para obtener servicios necesarios
+        using var scope = _serviceProvider.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
-        if (!hasData)
-        {
-            _logger.LogInformation("📝 Base de datos vacía detectada. Ejecutando seeding inicial...");
+        var seeder = new FarutechDataSeeder(_context, userManager, seederLogger);
+        await seeder.SeedAsync();
 
-            // Crear scope para obtener servicios necesarios
-            using var scope = _serviceProvider.CreateScope();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
-
-            var seeder = new FarutechDataSeeder(_context, userManager, seederLogger);
-            await seeder.SeedAsync();
-
-            _logger.LogInformation("✅ Seeding inicial completado");
-        }
-        else
-        {
-            _logger.LogInformation("ℹ️  Base de datos ya contiene datos. Saltando seeding.");
-        }
+        _logger.LogInformation("✅ Seeding idempotente completado (datos críticos verificados/creados)");
     }
 
     /// <summary>
