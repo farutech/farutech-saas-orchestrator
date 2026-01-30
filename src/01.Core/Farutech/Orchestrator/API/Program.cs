@@ -49,6 +49,9 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 var postgresPassword = builder.Configuration["postgres-password"] ?? string.Empty;
+// ========== HEALTH CHECKS ==========
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connectionString, name: "postgresql");
 var safeConnectionString = postgresPassword.Length > 0
     ? connectionString.Replace(postgresPassword, "***")
     : connectionString;
@@ -384,6 +387,9 @@ if (app.Environment.IsDevelopment())
 }
 
 Console.WriteLine("Application configured successfully, starting...");
+
+// ========== HEALTH CHECK ENDPOINT ==========
+app.MapHealthChecks("/health/live");
 
 // ========== INICIO DE LA APLICACIÓN ==========
 try

@@ -44,6 +44,8 @@ if (isDev)
         .AddPostgres("postgres", password: postgresPassword)
         .WithDataVolume("farutech-postgres-data")
         .WithEnvironment("POSTGRES_DB", "farutec_db")
+        .WithEnvironment("POSTGRES_USER", "postgres")
+        .WithEnvironment("POSTGRES_PASSWORD", postgresPassword)
         .WithPgAdmin(c => c.WithImage("dpage/pgadmin4:latest"))
         // Default connection for core orchestrator
         .AddDatabase("DefaultConnection", "farutec_db");
@@ -57,7 +59,11 @@ if (isDev)
     nats = builder
         .AddNats("nats")
         .WithDataVolume("farutech-nats-data")
-        .WithEnvironment("NATS_JETSTREAM", "enabled");
+        .WithEnvironment("NATS_JETSTREAM", "enabled")
+        .WithEnvironment("NATS_HOST", builder.Configuration["Parameters:nats-host"] ?? "nats")
+        .WithEnvironment("NATS_PORT", builder.Configuration["Parameters:nats-port"] ?? "4222")
+        .WithEnvironment("NATS_USER", builder.Configuration["Parameters:nats-user"] ?? "")
+        .WithEnvironment("NATS_PASSWORD", builder.Configuration["Parameters:nats-password"] ?? "");
 }
 
 // ====================================================
@@ -70,18 +76,24 @@ var api = builder
     .WithEnvironment("Jwt__SecretKey", jwtSecret)
     .WithEnvironment("Database__CommonName", commonDatabaseName)
     .WithEnvironment("Database__DedicatedPrefix", dedicatedDatabasePrefix)
-    .WithHttpHealthCheck("/health");
+    .WithEnvironment("Nats__Host", builder.Configuration["Parameters:nats-host"] ?? "nats")
+    .WithEnvironment("Nats__Port", builder.Configuration["Parameters:nats-port"] ?? "4222")
+    .WithEnvironment("Nats__User", builder.Configuration["Parameters:nats-user"] ?? "")
+    .WithEnvironment("Nats__Password", builder.Configuration["Parameters:nats-password"] ?? "")
+    .WithHttpHealthCheck("/health/live");
 
 // ---- Database dependency
 if (postgres is not null)
 {
     api = api.WithReference(postgres);
 }
-else if (isProd)
+else if (!isDev)
 {
+    // En ambientes QA, Staging, Prod: usar cadena de conexión inyectada por variable/secreto
     api = api.WithEnvironment(
         "ConnectionStrings__DefaultConnection",
-        builder.Configuration["Parameters:postgres-conn-string"]);
+        builder.Configuration["Parameters:postgres-conn-string"] ??
+        "Host=postgres;Port=5432;Database=farutec_db;Username=postgres;Password=REEMPLAZAR_PASSWORD");
 }
 
 // ---- NATS dependency
