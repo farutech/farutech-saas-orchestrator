@@ -23,7 +23,7 @@ public class FarutechDataSeeder
     private static readonly Guid SalespersonRoleId = new("00000000-0000-0000-0001-000000000004");
     private static readonly Guid AuditorRoleId = new("00000000-0000-0000-0001-000000000005");
 
-    private static readonly Guid ProductFaruPosId = new("00000000-0000-0000-0002-000000000001");
+    private static readonly Guid ProductOrdeonId = new("00000000-0000-0000-0002-000000000001");
     
     private static readonly Guid ModuleSalesId = new("00000000-0000-0000-0003-000000000001");
     private static readonly Guid ModuleInventoryId = new("00000000-0000-0000-0003-000000000002");
@@ -282,10 +282,10 @@ public class FarutechDataSeeder
 
         var product = new Product
         {
-            Id = ProductFaruPosId,
-            Code = "farutech_pos",
-            Name = "Farutech POS & Services",
-            Description = "Sistema punto de venta con gestión de servicios, control de caja e inventario",
+            Id = ProductOrdeonId,
+            Code = "ordeon",
+            Name = "Ordeon - Retail & Services",
+            Description = "Ordeon: plataforma para puntos de venta y gestión de servicios, control de caja e inventario",
             IsActive = true,
             CreatedBy = "System"
         };
@@ -308,9 +308,9 @@ public class FarutechDataSeeder
 
         var modules = new List<Module>
         {
-            new() { Id = ModuleSalesId, ProductId = ProductFaruPosId, Code = "sales_module", Name = "Ventas", Description = "Gestión completa de ventas y servicios", IsActive = true, CreatedBy = "System" },
-            new() { Id = ModuleInventoryId, ProductId = ProductFaruPosId, Code = "inventory_module", Name = "Inventario", Description = "Control de stock y productos", IsActive = true, CreatedBy = "System" },
-            new() { Id = ModuleSecurityId, ProductId = ProductFaruPosId, Code = "security_module", Name = "Seguridad", Description = "Gestión de roles, permisos y usuarios", IsActive = true, CreatedBy = "System" }
+            new() { Id = ModuleSalesId, ProductId = ProductOrdeonId, Code = "orders_module", Name = "Orders", Description = "Gestión de órdenes y punto de venta", IsActive = true, CreatedBy = "System" },
+            new() { Id = ModuleInventoryId, ProductId = ProductOrdeonId, Code = "inventory_module", Name = "Inventory", Description = "Control de stock y productos", IsActive = true, CreatedBy = "System" },
+            new() { Id = ModuleSecurityId, ProductId = ProductOrdeonId, Code = "security_module", Name = "Security", Description = "Gestión de roles, permisos y usuarios", IsActive = true, CreatedBy = "System" }
         };
 
         await _context.Modules.AddRangeAsync(modules);
@@ -359,7 +359,7 @@ public class FarutechDataSeeder
             new()
             {
                 Id = SubscriptionFullId,
-                ProductId = ProductFaruPosId,
+                ProductId = ProductOrdeonId,
                 Code = "FARUPOS-FULL",
                 Name = "Plan Full - Completo",
                 Description = "Acceso completo a todas las funcionalidades: Ventas, Inventario Multi-bodega, Gestión de Servicios y Seguridad con control de roles y permisos.",
@@ -375,7 +375,7 @@ public class FarutechDataSeeder
             new()
             {
                 Id = SubscriptionMostradorId,
-                ProductId = ProductFaruPosId,
+                ProductId = ProductOrdeonId,
                 Code = "FARUPOS-MOSTRADOR",
                 Name = "Plan Mostrador - Básico",
                 Description = "Perfecto para puntos de venta simples. Incluye Terminal POS, Control de Inventario Básico y acceso con permisos estándar para todos los usuarios. Sin gestión de servicios ni multi-bodega.",

@@ -41,6 +41,7 @@ if (isDev)
         .WithDataVolume("farutech-postgres-data")
         .WithEnvironment("POSTGRES_DB", "farutec_db")
         .WithPgAdmin()
+        // Default connection for core orchestrator
         .AddDatabase("DefaultConnection", "farutec_db");
 }
 
@@ -95,14 +96,24 @@ else if (isProd)
 // ORDEON (APLICACIÓN DE NEGOCIO)
 // ====================================================
 var ordeonApi = builder
-    .AddProject<Projects.Ordeon_API>("ordeon-api")
+    .AddProject<Projects.Ordeon_API>("ordeon-api", launchProfileName: "http")
     .WithReference(api) // Dependencia de Orchestrator para registro de capacidades
     .WithEnvironment("Orchestrator__BaseUrl", api.GetEndpoint("https"));
 
 if (postgres is not null)
 {
+    // Map Ordeon to use the same Postgres resource but expose it as "CustomerDatabase"
+    // so Ordeon can read `ConnectionStrings:CustomerDatabase` as expected.
     ordeonApi = ordeonApi.WithReference(postgres, "CustomerDatabase");
 }
+
+// If AppHost is running in development, ensure Ordeon runs in Development so it applies migrations/seeds
+if (isDev)
+{
+    ordeonApi = ordeonApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development");
+}
+// Ensure Aspire requests Ordeon to run migrations/seeds on startup so catalogs are created
+ordeonApi = ordeonApi.WithEnvironment("Ordeon__RunMigrationsOnStartup", "true");
 
 // ====================================================
 // FRONTEND (CONSUMIDOR FINAL)

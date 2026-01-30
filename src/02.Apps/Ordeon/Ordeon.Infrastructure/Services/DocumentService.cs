@@ -31,8 +31,11 @@ public sealed class DocumentService : IDocumentService
 
         // 2. Generar transacciones segun el tipo de documento (Simplificado)
         var definition = await _context.DocumentDefinitions.FindAsync(header.DocumentDefinitionId);
-        
-        foreach (var line in header.Lines)
+        if (definition == null) throw new Exception("Document definition not found");
+
+        var lines = header.Lines ?? Enumerable.Empty<DocumentLine>();
+
+        foreach (var line in lines)
         {
             var txType = definition.Module switch
             {

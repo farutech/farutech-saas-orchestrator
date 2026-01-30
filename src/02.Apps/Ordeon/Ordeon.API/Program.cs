@@ -67,6 +67,26 @@ var app = builder.Build();
 app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
+// Decide whether to run migrations on startup: run when in Development OR when explicitly requested via configuration
+var runMigrations = app.Environment.IsDevelopment() ||
+    (builder.Configuration.GetValue<bool>("Ordeon:RunMigrationsOnStartup", false));
+
+if (runMigrations)
+{
+    try
+    {
+        Console.WriteLine("🔄 Aplicando migraciones EF Core (Ordeon) con retry...");
+        await Ordeon.Infrastructure.DatabaseMigrator.MigrateAsync(app.Services, app.Logger);
+        Console.WriteLine("✅ Migraciones EF Core (Ordeon) aplicadas exitosamente");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ Error aplicando migraciones Ordeon: {ex.Message}");
+        // No fail-fast: permitir continuar en entornos donde la DB se gestiona externamente
+    }
+}
+
+// Swagger UI only in Development (keep closed in prod by default)
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

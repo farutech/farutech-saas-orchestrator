@@ -13,19 +13,19 @@ namespace Ordeon.Infrastructure.Persistence.Interceptors;
 
 public sealed class AuditInterceptor : SaveChangesInterceptor
 {
-    public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
         var context = eventData.Context;
-        if (context == null) return result;
+        if (context == null) return new ValueTask<InterceptionResult<int>>(result);
 
         var entries = context.ChangeTracker.Entries<Entity>()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted)
             .ToList();
 
-        if (!entries.Any()) return result;
+        if (!entries.Any()) return new ValueTask<InterceptionResult<int>>(result);
 
         // Nota: En un entorno real, obtendríamos el UserId del IHttpContextAccessor
         // Aquí simplificamos o usamos un Guid.Empty si no está disponible en este scope directo
@@ -47,6 +47,6 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
             // Lo ideal es enviarlo a una cola o usar un segundo DbContext/DbSet específico
         }
 
-        return result;
+        return new ValueTask<InterceptionResult<int>>(result);
     }
 }
