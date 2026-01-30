@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Farutech.Orchestrator.Infrastructure.Persistence;
 using Farutech.Orchestrator.Domain.Entities.Identity;
@@ -13,15 +14,19 @@ namespace Farutech.Orchestrator.API.Services;
 /// Servicio de bootstrap inteligente para inicialización de base de datos.
 /// Garantiza que la base de datos se cree en el orden correcto: Esquemas -> Estructura -> Datos.
 /// </summary>
-public class DatabaseBootstrapService(
-    OrchestratorDbContext context,
-    ILogger<DatabaseBootstrapService> logger,
-    IServiceProvider serviceProvider)
+public class DatabaseBootstrapService(OrchestratorDbContext context,
+                                      ILogger<DatabaseBootstrapService> logger,
+                                      IServiceProvider serviceProvider,
+                                      IConfiguration configuration)
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly ILogger<DatabaseBootstrapService> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IConfiguration _configuration = configuration;
     private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
+
+    private string CommonDatabaseName => _configuration["Database:CommonName"] ?? "farutech_db_custs";
+    private string DedicatedDatabasePrefix => _configuration["Database:DedicatedPrefix"] ?? "farutech_db_cust_";
 
     /// <summary>
     /// Ejecuta el bootstrap completo de la base de datos en orden estricto.
@@ -104,7 +109,7 @@ public class DatabaseBootstrapService(
                     _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
                 }
 
-                // Asegurar que exista la base de datos para customers (farutech_db_custs)
+                // Asegurar que exista la base de datos para customers (configurable)
                 try
                 {
                     var connStringBuilder = new NpgsqlConnectionStringBuilder(connection.ConnectionString)
@@ -118,18 +123,18 @@ public class DatabaseBootstrapService(
                     try
                     {
                         await using var checkCmd = adminConn.CreateCommand();
-                        checkCmd.CommandText = "SELECT 1 FROM pg_database WHERE datname = 'farutech_db_custs'";
+                        checkCmd.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{CommonDatabaseName}'";
                         var exists = await checkCmd.ExecuteScalarAsync();
                         if (exists == null)
                         {
                             await using var createCmd = adminConn.CreateCommand();
-                            createCmd.CommandText = "CREATE DATABASE \"farutech_db_custs\"";
+                            createCmd.CommandText = $"CREATE DATABASE \"{CommonDatabaseName}\"";
                             await createCmd.ExecuteNonQueryAsync();
-                            _logger.LogInformation("✅ Database 'farutech_db_custs' creada");
+                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' creada");
                         }
                         else
                         {
-                            _logger.LogInformation("✅ Database 'farutech_db_custs' ya existe");
+                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' ya existe");
                         }
                     }
                     finally
@@ -139,7 +144,7 @@ public class DatabaseBootstrapService(
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "No se pudo crear/verificar la base 'farutech_db_custs' -- continuando");
+                    _logger.LogWarning(ex, $"No se pudo crear/verificar la base '{CommonDatabaseName}' -- continuando");
                 }
 
                 _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");

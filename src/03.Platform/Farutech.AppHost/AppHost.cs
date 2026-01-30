@@ -11,6 +11,8 @@ var isProd = environment == "Production";
 // ===================== PARÁMETROS =====================
 var postgresPassword = builder.AddParameter("postgres-password", secret: true);
 var jwtSecret = builder.AddParameter("jwt-secret", secret: true);
+var commonDatabaseName = builder.AddParameter("database-common-name");
+var dedicatedDatabasePrefix = builder.AddParameter("database-dedicated-prefix");
 
 var postgresConnString = isProd
     ? builder.AddParameter("postgres-conn-string", secret: true)
@@ -25,6 +27,8 @@ if (isDev)
 {
     builder.Configuration["Parameters:postgres-password"] ??= "DevOnly_StrongPassword_123";
     builder.Configuration["Parameters:jwt-secret"] ??= "DevOnly_JWT_Secret_Min32Chars_Long";
+    builder.Configuration["Parameters:database-common-name"] ??= "farutech_db_custs";
+    builder.Configuration["Parameters:database-dedicated-prefix"] ??= "farutech_db_cust_";
 }
 
 // ====================================================
@@ -64,6 +68,8 @@ var api = builder
         "orchestrator-api",
         launchProfileName: "https")
     .WithEnvironment("Jwt__SecretKey", jwtSecret)
+    .WithEnvironment("Database__CommonName", commonDatabaseName)
+    .WithEnvironment("Database__DedicatedPrefix", dedicatedDatabasePrefix)
     .WithHttpHealthCheck("/health");
 
 // ---- Database dependency

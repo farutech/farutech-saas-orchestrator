@@ -10,9 +10,8 @@ namespace Farutech.Orchestrator.API.Services;
 /// Se ejecuta DESPUÉS de las migraciones EF Core y ANTES del seeding.
 /// Responsabilidades: creación de esquemas físicos adicionales y validaciones.
 /// </summary>
-public class DatabasePostMigrationService(
-    OrchestratorDbContext context,
-    ILogger<DatabasePostMigrationService> logger)
+public class DatabasePostMigrationService(OrchestratorDbContext context,
+                                          ILogger<DatabasePostMigrationService> logger)
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly ILogger<DatabasePostMigrationService> _logger = logger;

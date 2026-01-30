@@ -12,9 +12,8 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Requiere autenticación
-public class CatalogController(
-    ICatalogService catalogService,
-    ILogger<CatalogController> logger) : ControllerBase
+public class CatalogController(ICatalogService catalogService,
+                               ILogger<CatalogController> logger) : ControllerBase
 {
     private readonly ICatalogService _catalogService = catalogService;
     private readonly ILogger<CatalogController> _logger = logger;

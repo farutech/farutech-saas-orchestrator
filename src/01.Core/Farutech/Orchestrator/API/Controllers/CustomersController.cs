@@ -15,10 +15,9 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CustomersController(
-    OrchestratorDbContext context,
-    IAuthService authService,
-    ILogger<CustomersController> logger) : ControllerBase
+public class CustomersController(OrchestratorDbContext context,
+                                 IAuthService authService,
+                                 ILogger<CustomersController> logger) : ControllerBase
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IAuthService _authService = authService;
