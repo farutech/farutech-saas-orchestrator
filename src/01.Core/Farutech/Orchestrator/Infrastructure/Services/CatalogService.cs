@@ -10,9 +10,8 @@ namespace Farutech.Orchestrator.Infrastructure.Services;
 /// <summary>
 /// Servicio para gestión de catálogos maestros (Products, Modules, Features).
 /// </summary>
-public class CatalogService(
-    OrchestratorDbContext context,
-    ILogger<CatalogService> logger) : ICatalogService
+public class CatalogService(OrchestratorDbContext context,
+                            ILogger<CatalogService> logger) : ICatalogService
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly ILogger<CatalogService> _logger = logger;

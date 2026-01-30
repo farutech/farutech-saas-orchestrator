@@ -7,14 +7,9 @@ namespace Farutech.Orchestrator.Application.Services;
 /// <summary>
 /// Service implementation for Customer business operations
 /// </summary>
-public class CustomerService : ICustomerService
+public class CustomerService(ICustomerRepository customerRepository) : ICustomerService
 {
-    private readonly ICustomerRepository _customerRepository;
-
-    public CustomerService(ICustomerRepository customerRepository)
-    {
-        _customerRepository = customerRepository;
-    }
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <inheritdoc />
     public async Task<Customer> CreateCustomerAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)

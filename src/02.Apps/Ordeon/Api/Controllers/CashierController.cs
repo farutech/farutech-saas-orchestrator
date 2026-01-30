@@ -13,16 +13,10 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CashierController : ControllerBase
+public class CashierController(OrdeonDbContext context, ICashierContext cashierContext) : ControllerBase
 {
-    private readonly OrdeonDbContext _context;
-    private readonly ICashierContext _cashierContext;
-
-    public CashierController(OrdeonDbContext context, ICashierContext cashierContext)
-    {
-        _context = context;
-        _cashierContext = cashierContext;
-    }
+    private readonly OrdeonDbContext _context = context;
+    private readonly ICashierContext _cashierContext = cashierContext;
 
     [HttpPost("open")]
     [RequireFeature("POS_BASIC")]

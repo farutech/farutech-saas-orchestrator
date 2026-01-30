@@ -5,6 +5,8 @@ namespace Farutech.Apps.Ordeon.Infrastructure.Migrations;
 
 public partial class InitCatalogs : Migration
 {
+    private static readonly string[] columns = ["Id", "Name", "Description", "IsActive", "CreatedAt"];
+
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.EnsureSchema(name: "catalog");
@@ -29,7 +31,7 @@ public partial class InitCatalogs : Migration
         migrationBuilder.InsertData(
             schema: "catalog",
             table: "Products",
-            columns: new[] { "Id", "Name", "Description", "IsActive", "CreatedAt" },
+            columns: columns,
             values: new object[,]
             {
                 { new Guid("00000000-0000-0000-0000-000000000001"), "Default Product", "Producto por defecto", true, new DateTime(2026, 1, 29, 0, 0, 0, DateTimeKind.Utc) },

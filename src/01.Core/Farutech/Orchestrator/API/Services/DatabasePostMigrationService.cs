@@ -10,18 +10,13 @@ namespace Farutech.Orchestrator.API.Services;
 /// Se ejecuta DESPUÉS de las migraciones EF Core y ANTES del seeding.
 /// Responsabilidades: creación de esquemas físicos adicionales y validaciones.
 /// </summary>
-public class DatabasePostMigrationService
+public class DatabasePostMigrationService(
+    OrchestratorDbContext context,
+    ILogger<DatabasePostMigrationService> logger)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly ILogger<DatabasePostMigrationService> _logger;
-
-    public DatabasePostMigrationService(
-        OrchestratorDbContext context,
-        ILogger<DatabasePostMigrationService> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
+    private readonly OrchestratorDbContext _context = context;
+    private readonly ILogger<DatabasePostMigrationService> _logger = logger;
+    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
 
     /// <summary>
     /// Ejecuta la configuración post-migración en orden estricto.
@@ -89,7 +84,7 @@ public class DatabasePostMigrationService
             try
             {
                 // Lista de esquemas adicionales requeridos
-                var additionalSchemas = new[] { "identity", "tenants", "catalog", "core" };
+                var additionalSchemas = stringArray;
 
                 foreach (var schema in additionalSchemas)
                 {

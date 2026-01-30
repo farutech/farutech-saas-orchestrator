@@ -9,17 +9,11 @@ using System.Threading.Tasks;
 
 namespace Farutech.Apps.Ordeon.Infrastructure.Services;
 
-public sealed class CashierContext : ICashierContext
+public sealed class CashierContext(IHttpContextAccessor httpContextAccessor, OrdeonDbContext context) : ICashierContext
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly OrdeonDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly OrdeonDbContext _context = context;
     private Guid? _cachedCashierId;
-
-    public CashierContext(IHttpContextAccessor httpContextAccessor, OrdeonDbContext context)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _context = context;
-    }
 
     public Guid? CashierId => _cachedCashierId;
 

@@ -8,14 +8,9 @@ namespace Farutech.Orchestrator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for Customer entity
 /// </summary>
-public class CustomerRepository : ICustomerRepository
+public class CustomerRepository(OrchestratorDbContext dbContext) : ICustomerRepository
 {
-    private readonly OrchestratorDbContext _dbContext;
-
-    public CustomerRepository(OrchestratorDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly OrchestratorDbContext _dbContext = dbContext;
 
     /// <inheritdoc />
     public async Task AddAsync(Customer customer, CancellationToken cancellationToken = default)

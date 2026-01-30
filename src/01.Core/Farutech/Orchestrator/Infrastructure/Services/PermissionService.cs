@@ -9,9 +9,8 @@ namespace Farutech.Orchestrator.Infrastructure.Services;
 /// <summary>
 /// Implementación del servicio de permisos RBAC con caché
 /// </summary>
-public class PermissionService(
-    OrchestratorDbContext context,
-    IMemoryCache cache) : IPermissionService
+public class PermissionService(OrchestratorDbContext context,
+                               IMemoryCache cache) : IPermissionService
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IMemoryCache _cache = cache;

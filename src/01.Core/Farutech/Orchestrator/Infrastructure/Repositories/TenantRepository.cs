@@ -8,14 +8,9 @@ namespace Farutech.Orchestrator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for TenantInstance entity
 /// </summary>
-public class TenantRepository : ITenantRepository
+public class TenantRepository(OrchestratorDbContext dbContext) : ITenantRepository
 {
-    private readonly OrchestratorDbContext _dbContext;
-
-    public TenantRepository(OrchestratorDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly OrchestratorDbContext _dbContext = dbContext;
 
     /// <inheritdoc />
     public async Task AddAsync(TenantInstance tenant, CancellationToken cancellationToken = default)

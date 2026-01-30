@@ -12,14 +12,9 @@ namespace Farutech.Orchestrator.API;
 /// <summary>
 /// Clase Startup simplificada para pruebas de integración
 /// </summary>
-public class TestStartup
+public class TestStartup(IConfiguration configuration)
 {
-    public TestStartup(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
-
-    public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
     {

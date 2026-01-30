@@ -10,11 +10,14 @@ namespace Farutech.Orchestrator.Infrastructure.Seeding;
 /// <summary>
 /// Data seeder for Farutech Orchestrator - Seeds catalog data, permissions, roles, and initial SuperAdmin user
 /// </summary>
-public class FarutechDataSeeder
+public class FarutechDataSeeder(
+    OrchestratorDbContext context,
+    UserManager<ApplicationUser> userManager,
+    ILogger<FarutechDataSeeder> logger)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<FarutechDataSeeder> _logger;
+    private readonly OrchestratorDbContext _context = context;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ILogger<FarutechDataSeeder> _logger = logger;
 
     // Predefined GUIDs for deterministic seeding
     private static readonly Guid SuperAdminRoleId = new("00000000-0000-0000-0001-000000000001");
@@ -37,16 +40,6 @@ public class FarutechDataSeeder
 
     private static readonly Guid SubscriptionFullId = new("00000000-0000-0000-0005-000000000001");
     private static readonly Guid SubscriptionMostradorId = new("00000000-0000-0000-0005-000000000002");
-
-    public FarutechDataSeeder(
-        OrchestratorDbContext context,
-        UserManager<ApplicationUser> userManager,
-        ILogger<FarutechDataSeeder> logger)
-    {
-        _context = context;
-        _userManager = userManager;
-        _logger = logger;
-    }
 
     public async Task SeedAsync()
     {
@@ -445,7 +438,7 @@ public class FarutechDataSeeder
     private async Task SeedSuperAdminUserAsync()
     {
         var superAdminEmail = Environment.GetEnvironmentVariable("FARUTECH_SUPERADMIN_EMAIL") ?? "webmaster@farutech.com";
-        var superAdminPassword = Environment.GetEnvironmentVariable("FARUTECH_SUPERADMIN_PASSWORD") ?? "ChangeMe@2026!";
+        var superAdminPassword = Environment.GetEnvironmentVariable("FARUTECH_SUPERADMIN_PASSWORD") ?? "Holamundo1*";
 
         var existingUser = await _userManager.FindByEmailAsync(superAdminEmail);
         if (existingUser != null)

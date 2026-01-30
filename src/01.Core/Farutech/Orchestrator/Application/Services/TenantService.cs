@@ -7,16 +7,10 @@ namespace Farutech.Orchestrator.Application.Services;
 /// <summary>
 /// Service implementation for Tenant business operations
 /// </summary>
-public class TenantService : ITenantService
+public class TenantService(ITenantRepository tenantRepository, ICustomerRepository customerRepository) : ITenantService
 {
-    private readonly ITenantRepository _tenantRepository;
-    private readonly ICustomerRepository _customerRepository;
-
-    public TenantService(ITenantRepository tenantRepository, ICustomerRepository customerRepository)
-    {
-        _tenantRepository = tenantRepository;
-        _customerRepository = customerRepository;
-    }
+    private readonly ITenantRepository _tenantRepository = tenantRepository;
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <inheritdoc />
     public async Task<TenantInstance> CreateTenantAsync(CreateTenantRequest request, CancellationToken cancellationToken = default)

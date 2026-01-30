@@ -12,17 +12,11 @@ namespace Farutech.Orchestrator.Infrastructure.Messaging;
 /// NATS message bus resiliente con modo degradado
 /// Si NATS no está disponible, registra el mensaje pero no falla
 /// </summary>
-public class NatsMessageBus : IMessageBus
+public class NatsMessageBus(INatsConnection? connection, ILogger<NatsMessageBus> logger) : IMessageBus
 {
-    private readonly INatsConnection? _connection;
-    private readonly ILogger<NatsMessageBus> _logger;
+    private readonly INatsConnection? _connection = connection;
+    private readonly ILogger<NatsMessageBus> _logger = logger;
     private const string ProvisioningSubject = "provisioning.tasks";
-
-    public NatsMessageBus(INatsConnection? connection, ILogger<NatsMessageBus> logger)
-    {
-        _connection = connection;
-        _logger = logger;
-    }
 
     public async Task PublishProvisioningTaskAsync(ProvisioningTaskMessage task) 
         => await PublishAsync(ProvisioningSubject, task);

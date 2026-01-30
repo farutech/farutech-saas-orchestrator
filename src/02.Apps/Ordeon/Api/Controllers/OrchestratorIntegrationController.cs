@@ -7,18 +7,12 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 
 [ApiController]
 [Route("api/internal/orchestrator")]
-public class OrchestratorIntegrationController : ControllerBase
+public class OrchestratorIntegrationController(
+    ITenantProvisioningService provisioningService,
+    IPermissionProvider permissionProvider) : ControllerBase
 {
-    private readonly ITenantProvisioningService _provisioningService;
-    private readonly IPermissionProvider _permissionProvider;
-
-    public OrchestratorIntegrationController(
-        ITenantProvisioningService provisioningService,
-        IPermissionProvider permissionProvider)
-    {
-        _provisioningService = provisioningService;
-        _permissionProvider = permissionProvider;
-    }
+    private readonly ITenantProvisioningService _provisioningService = provisioningService;
+    private readonly IPermissionProvider _permissionProvider = permissionProvider;
 
     /// <summary>
     /// Punto de entrada para que el Orchestrator solicite la creación de un nuevo Tenant.

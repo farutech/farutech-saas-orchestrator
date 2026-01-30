@@ -9,14 +9,9 @@ using System.Threading.Tasks;
 
 namespace Farutech.Apps.Ordeon.Infrastructure.Services;
 
-public sealed class TenantProvisioningService : ITenantProvisioningService
+public sealed class TenantProvisioningService(IServiceProvider serviceProvider) : ITenantProvisioningService
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public TenantProvisioningService(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     public async Task ProvisionTenantAsync(Guid tenantId)
     {

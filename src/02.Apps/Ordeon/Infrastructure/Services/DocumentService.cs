@@ -8,14 +8,9 @@ using System.Threading.Tasks;
 
 namespace Farutech.Apps.Ordeon.Infrastructure.Services;
 
-public sealed class DocumentService : IDocumentService
+public sealed class DocumentService(OrdeonDbContext context) : IDocumentService
 {
-    private readonly OrdeonDbContext _context;
-
-    public DocumentService(OrdeonDbContext context)
-    {
-        _context = context;
-    }
+    private readonly OrdeonDbContext _context = context;
 
     public async Task ActivateDocumentAsync(Guid documentHeaderId)
     {

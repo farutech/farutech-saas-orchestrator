@@ -9,6 +9,8 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
     /// <inheritdoc />
     public partial class InitialArchitecture : Migration
     {
+        private static readonly string[] columns = ["ModuleId", "Code"];
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -718,7 +720,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_Features_ModuleId_Code",
                 schema: "catalog",
                 table: "Features",
-                columns: new[] { "ModuleId", "Code" },
+                columns: columns,
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -731,7 +733,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_Modules_ProductId_Code",
                 schema: "catalog",
                 table: "Modules",
-                columns: new[] { "ProductId", "Code" },
+                columns: ["ProductId", "Code"],
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -820,7 +822,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_SubscriptionPlanFeatures_SubscriptionId_FeatureId",
                 schema: "catalog",
                 table: "SubscriptionPlanFeatures",
-                columns: new[] { "SubscriptionId", "FeatureId" },
+                columns: ["SubscriptionId", "FeatureId"],
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -839,14 +841,14 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_SubscriptionPlans_ProductId_Code",
                 schema: "catalog",
                 table: "SubscriptionPlans",
-                columns: new[] { "ProductId", "Code" },
+                columns: ["ProductId", "Code"],
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_CustomerId_ProductId",
                 schema: "tenants",
                 table: "Subscriptions",
-                columns: new[] { "CustomerId", "ProductId" });
+                columns: ["CustomerId", "ProductId"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_NextBillingDate",
@@ -870,7 +872,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_TenantInstances_CustomerId_Code",
                 schema: "tenants",
                 table: "TenantInstances",
-                columns: new[] { "CustomerId", "Code" },
+                columns: ["CustomerId", "Code"],
                 unique: true,
                 filter: "\"Code\" IS NOT NULL");
 
@@ -878,7 +880,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_TenantInstances_CustomerId_DeploymentType",
                 schema: "tenants",
                 table: "TenantInstances",
-                columns: new[] { "CustomerId", "DeploymentType" });
+                columns: ["CustomerId", "DeploymentType"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_Status",
@@ -921,7 +923,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_UserRoles_UserId_TenantId",
                 schema: "identity",
                 table: "user_roles",
-                columns: new[] { "UserId", "TenantId" });
+                columns: ["UserId", "TenantId"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCompanyMemberships_CustomerId",
@@ -939,7 +941,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_UserCompanyMemberships_User_Customer",
                 schema: "identity",
                 table: "UserCompanyMemberships",
-                columns: new[] { "UserId", "CustomerId" },
+                columns: ["UserId", "CustomerId"],
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -952,7 +954,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_UserInvitations_Email_Status",
                 schema: "identity",
                 table: "UserInvitations",
-                columns: new[] { "Email", "Status" });
+                columns: ["Email", "Status"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInvitations_Token",

@@ -13,21 +13,15 @@ namespace Farutech.Orchestrator.API.Services;
 /// Servicio de bootstrap inteligente para inicialización de base de datos.
 /// Garantiza que la base de datos se cree en el orden correcto: Esquemas -> Estructura -> Datos.
 /// </summary>
-public class DatabaseBootstrapService
+public class DatabaseBootstrapService(
+    OrchestratorDbContext context,
+    ILogger<DatabaseBootstrapService> logger,
+    IServiceProvider serviceProvider)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly ILogger<DatabaseBootstrapService> _logger;
-    private readonly IServiceProvider _serviceProvider;
-
-    public DatabaseBootstrapService(
-        OrchestratorDbContext context,
-        ILogger<DatabaseBootstrapService> logger,
-        IServiceProvider serviceProvider)
-    {
-        _context = context;
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly OrchestratorDbContext _context = context;
+    private readonly ILogger<DatabaseBootstrapService> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
 
     /// <summary>
     /// Ejecuta el bootstrap completo de la base de datos en orden estricto.
@@ -99,7 +93,7 @@ public class DatabaseBootstrapService
 
             try
             {
-                var schemas = new[] { "identity", "tenants", "catalog", "core" };
+                var schemas = stringArray;
 
                 foreach (var schema in schemas)
                 {

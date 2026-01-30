@@ -14,24 +14,16 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class PosDocumentsController : ControllerBase
+public class PosDocumentsController(
+    OrdeonDbContext context,
+    IDocumentService documentService,
+    ITenantService tenantService,
+    IHttpContextAccessor httpContextAccessor) : ControllerBase
 {
-    private readonly OrdeonDbContext _context;
-    private readonly IDocumentService _documentService;
-    private readonly ITenantService _tenantService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public PosDocumentsController(
-        OrdeonDbContext context, 
-        IDocumentService documentService,
-        ITenantService tenantService,
-        IHttpContextAccessor httpContextAccessor)
-    {
-        _context = context;
-        _documentService = documentService;
-        _tenantService = tenantService;
-        _httpContextAccessor = httpContextAccessor;
-    }
+    private readonly OrdeonDbContext _context = context;
+    private readonly IDocumentService _documentService = documentService;
+    private readonly ITenantService _tenantService = tenantService;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     [HttpPost("withdrawal")]
     [RequireFeature("POS_BASIC")]

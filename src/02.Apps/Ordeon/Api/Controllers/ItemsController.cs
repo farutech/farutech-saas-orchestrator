@@ -13,14 +13,9 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ItemsController : ControllerBase
+public class ItemsController(OrdeonDbContext context) : ControllerBase
 {
-    private readonly OrdeonDbContext _context;
-
-    public ItemsController(OrdeonDbContext context)
-    {
-        _context = context;
-    }
+    private readonly OrdeonDbContext _context = context;
 
     [HttpGet]
     [RequirePermission(Permissions.Inventory.Read)]

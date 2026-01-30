@@ -6,16 +6,10 @@ using Farutech.Apps.Ordeon.Application.Common.Interfaces;
 
 namespace Farutech.Apps.Ordeon.Infrastructure.Services;
 
-public sealed class OrchestratorClient : IOrchestratorClient
+public sealed class OrchestratorClient(HttpClient httpClient, IPermissionProvider permissionProvider) : IOrchestratorClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly IPermissionProvider _permissionProvider;
-
-    public OrchestratorClient(HttpClient httpClient, IPermissionProvider permissionProvider)
-    {
-        _httpClient = httpClient;
-        _permissionProvider = permissionProvider;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly IPermissionProvider _permissionProvider = permissionProvider;
 
     public async Task RegisterCapabilitiesAsync()
     {

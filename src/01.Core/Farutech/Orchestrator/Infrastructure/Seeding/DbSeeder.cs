@@ -91,8 +91,7 @@ public static class DbSeeder
         var permissions = new List<Permission>
         {
             // ========== DASHBOARD PERMISSIONS ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "dashboard:access",
                 Name = "Acceso al Dashboard",
@@ -104,8 +103,7 @@ public static class DbSeeder
             },
 
             // ========== CUSTOMERS MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "customers:list",
                 Name = "Listar Clientes",
@@ -115,8 +113,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "customers:read",
                 Name = "Ver Detalle de Clientes",
@@ -126,8 +123,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "customers:create",
                 Name = "Crear Clientes",
@@ -137,8 +133,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "customers:update",
                 Name = "Actualizar Clientes",
@@ -148,8 +143,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "customers:delete",
                 Name = "Eliminar Clientes",
@@ -161,8 +155,7 @@ public static class DbSeeder
             },
 
             // ========== PRODUCTS MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "products:list",
                 Name = "Listar Productos",
@@ -172,8 +165,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "products:create",
                 Name = "Crear Productos",
@@ -183,8 +175,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "products:update",
                 Name = "Actualizar Productos",
@@ -196,8 +187,7 @@ public static class DbSeeder
             },
 
             // ========== STOCK MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "stock:adjust_in",
                 Name = "Ajuste de Entrada",
@@ -207,8 +197,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "stock:adjust_out",
                 Name = "Ajuste de Salida",
@@ -220,8 +209,7 @@ public static class DbSeeder
             },
 
             // ========== POS MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "pos:open_session",
                 Name = "Abrir Sesión POS",
@@ -231,8 +219,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "pos:process_sale",
                 Name = "Procesar Ventas",
@@ -242,8 +229,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "pos:close_session",
                 Name = "Cerrar Sesión POS",
@@ -253,8 +239,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "master_data.items.read",
                 Name = "Consultar Items",
@@ -264,8 +249,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "master_data.items.update",
                 Name = "Modificar Items",
@@ -275,8 +259,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "master_data.items.delete",
                 Name = "Eliminar Items",
@@ -286,8 +269,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "master_data.warehouses.manage",
                 Name = "Gestionar Bodegas",
@@ -297,8 +279,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "master_data.customers.manage",
                 Name = "Gestionar Clientes",
@@ -310,8 +291,7 @@ public static class DbSeeder
             },
 
             // ========== CASH CONTROL MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "cash_control.register.open",
                 Name = "Abrir Caja",
@@ -321,8 +301,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "cash_control.register.close",
                 Name = "Cerrar Caja",
@@ -332,8 +311,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "cash_control.withdrawal.create",
                 Name = "Crear Retiro/Sangría",
@@ -343,8 +321,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "cash_control.blind_count",
                 Name = "Arqueo Ciego",
@@ -354,8 +331,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "cash_control.reports.view",
                 Name = "Ver Reportes de Caja",
@@ -367,8 +343,7 @@ public static class DbSeeder
             },
 
             // ========== SALES MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "sales.pos.create",
                 Name = "Crear Venta POS",
@@ -378,8 +353,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "sales.pos.cancel",
                 Name = "Cancelar Venta",
@@ -389,8 +363,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "sales.discounts.apply",
                 Name = "Aplicar Descuentos",
@@ -400,8 +373,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "sales.reports.view",
                 Name = "Ver Reportes de Ventas",
@@ -413,8 +385,7 @@ public static class DbSeeder
             },
 
             // ========== SERVICES MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "services.orders.create",
                 Name = "Crear Orden de Servicio",
@@ -424,8 +395,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "services.orders.manage",
                 Name = "Gestionar Órdenes",
@@ -437,8 +407,7 @@ public static class DbSeeder
             },
 
             // ========== INVENTORY MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "inventory.stock.view",
                 Name = "Ver Inventario",
@@ -448,8 +417,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "inventory.adjustments.create",
                 Name = "Crear Ajustes",
@@ -459,8 +427,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "inventory.transfers.create",
                 Name = "Crear Traslados",
@@ -472,8 +439,7 @@ public static class DbSeeder
             },
 
             // ========== REPORTS MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "reports.financial.view",
                 Name = "Ver Reportes Financieros",
@@ -483,8 +449,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = false
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "reports.operational.view",
                 Name = "Ver Reportes Operacionales",
@@ -496,8 +461,7 @@ public static class DbSeeder
             },
 
             // ========== ADMINISTRATION MODULE ==========
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "admin.users.manage",
                 Name = "Gestionar Usuarios",
@@ -507,8 +471,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "admin.roles.manage",
                 Name = "Gestionar Roles",
@@ -518,8 +481,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "admin.settings.manage",
                 Name = "Gestionar Configuración",
@@ -529,8 +491,7 @@ public static class DbSeeder
                 IsActive = true,
                 IsCritical = true
             },
-            new Permission
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Code = "admin.audit.view",
                 Name = "Ver Auditoría",
@@ -634,14 +595,14 @@ public static class DbSeeder
             Scope = "Tenant"
         };
 
-        await context.Roles.AddRangeAsync(new[] 
-        { 
+        await context.Roles.AddRangeAsync(
+        [
             superAdminRole, 
             managerRole, 
             cashierRole, 
             salespersonRole, 
             auditorRole 
-        });
+        ]);
 
         await context.SaveChangesAsync(); // Save to get IDs
 
@@ -833,12 +794,12 @@ public static class DbSeeder
             IsDeleted = false
         };
 
-        await context.Modules.AddRangeAsync(new[]
-        {
+        await context.Modules.AddRangeAsync(
+        [
             salesModule,
             inventoryModule,
             securityModule
-        });
+        ]);
 
         await context.SaveChangesAsync();
 
@@ -847,8 +808,7 @@ public static class DbSeeder
         var features = new List<Feature>
         {
             // SALES MODULE FEATURES
-            new Feature
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 ModuleId = salesModule.Id,
                 Code = "pos_terminal",
@@ -858,8 +818,7 @@ public static class DbSeeder
                 RequiresLicense = false,
                 AdditionalCost = 0
             },
-            new Feature
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 ModuleId = salesModule.Id,
                 Code = "service_orders",
@@ -871,8 +830,7 @@ public static class DbSeeder
             },
 
             // INVENTORY MODULE FEATURES
-            new Feature
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 ModuleId = inventoryModule.Id,
                 Code = "stock_management",
@@ -882,8 +840,7 @@ public static class DbSeeder
                 RequiresLicense = false,
                 AdditionalCost = 0
             },
-            new Feature
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 ModuleId = inventoryModule.Id,
                 Code = "warehouses",
@@ -895,8 +852,7 @@ public static class DbSeeder
             },
 
             // SECURITY MODULE FEATURES
-            new Feature
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 ModuleId = securityModule.Id,
                 Code = "rbac_core",
@@ -976,7 +932,7 @@ public static class DbSeeder
             }"
         };
 
-        await context.SubscriptionPlans.AddRangeAsync(new[] { fullPlan, mostradorPlan });
+        await context.SubscriptionPlans.AddRangeAsync([fullPlan, mostradorPlan]);
         await context.SaveChangesAsync();
         Console.WriteLine("[DbSeeder] ✅ Subscription plans created");
 

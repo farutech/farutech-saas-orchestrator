@@ -11,14 +11,9 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ThirdPartiesController : ControllerBase
+public class ThirdPartiesController(OrdeonDbContext context) : ControllerBase
 {
-    private readonly OrdeonDbContext _context;
-
-    public ThirdPartiesController(OrdeonDbContext context)
-    {
-        _context = context;
-    }
+    private readonly OrdeonDbContext _context = context;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()

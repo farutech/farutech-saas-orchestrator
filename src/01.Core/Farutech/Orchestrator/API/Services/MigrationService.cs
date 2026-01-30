@@ -8,16 +8,10 @@ namespace Farutech.Orchestrator.API.Services;
 /// Servicio de migración automática con auto-healing para esquemas de base de datos.
 /// Garantiza que el esquema esté sincronizado antes de que la aplicación acepte tráfico.
 /// </summary>
-public class MigrationService
+public class MigrationService(OrchestratorDbContext context, ILogger<MigrationService> logger)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly ILogger<MigrationService> _logger;
-
-    public MigrationService(OrchestratorDbContext context, ILogger<MigrationService> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
+    private readonly OrchestratorDbContext _context = context;
+    private readonly ILogger<MigrationService> _logger = logger;
 
     /// <summary>
     /// Ejecuta verificación y reparación automática del esquema de base de datos.

@@ -9,14 +9,9 @@ namespace Farutech.Orchestrator.Infrastructure.Repositories;
 /// <summary>
 /// Repository implementation for UserInvitation entity
 /// </summary>
-public class InvitationRepository : IInvitationRepository
+public class InvitationRepository(OrchestratorDbContext dbContext) : IInvitationRepository
 {
-    private readonly OrchestratorDbContext _dbContext;
-
-    public InvitationRepository(OrchestratorDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly OrchestratorDbContext _dbContext = dbContext;
 
     /// <inheritdoc />
     public async Task AddAsync(UserInvitation invitation, CancellationToken cancellationToken = default)

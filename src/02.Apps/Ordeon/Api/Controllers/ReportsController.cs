@@ -13,14 +13,9 @@ namespace Farutech.Apps.Ordeon.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ReportsController : ControllerBase
+public class ReportsController(OrdeonDbContext context) : ControllerBase
 {
-    private readonly OrdeonDbContext _context;
-
-    public ReportsController(OrdeonDbContext context)
-    {
-        _context = context;
-    }
+    private readonly OrdeonDbContext _context = context;
 
     /// <summary>
     /// Consulta el stock consolidado por artículo y bodega.

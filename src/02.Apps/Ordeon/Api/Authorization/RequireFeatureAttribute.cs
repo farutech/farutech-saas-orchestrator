@@ -9,18 +9,13 @@ public sealed class RequireFeatureAttribute : TypeFilterAttribute
 {
     public RequireFeatureAttribute(string feature) : base(typeof(FeatureFilter))
     {
-        Arguments = new object[] { feature };
+        Arguments = [feature];
     }
 }
 
-public sealed class FeatureFilter : IAuthorizationFilter
+public sealed class FeatureFilter(string feature) : IAuthorizationFilter
 {
-    private readonly string _feature;
-
-    public FeatureFilter(string feature)
-    {
-        _feature = feature;
-    }
+    private readonly string _feature = feature;
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {

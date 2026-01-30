@@ -10,18 +10,13 @@ public sealed class RequirePermissionAttribute : TypeFilterAttribute
 {
     public RequirePermissionAttribute(string permission) : base(typeof(PermissionFilter))
     {
-        Arguments = new object[] { permission };
+        Arguments = [permission];
     }
 }
 
-public sealed class PermissionFilter : IAuthorizationFilter
+public sealed class PermissionFilter(string permission) : IAuthorizationFilter
 {
-    private readonly string _permission;
-
-    public PermissionFilter(string permission)
-    {
-        _permission = permission;
-    }
+    private readonly string _permission = permission;
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
