@@ -40,7 +40,7 @@ if (isDev)
         .AddPostgres("postgres", password: postgresPassword)
         .WithDataVolume("farutech-postgres-data")
         .WithEnvironment("POSTGRES_DB", "farutec_db")
-        .WithPgAdmin()
+        .WithPgAdmin(c => c.WithImage("dpage/pgadmin4:latest"))
         // Default connection for core orchestrator
         .AddDatabase("DefaultConnection", "farutec_db");
 }
@@ -52,7 +52,7 @@ if (isDev)
 {
     nats = builder
         .AddNats("nats")
-        .WithDataVolume()
+        .WithDataVolume("farutech-nats-data")
         .WithEnvironment("NATS_JETSTREAM", "enabled");
 }
 
