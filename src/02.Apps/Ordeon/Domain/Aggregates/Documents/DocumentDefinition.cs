@@ -17,9 +17,9 @@ public enum DocumentModule
 /// </summary>
 public sealed class DocumentDefinition : Entity, IAggregateRoot
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; } // Ej: "FACT", "COT", "BOD"
-    public string Prefix { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty; // Ej: "FACT", "COT", "BOD"
+    public string Prefix { get; private set; } = string.Empty;
     public int NextNumber { get; private set; }
     public DocumentModule Module { get; private set; }
     public bool IsActive { get; private set; }
@@ -29,9 +29,13 @@ public sealed class DocumentDefinition : Entity, IAggregateRoot
 
     private DocumentDefinition(string name, string code, string prefix, DocumentModule module)
     {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
+        if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required");
+        if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters");
+        if (prefix?.Length > 10) throw new ArgumentException("Prefix cannot exceed 10 characters");
         Name = name;
         Code = code.ToUpperInvariant();
-        Prefix = prefix?.ToUpperInvariant() ?? "";
+        Prefix = (prefix ?? string.Empty).ToUpperInvariant();
         NextNumber = 1;
         Module = module;
         IsActive = true;
@@ -39,11 +43,6 @@ public sealed class DocumentDefinition : Entity, IAggregateRoot
 
     public static DocumentDefinition Create(string name, string code, string prefix, DocumentModule module)
     {
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
-        if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required");
-        if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters");
-        if (prefix?.Length > 10) throw new ArgumentException("Prefix cannot exceed 10 characters");
-        
         return new DocumentDefinition(name, code, prefix, module);
     }
 
@@ -57,7 +56,7 @@ public sealed class DocumentDefinition : Entity, IAggregateRoot
 
     public void UpdateConfiguration(string json)
     {
-        ConfigurationJson = json;
+        ConfigurationJson = json ?? "{}";
         MarkAsUpdated();
     }
 }

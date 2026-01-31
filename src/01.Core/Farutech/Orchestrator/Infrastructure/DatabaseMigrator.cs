@@ -19,11 +19,12 @@ public static class DatabaseMigrator
     /// <param name="maxRetries">Maximum number of retry attempts</param>
     /// <returns>Task that completes when migrations are applied</returns>
     /// <exception cref="Exception">Thrown when migrations fail after all retries</exception>
-    public static async Task MigrateAsync(
-        IServiceProvider services,
-        ILogger logger,
-        int maxRetries = 10)
+    public static async Task MigrateAsync(IServiceProvider services,
+                                          ILogger logger,
+                                          int maxRetries = 10)
     {
+        bool dbReady = false;
+        Exception? lastException = null;
         for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
             try
@@ -69,6 +70,7 @@ public static class DatabaseMigrator
                 }
 
                 logger.LogInformation("✅ Database ready");
+                dbReady = true;
                 return;
             }
             catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
@@ -91,16 +93,18 @@ public static class DatabaseMigrator
 
                     logger.LogInformation("Marked {Count} pending migrations as applied due to existing relations.", pending.Count());
                     logger.LogInformation("✅ Database ready (continued after handling 42P07)");
+                    dbReady = true;
                     return;
                 }
                 catch (Exception inner)
                 {
                     logger.LogError(inner, "Failed to mark migrations as applied after 42P07 handling");
-                    throw;
+                    lastException = inner;
                 }
             }
             catch (Exception ex)
             {
+                lastException = ex;
                 logger.LogWarning(
                     ex,
                     "⏳ Database not ready (attempt {Attempt}/{MaxRetries}). Retrying in 5 seconds...",
@@ -115,8 +119,14 @@ public static class DatabaseMigrator
             }
         }
 
-        var errorMessage = $"❌ Database never became available after {maxRetries} attempts";
-        logger.LogError(errorMessage);
-        throw new Exception(errorMessage);
+        if (!dbReady)
+        {
+            var errorMessage = $"❌ Database never became available after {maxRetries} attempts";
+            logger.LogError(errorMessage);
+            if (lastException != null)
+                throw new Exception(errorMessage, lastException);
+            else
+                throw new Exception(errorMessage);
+        }
     }
 }
