@@ -153,25 +153,30 @@ export default function HomePage() {
       const targetInstance = targetOrg?.instances.find(i => i.instanceId === instanceId);
       
       // Default to /app/:instanceId or the instance URL
-      const url = targetInstance?.url || `/app/${instanceId}`;
-      
-      // Check if URL is external (different domain/origin)
-      const isExternalUrl = url.startsWith('http') && 
-                           !url.includes('localhost') &&
-                           !url.includes('127.0.0.1') &&
-                           !url.includes(window.location.hostname);
-      
+      const url = targetInstance?.url || undefined;
+
+      // Build constructed external URL using last segment of instance.code and organization code
+      const orgCode = targetOrg?.organizationCode || undefined;
+      const instanceCodeRaw = targetInstance?.code || undefined;
+      const instanceLastSegment = instanceCodeRaw ? String(instanceCodeRaw).split('-').pop() : undefined;
+      const constructedExternalUrl = (instanceLastSegment && orgCode)
+        ? `https://${instanceLastSegment}.${orgCode}.app.farutech.io`
+        : undefined;
+
+      const finalUrl = constructedExternalUrl || url || `/app/${instanceId}`;
+
       // Store preferred instance
       sessionStorage.setItem('farutech_last_instance', instanceId);
-      
-      if (isExternalUrl) {
-          // External URL (production subdomain): Full redirect
-          await selectContext(tenantId, window.location.pathname);
-          window.location.href = url;
-      } else {
-          // Local URL or relative path: Navigate within this app
-          await selectContext(tenantId, `/app/${instanceId}`);
+
+      // If finalUrl is an external absolute URL (different host), select context then redirect
+      if (finalUrl.startsWith('http') && !finalUrl.includes(window.location.hostname)) {
+        await selectContext(tenantId, window.location.pathname, instanceId);
+        window.location.href = finalUrl;
+        return;
       }
+
+      // Fallback: local navigation to app route
+      await selectContext(tenantId, `/app/${instanceId}`, instanceId);
   };
 
   // Handle Create Instance - Open modal instead of navigating

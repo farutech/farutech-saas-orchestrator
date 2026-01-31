@@ -31,7 +31,7 @@ export interface AppContextType {
 
   // Actions
   loginWithFlow: (credentials: LoginRequest) => Promise<void>; // Orchestrates login + context checks
-  selectContext: (tenantId: string, redirectPath?: string) => Promise<void>;
+  selectContext: (tenantId: string, redirectPath?: string, preferredInstanceId?: string) => Promise<void>;
   selectInstance: (instanceId: string) => Promise<void>;
   refreshAvailableTenants: () => Promise<void>;
   
@@ -190,7 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // ============================================================================
   // Select Context Action
   // ============================================================================
-  const selectContext = async (tenantId: string, redirectPath: string = '/home') => {
+    const selectContext = async (tenantId: string, redirectPath: string = '/home', preferredInstanceId?: string) => {
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken) {
           toast.error('Sesión expirada.');
@@ -204,19 +204,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSelectedTenant(tenant);
       sessionStorage.setItem('farutech_selected_tenant', JSON.stringify(tenant));
 
-      // Multi-instance check
-      if (tenant.instances && tenant.instances.length > 1) {
+        // Multi-instance check
+        if (tenant.instances && tenant.instances.length > 1) {
+          // If caller requested a specific instance, select it directly
+          if (preferredInstanceId) {
+            const preferred = tenant.instances.find(i => i.instanceId === preferredInstanceId);
+            if (preferred) {
+              // Delegate to internal selection flow
+              await selectInstanceInternal(tenantId, preferred, intermediateToken);
+              return;
+            }
+          }
+
           setAvailableInstances(tenant.instances);
           sessionStorage.setItem('farutech_available_instances', JSON.stringify(tenant.instances));
           setRequiresInstanceSelection(true);
           setRequiresContextSelection(false);
           toast.info('Selecciona la aplicación');
-          navigate('/select-instance'); // Warning: We wanted to remove this route? 
-          // Actually, Phase 1 said remove /select-instance logic, but here we might still need it 
-          // OR better: use the new HomePage logic for it.
-          // For now, let's stick to existing flow until strictly replaced.
+          navigate('/select-instance');
           return;
-      }
+        }
 
       // Single instance
       if (tenant.instances && tenant.instances.length === 1) {
