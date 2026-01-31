@@ -31,6 +31,12 @@ public class FarutechDataSeeder
     private static readonly Guid InventoryModuleId = new("10000000-0000-0000-0001-000000000003");
     private static readonly Guid SecurityModuleId = new("10000000-0000-0000-0001-000000000004");
 
+    // Subscription plan GUIDs
+    private static readonly Guid BasicPlanId = new("20000000-0000-0000-0001-000000000001");
+    private static readonly Guid StandardPlanId = new("20000000-0000-0000-0001-000000000002");
+    private static readonly Guid ProfessionalPlanId = new("20000000-0000-0000-0001-000000000003");
+    private static readonly Guid EnterprisePlanId = new("20000000-0000-0000-0001-000000000004");
+
     public FarutechDataSeeder(
         OrchestratorDbContext context,
         UserManager<ApplicationUser> userManager,
@@ -54,6 +60,9 @@ public class FarutechDataSeeder
 
             // Seed catalog data first (products, modules, features)
             await SeedCatalogDataAsync();
+
+            // Seed subscription plans and their feature associations
+            await SeedSubscriptionPlansAsync();
 
             // Solo seed de roles y SuperAdmin
             await SeedRolesAsync();
@@ -175,6 +184,9 @@ public class FarutechDataSeeder
 
         // Seed Features
         await SeedFeaturesAsync();
+
+        // Seed Subscription Plans
+        await SeedSubscriptionPlansAsync();
 
         _logger.LogInformation("✅ Seeding de catálogo completado");
     }
@@ -354,5 +366,183 @@ public class FarutechDataSeeder
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedSubscriptionPlansAsync()
+    {
+        _logger.LogInformation("📋 Iniciando seeding de planes de suscripción...");
+
+        var subscriptionPlans = new[]
+        {
+            new Subscription
+            {
+                Id = BasicPlanId,
+                ProductId = FarutechPosProductId,
+                Code = "farupos_basic",
+                Name = "Plan Básico",
+                Description = "Ideal para pequeños negocios que están comenzando. Incluye funcionalidades esenciales de ventas e inventario básico.",
+                IsFullAccess = false,
+                MonthlyPrice = 29.99m,
+                AnnualPrice = 299.99m, // ~20% descuento
+                IsActive = true,
+                IsRecommended = false,
+                DisplayOrder = 1,
+                LimitsConfig = @"{
+                    ""maxUsers"": 3,
+                    ""maxTransactions"": 500,
+                    ""storageGB"": 5,
+                    ""support"": ""email""
+                }",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Subscription
+            {
+                Id = StandardPlanId,
+                ProductId = FarutechPosProductId,
+                Code = "farupos_standard",
+                Name = "Plan Estándar",
+                Description = "Perfecto para negocios en crecimiento. Incluye todas las funcionalidades básicas con límites ampliados.",
+                IsFullAccess = false,
+                MonthlyPrice = 79.99m,
+                AnnualPrice = 799.99m, // ~17% descuento
+                IsActive = true,
+                IsRecommended = true,
+                DisplayOrder = 2,
+                LimitsConfig = @"{
+                    ""maxUsers"": 10,
+                    ""maxTransactions"": 2500,
+                    ""storageGB"": 25,
+                    ""support"": ""email+chat""
+                }",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Subscription
+            {
+                Id = ProfessionalPlanId,
+                ProductId = FarutechPosProductId,
+                Code = "farupos_professional",
+                Name = "Plan Profesional",
+                Description = "Para negocios establecidos. Incluye funcionalidades avanzadas y gestión de múltiples bodegas.",
+                IsFullAccess = false,
+                MonthlyPrice = 149.99m,
+                AnnualPrice = 1499.99m, // ~17% descuento
+                IsActive = true,
+                IsRecommended = false,
+                DisplayOrder = 3,
+                LimitsConfig = @"{
+                    ""maxUsers"": 25,
+                    ""maxTransactions"": 10000,
+                    ""storageGB"": 100,
+                    ""support"": ""priority"",
+                    ""warehouses"": true
+                }",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Subscription
+            {
+                Id = EnterprisePlanId,
+                ProductId = FarutechPosProductId,
+                Code = "farupos_enterprise",
+                Name = "Plan Enterprise",
+                Description = "Solución completa para grandes empresas. Acceso ilimitado a todas las funcionalidades y soporte premium.",
+                IsFullAccess = true,
+                MonthlyPrice = 299.99m,
+                AnnualPrice = 2999.99m, // ~17% descuento
+                IsActive = true,
+                IsRecommended = false,
+                DisplayOrder = 4,
+                LimitsConfig = @"{
+                    ""maxUsers"": -1,
+                    ""maxTransactions"": -1,
+                    ""storageGB"": -1,
+                    ""support"": ""dedicated"",
+                    ""warehouses"": true,
+                    ""customizations"": true,
+                    ""api"": true
+                }",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            }
+        };
+
+        foreach (var plan in subscriptionPlans)
+        {
+            var existingPlan = await _context.SubscriptionPlans.FirstOrDefaultAsync(s => s.Code == plan.Code);
+            if (existingPlan == null)
+            {
+                _context.SubscriptionPlans.Add(plan);
+                _logger.LogInformation($"✅ Plan de suscripción creado: {plan.Name} (${plan.MonthlyPrice}/mes)");
+            }
+            else
+            {
+                _logger.LogInformation($"⏭️  Plan de suscripción ya existe: {plan.Name}, omitiendo...");
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Associate features with subscription plans
+        await SeedSubscriptionPlanFeaturesAsync();
+
+        _logger.LogInformation("✅ Seeding de planes de suscripción completado");
+    }
+
+    private async Task SeedSubscriptionPlanFeaturesAsync()
+    {
+        _logger.LogInformation("🔗 Asociando features a planes de suscripción...");
+
+        // Get all features
+        var features = await _context.Features.ToListAsync();
+        var posTerminal = features.First(f => f.Code == "pos_terminal");
+        var serviceOrders = features.First(f => f.Code == "service_orders");
+        var stockManagement = features.First(f => f.Code == "stock_management");
+        var warehouses = features.First(f => f.Code == "warehouses");
+        var rbacCore = features.First(f => f.Code == "rbac_core");
+
+        // Define which features are included in each plan
+        var planFeatures = new[]
+        {
+            // Basic Plan - Only essential features
+            new { PlanId = BasicPlanId, FeatureIds = new[] { posTerminal.Id, stockManagement.Id, rbacCore.Id } },
+
+            // Standard Plan - All basic features
+            new { PlanId = StandardPlanId, FeatureIds = new[] { posTerminal.Id, serviceOrders.Id, stockManagement.Id, rbacCore.Id } },
+
+            // Professional Plan - All features except full access
+            new { PlanId = ProfessionalPlanId, FeatureIds = new[] { posTerminal.Id, serviceOrders.Id, stockManagement.Id, warehouses.Id, rbacCore.Id } },
+
+            // Enterprise Plan - All features (full access)
+            new { PlanId = EnterprisePlanId, FeatureIds = new[] { posTerminal.Id, serviceOrders.Id, stockManagement.Id, warehouses.Id, rbacCore.Id } }
+        };
+
+        foreach (var planFeature in planFeatures)
+        {
+            foreach (var featureId in planFeature.FeatureIds)
+            {
+                var existingAssociation = await _context.SubscriptionFeatures
+                    .FirstOrDefaultAsync(spf => spf.SubscriptionId == planFeature.PlanId && spf.FeatureId == featureId);
+
+                if (existingAssociation == null)
+                {
+                    var subscriptionFeature = new SubscriptionFeature
+                    {
+                        SubscriptionId = planFeature.PlanId,
+                        FeatureId = featureId,
+                        IsEnabled = true,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"
+                    };
+
+                    _context.SubscriptionFeatures.Add(subscriptionFeature);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("✅ Asociación de features a planes completada");
     }
 }
