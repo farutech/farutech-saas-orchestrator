@@ -57,12 +57,7 @@ public class CustomerService(ICustomerRepository customerRepository) : ICustomer
     /// <inheritdoc />
     public async Task<Customer> UpdateCustomerAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
-        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-        if (customer == null)
-        {
-            throw new KeyNotFoundException($"Customer with ID {id} not found.");
-        }
-
+        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Customer with ID {id} not found.");
         if (!string.IsNullOrWhiteSpace(request.CompanyName))
         {
             customer.CompanyName = request.CompanyName;
@@ -97,12 +92,7 @@ public class CustomerService(ICustomerRepository customerRepository) : ICustomer
     /// <inheritdoc />
     public async Task DeleteCustomerAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-        if (customer == null)
-        {
-            throw new KeyNotFoundException($"Customer with ID {id} not found.");
-        }
-
+        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Customer with ID {id} not found.");
         await _customerRepository.DeleteAsync(customer, cancellationToken);
     }
 

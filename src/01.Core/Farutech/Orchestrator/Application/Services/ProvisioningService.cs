@@ -20,28 +20,19 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
     public async Task<ProvisionTenantResponse> ProvisionTenantAsync(ProvisionTenantRequest request)
     {
         // ===== VALIDATION PHASE =====
-        
+
         // Validate customer exists and is active
-        var customer = await _repository.GetCustomerByIdAsync(request.CustomerId);
-        if (customer == null)
-            throw new InvalidOperationException($"❌ Customer con ID {request.CustomerId} no existe en la base de datos. Asegúrese de crear primero la organización.");
-        
+        var customer = await _repository.GetCustomerByIdAsync(request.CustomerId) ?? throw new InvalidOperationException($"❌ Customer con ID {request.CustomerId} no existe en la base de datos. Asegúrese de crear primero la organización.");
         if (!customer.IsActive)
             throw new InvalidOperationException($"❌ Customer '{customer.CompanyName}' (ID: {customer.Id}) está inactivo. No se pueden crear instancias para organizaciones inactivas.");
 
         // Validate product exists and is active
-        var product = await _repository.GetProductByIdAsync(request.ProductId);
-        if (product == null)
-            throw new InvalidOperationException($"❌ Product con ID {request.ProductId} no existe en el catálogo. Verifique que el producto esté correctamente cargado en la base de datos.");
-        
+        var product = await _repository.GetProductByIdAsync(request.ProductId) ?? throw new InvalidOperationException($"❌ Product con ID {request.ProductId} no existe en el catálogo. Verifique que el producto esté correctamente cargado en la base de datos.");
         if (!product.IsActive)
             throw new InvalidOperationException($"❌ Product '{product.Name}' (ID: {product.Id}) está inactivo y no puede ser aprovisionado.");
 
         // Validate subscription plan exists and is active
-        var subscriptionPlan = await _repository.GetSubscriptionPlanByIdAsync(request.SubscriptionPlanId);
-        if (subscriptionPlan == null)
-            throw new InvalidOperationException($"❌ SubscriptionPlan con ID {request.SubscriptionPlanId} no existe. Verifique que los planes de suscripción estén correctamente cargados.");
-        
+        var subscriptionPlan = await _repository.GetSubscriptionPlanByIdAsync(request.SubscriptionPlanId) ?? throw new InvalidOperationException($"❌ SubscriptionPlan con ID {request.SubscriptionPlanId} no existe. Verifique que los planes de suscripción estén correctamente cargados.");
         if (!subscriptionPlan.IsActive)
             throw new InvalidOperationException($"❌ Plan de suscripción '{subscriptionPlan.Name}' (ID: {subscriptionPlan.Id}) está inactivo.");
 

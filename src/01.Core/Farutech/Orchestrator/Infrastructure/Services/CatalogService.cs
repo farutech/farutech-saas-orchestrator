@@ -355,12 +355,7 @@ public class CatalogService(OrchestratorDbContext context,
     {
         // Verificar que el producto exista
         var product = await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == request.ProductId && !p.IsDeleted);
-
-        if (product == null)
-        {
-            throw new InvalidOperationException($"El producto con ID {request.ProductId} no existe");
-        }
+            .FirstOrDefaultAsync(p => p.Id == request.ProductId && !p.IsDeleted) ?? throw new InvalidOperationException($"El producto con ID {request.ProductId} no existe");
 
         // Validar que no exista otro módulo con el mismo nombre en el mismo producto
         var existingModule = await _context.Modules
@@ -507,12 +502,7 @@ public class CatalogService(OrchestratorDbContext context,
     {
         // Verificar que el módulo exista
         var module = await _context.Modules
-            .FirstOrDefaultAsync(m => m.Id == request.ModuleId && !m.IsDeleted);
-
-        if (module == null)
-        {
-            throw new InvalidOperationException($"El módulo con ID {request.ModuleId} no existe");
-        }
+            .FirstOrDefaultAsync(m => m.Id == request.ModuleId && !m.IsDeleted) ?? throw new InvalidOperationException($"El módulo con ID {request.ModuleId} no existe");
 
         // Validar que no exista otra feature con el mismo nombre en el mismo módulo
         var existingFeature = await _context.Features

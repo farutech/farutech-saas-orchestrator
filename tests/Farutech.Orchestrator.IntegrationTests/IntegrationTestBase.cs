@@ -196,9 +196,7 @@ public class IntegrationTestBase : IAsyncLifetime
         var loginResponse = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
         loginResponse.EnsureSuccessStatusCode();
 
-        var loginResult = await loginResponse.Content.ReadFromJsonAsync<SecureLoginResponse>();
-        if (loginResult == null)
-            throw new Exception("Login failed");
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<SecureLoginResponse>() ?? throw new Exception("Login failed");
 
         // If user has multiple tenants, select context
         if (loginResult.IntermediateToken != null)

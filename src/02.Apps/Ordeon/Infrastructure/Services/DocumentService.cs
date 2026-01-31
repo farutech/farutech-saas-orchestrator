@@ -16,18 +16,14 @@ public sealed class DocumentService(OrdeonDbContext context) : IDocumentService
     {
         var header = await _context.DocumentHeaders
             .Include(h => h.Lines)
-            .FirstOrDefaultAsync(h => h.Id == documentHeaderId);
-
-        if (header == null) throw new Exception("Document not found");
+            .FirstOrDefaultAsync(h => h.Id == documentHeaderId) ?? throw new Exception("Document not found");
         if (header.Status != DocumentStatus.Draft) throw new Exception("Only draft documents can be activated");
 
         // 1. Activar el documento
         header.Activate();
 
         // 2. Generar transacciones segun el tipo de documento (Simplificado)
-        var definition = await _context.DocumentDefinitions.FindAsync(header.DocumentDefinitionId);
-        if (definition == null) throw new Exception("Document definition not found");
-
+        var definition = await _context.DocumentDefinitions.FindAsync(header.DocumentDefinitionId) ?? throw new Exception("Document definition not found");
         var lines = header.Lines ?? Enumerable.Empty<DocumentLine>();
 
         foreach (var line in lines)

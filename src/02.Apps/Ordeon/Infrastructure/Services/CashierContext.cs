@@ -31,11 +31,7 @@ public sealed class CashierContext(IHttpContextAccessor httpContextAccessor, Ord
             throw new UnauthorizedAccessException("Invalid User ID in token.");
 
         var cashier = await _context.Cashiers
-            .FirstOrDefaultAsync(c => c.UserId == userId);
-
-        if (cashier == null)
-            throw new UnauthorizedAccessException("The authenticated user is not registered as a Cashier.");
-
+            .FirstOrDefaultAsync(c => c.UserId == userId) ?? throw new UnauthorizedAccessException("The authenticated user is not registered as a Cashier.");
         if (!cashier.IsActive)
             throw new UnauthorizedAccessException("Cashier account is inactive.");
 
