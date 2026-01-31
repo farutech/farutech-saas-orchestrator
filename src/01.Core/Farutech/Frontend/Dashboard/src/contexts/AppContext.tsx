@@ -325,9 +325,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (instance.url) {
         const isExternal = instance.url.startsWith('http') && !instance.url.includes(window.location.hostname);
         if (isExternal) window.location.href = instance.url;
-        else navigate('/dashboard'); // Normalized path
+        else navigate(`/app/${instance.instanceId}`); // Navigate to app route with instance id
       } else {
-        navigate('/dashboard');
+        navigate(`/app/${instance.instanceId}`);
       }
   };
 
