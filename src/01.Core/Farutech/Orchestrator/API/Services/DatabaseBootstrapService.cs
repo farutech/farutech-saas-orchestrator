@@ -277,21 +277,31 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         foreach (var (schema, table) in criticalTables)
         {
-            var exists = await _context.Database.SqlQueryRaw<int>($@"
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = {{0}}
-                AND table_name = {{1}}
-            ", schema, table).SingleAsync() > 0;
+            // SQL claro y eficiente usando EXISTS
+            var exists = await _context.Database.SqlQueryRaw<bool>($@"
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = {{0}}
+                      AND table_name = {{1}}
+                )
+            ", schema, table).SingleAsync();
 
             if (!exists)
             {
-                _logger.LogError($"❌ Tabla crítica faltante: {schema}.{table}");
-                throw new InvalidOperationException($"Tabla crítica faltante: {schema}.{table}");
+                _logger.LogCritical(
+                    "❌ Tabla crítica faltante: {Schema}.{Table}. " +
+                    "Esto indica que las migraciones de EF Core no se aplicaron correctamente. " +
+                    "Verifique la configuración de Identity y el schema '{Schema}'.",
+                    schema, table, schema);
+
+                throw new InvalidOperationException(
+                    $"Tabla crítica faltante: {schema}.{table}. " +
+                    "Las migraciones de EF Core fallaron o Identity no está configurado correctamente.");
             }
             else
             {
-                _logger.LogInformation($"✅ Tabla crítica verificada: {schema}.{table}");
+                _logger.LogInformation("✅ Tabla crítica verificada: {Schema}.{Table}", schema, table);
             }
         }
     }

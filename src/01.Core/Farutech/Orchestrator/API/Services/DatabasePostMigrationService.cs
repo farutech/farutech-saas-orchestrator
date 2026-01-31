@@ -26,6 +26,9 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
 
         try
         {
+            // PASO 0: Verificar que las migraciones se aplicaron completamente
+            await VerifyMigrationsAppliedAsync();
+
             // PASO 1: Crear esquemas físicos adicionales (si no existen)
             await CreateAdditionalSchemasAsync();
 
@@ -39,6 +42,32 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
             _logger.LogError(ex, "❌ Error crítico durante la configuración post-migración");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Verificar que no hay migraciones pendientes antes de proceder con validaciones.
+    /// </summary>
+    private async Task VerifyMigrationsAppliedAsync()
+    {
+        _logger.LogInformation("🔍 Verificando que las migraciones EF Core se aplicaron completamente...");
+
+        var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+
+        if (pendingMigrations.Any())
+        {
+            var migrationList = string.Join(", ", pendingMigrations);
+            _logger.LogCritical(
+                "❌ Hay {Count} migraciones pendientes que no se aplicaron: {Migrations}. " +
+                "Esto indica un problema en el proceso de migración. " +
+                "Las validaciones post-migración no pueden continuar.",
+                pendingMigrations.Count(), migrationList);
+
+            throw new InvalidOperationException(
+                $"Hay {pendingMigrations.Count()} migraciones pendientes: {migrationList}. " +
+                "Ejecute las migraciones antes de iniciar la aplicación.");
+        }
+
+        _logger.LogInformation("✅ Todas las migraciones EF Core aplicadas correctamente");
     }
 
     /// <summary>
@@ -184,22 +213,31 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
 
         foreach (var (schema, table) in criticalTables)
         {
-            var count = await _context.Database.SqlQueryRaw<int>($@"
-                SELECT COUNT(*) as ""Value""
-                FROM information_schema.tables
-                WHERE table_schema = {{0}}
-                AND table_name = {{1}}
+            // SQL claro y eficiente usando EXISTS
+            var exists = await _context.Database.SqlQueryRaw<bool>($@"
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = {{0}}
+                      AND table_name = {{1}}
+                )
             ", schema, table).SingleAsync();
-            var exists = count > 0;
 
             if (!exists)
             {
-                _logger.LogError($"❌ Tabla crítica faltante: {schema}.{table}");
-                throw new InvalidOperationException($"Tabla crítica faltante: {schema}.{table}");
+                _logger.LogCritical(
+                    "❌ Tabla crítica faltante: {Schema}.{Table}. " +
+                    "Esto indica que las migraciones de EF Core no se aplicaron correctamente. " +
+                    "Verifique la configuración de Identity y el schema '{Schema}'.",
+                    schema, table, schema);
+
+                throw new InvalidOperationException(
+                    $"Tabla crítica faltante: {schema}.{table}. " +
+                    "Las migraciones de EF Core fallaron o Identity no está configurado correctamente.");
             }
             else
             {
-                _logger.LogInformation($"✅ Tabla crítica verificada: {schema}.{table}");
+                _logger.LogInformation("✅ Tabla crítica verificada: {Schema}.{Table}", schema, table);
             }
         }
     }

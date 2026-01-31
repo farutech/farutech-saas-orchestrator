@@ -15,10 +15,9 @@ public static class DatabaseMigrator
     private const string EfProductVersion = "9.0.1";
     private const int RetryDelaySeconds = 5;
 
-    public static async Task MigrateAsync(
-        IServiceProvider services,
-        ILogger logger,
-        int maxRetries = 10)
+    public static async Task MigrateAsync(IServiceProvider services,
+                                          ILogger logger,
+                                          int maxRetries = 10)
     {
         Exception? lastException = null;
 
@@ -26,10 +25,9 @@ public static class DatabaseMigrator
         {
             try
             {
-                logger.LogInformation(
-                    "🔄 Database initialization attempt {Attempt}/{MaxRetries}",
-                    attempt,
-                    maxRetries);
+                logger.LogInformation("🔄 Database initialization attempt {Attempt}/{MaxRetries}",
+                                      attempt,
+                                      maxRetries);
 
                 using var scope = services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
@@ -42,9 +40,8 @@ public static class DatabaseMigrator
             catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
             {
                 // Relation already exists (schema partially created or manually provisioned)
-                logger.LogWarning(
-                    pgEx,
-                    "⚠️ Detected existing database objects (Postgres 42P07). Attempting to reconcile migrations.");
+                logger.LogWarning(pgEx,
+                                  "⚠️ Detected existing database objects (Postgres 42P07). Attempting to reconcile migrations.");
 
                 if (await TryMarkPendingMigrationsAsAppliedAsync(services, logger))
                 {
@@ -60,53 +57,51 @@ public static class DatabaseMigrator
 
                 if (attempt < maxRetries)
                 {
-                    logger.LogInformation(
-                        "⏳ Database not available yet. Retrying in {Delay}s... ({Attempt}/{MaxRetries})",
-                        RetryDelaySeconds,
-                        attempt,
-                        maxRetries);
+                    logger.LogInformation("⏳ Database not available yet. Retrying in {Delay}s... ({Attempt}/{MaxRetries})",
+                                          RetryDelaySeconds,
+                                          attempt,
+                                          maxRetries);
 
                     await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                 }
             }
         }
 
-        logger.LogCritical(
-            lastException,
-            "❌ Database did not become available after {MaxRetries} attempts",
-            maxRetries);
+        logger.LogCritical(lastException,
+                           "❌ Database did not become available after {MaxRetries} attempts",
+                           maxRetries);
 
-        throw new InvalidOperationException(
-            $"Database initialization failed after {maxRetries} attempts.",
-            lastException);
+        throw new InvalidOperationException($"Database initialization failed after {maxRetries} attempts.",
+                                            lastException);
     }
 
-    private static async Task EnsureDatabaseReadyAsync(
-        OrchestratorDbContext db,
-        ILogger logger)
+    private static async Task EnsureDatabaseReadyAsync(OrchestratorDbContext db,
+                                                       ILogger logger)
     {
-        await db.Database.EnsureCreatedAsync();
+        // NO usar EnsureCreatedAsync() - puede crear tablas con nombres incorrectos
+        // Solo usar MigrateAsync() que respeta las configuraciones de ToTable()
 
         var pendingMigrations = (await db.Database.GetPendingMigrationsAsync()).ToList();
 
-        if (!pendingMigrations.Any())
+        if (pendingMigrations.Count == 0)
         {
             logger.LogInformation("📦 No pending migrations detected");
             return;
         }
 
+        // Verificar si las tablas críticas ya existen (posiblemente creadas por migraciones previas)
         if (await IdentityTablesExistAsync(db))
         {
-            logger.LogWarning(
-                "⚠️ Existing identity tables detected. Marking migrations as applied.");
+            logger.LogWarning("⚠️ Existing identity tables detected. " +
+                              "This may indicate previous migrations or manual table creation. " +
+                              "Marking migrations as applied to avoid conflicts.");
 
             await MarkMigrationsAsAppliedAsync(db, pendingMigrations, logger);
             return;
         }
 
-        logger.LogInformation(
-            "📦 Applying {Count} pending migrations",
-            pendingMigrations.Count);
+        logger.LogInformation("📦 Applying {Count} pending migrations",
+                              pendingMigrations.Count);
 
         await db.Database.MigrateAsync();
 
@@ -126,10 +121,9 @@ public static class DatabaseMigrator
         return result > 0;
     }
 
-    private static async Task MarkMigrationsAsAppliedAsync(
-        OrchestratorDbContext db,
-        IEnumerable<string> migrations,
-        ILogger logger)
+    private static async Task MarkMigrationsAsAppliedAsync(OrchestratorDbContext db,
+                                                           IEnumerable<string> migrations,
+                                                           ILogger logger)
     {
         foreach (var migrationId in migrations)
         {
@@ -146,9 +140,8 @@ public static class DatabaseMigrator
             migrations.Count());
     }
 
-    private static async Task<bool> TryMarkPendingMigrationsAsAppliedAsync(
-        IServiceProvider services,
-        ILogger logger)
+    private static async Task<bool> TryMarkPendingMigrationsAsAppliedAsync(IServiceProvider services,
+                                                                           ILogger logger)
     {
         try
         {
