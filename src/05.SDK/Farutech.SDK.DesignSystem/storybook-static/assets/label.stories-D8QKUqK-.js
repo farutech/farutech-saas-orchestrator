@@ -1,3 +1,0 @@
-import"./react-uv-Ghkqr.js";import{t as e}from"./jsx-runtime-DNZ2e1fB.js";import"./react-dom-CsrWfbrJ.js";import"./dist-Cp-7oqJL.js";import"./cn-D_2D8x3C.js";import"./dist-BP6TTQzW.js";import"./dist-DgzQp32D.js";import{t}from"./label-DCRj14l7.js";var n=e(),r={title:`UI/Label`,component:t,tags:[`autodocs`],parameters:{layout:`centered`}};const i={render:()=>(0,n.jsx)(t,{children:`Label`})};i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{
-  render: () => <Label>Label</Label>
-}`,...i.parameters?.docs?.source}}};const a=[`Default`];export{i as Default,a as __namedExportsOrder,r as default};

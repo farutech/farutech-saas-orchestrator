@@ -1,1 +1,0 @@
-import{o as e}from"./iframe-D4gg6Iw3.js";import{t}from"./react-uv-Ghkqr.js";var n=e(t(),1),r=globalThis?.document?n.useLayoutEffect:()=>{};export{r as t};
