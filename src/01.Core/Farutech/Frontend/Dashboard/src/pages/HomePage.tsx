@@ -427,6 +427,7 @@ export default function HomePage() {
                       onToggleStatus={handleToggleStatus}
                       limitApps={3}
                       onViewAll={handleViewAll}
+                      onSelectOrganization={handleViewAll}
                     />
                   ))}
 

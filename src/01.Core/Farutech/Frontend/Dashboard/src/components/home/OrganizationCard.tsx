@@ -46,6 +46,7 @@ interface OrganizationCardProps {
   onToggleStatus: (tenantId: string, currentStatus: boolean) => void;
   limitApps?: number;
   onViewAll?: (tenantId: string) => void;
+  onSelectOrganization?: (tenantId: string) => void; // Nueva prop para selección de organización
 }
 
 export function OrganizationCard({ 
@@ -57,7 +58,8 @@ export function OrganizationCard({
   onEditOrganization,
   onToggleStatus,
   limitApps = 3,
-  onViewAll
+  onViewAll,
+  onSelectOrganization
 }: OrganizationCardProps) {
   
   const instanceCount = organization.instances.length;
@@ -68,17 +70,26 @@ export function OrganizationCard({
   const hasMore = instanceCount > displayInstances.length;
   const remainingCount = instanceCount - displayInstances.length;
 
+  // Determinar si la card debe ser clickable
+  const isCardClickable = organization.isActive && instanceCount > 1 && onSelectOrganization;
+
   return (
-    <Card className={cn(
-      "group transition-all duration-300 border-slate-200 bg-white relative overflow-hidden w-full min-w-0 flex flex-col",
-      isExpanded && organization.isActive ? "ring-2 ring-primary/20 shadow-lg" : "hover:border-primary/50 hover:shadow-md",
-      !organization.isActive && "opacity-75 grayscale-[0.5]"
-    )}>
-      {!organization.isActive && (
-        <div className="absolute top-0 right-0 p-2 z-10">
-          <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Inactiva</Badge>
-        </div>
-      )}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className={cn(
+            "group transition-all duration-300 border-slate-200 bg-white relative overflow-hidden w-full min-w-0 flex flex-col",
+            isExpanded && organization.isActive ? "ring-2 ring-primary/20 shadow-lg" : "hover:border-primary/50 hover:shadow-md",
+            !organization.isActive && "opacity-75 grayscale-[0.5]",
+            isCardClickable && "cursor-pointer hover:ring-2 hover:ring-primary/20"
+          )}
+          onClick={isCardClickable ? () => onSelectOrganization(organization.organizationId) : undefined}
+          >
+            {!organization.isActive && (
+              <div className="absolute top-0 right-0 p-2 z-10">
+                <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Inactiva</Badge>
+              </div>
+            )}
       
       <CardHeader className="p-5 pb-3">
         <div className="flex justify-between items-start">
@@ -105,7 +116,12 @@ export function OrganizationCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 ml-2 flex-shrink-0">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-slate-400 hover:text-slate-700 ml-2 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -160,10 +176,16 @@ export function OrganizationCard({
           <Button 
             variant={isExpanded ? "secondary" : "outline"}
             className="w-full justify-between group-hover:border-primary/30 group-hover:bg-primary/5 transition-all text-xs h-9"
-            onClick={onToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
           >
             <span className="font-medium text-slate-700 group-hover:text-primary">
-              {isExpanded ? 'Ocultar Aplicaciones' : 'Gestionar Aplicaciones'}
+              {isCardClickable 
+                ? (isExpanded ? 'Ocultar Aplicaciones' : 'Ver Aplicaciones') 
+                : (isExpanded ? 'Ocultar Aplicaciones' : 'Gestionar Aplicaciones')
+              }
             </span>
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
@@ -252,5 +274,11 @@ export function OrganizationCard({
         )}
       </CardFooter>
     </Card>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Haz clic para seleccionar instancia</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
