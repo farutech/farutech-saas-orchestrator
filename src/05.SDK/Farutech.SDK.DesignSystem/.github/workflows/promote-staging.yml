@@ -1,0 +1,48 @@
+# .github/workflows/promote-staging.yml
+name: Promote to Staging
+
+on:
+  pull_request:
+    branches: [staging]
+    types: [closed]
+    if: github.event.pull_request.merged == true
+
+jobs:
+  promote-staging:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://npm.pkg.github.com'
+      
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Update to RC Version
+        run: npm run version:rc
+      
+      - name: Publish to GitHub Packages (Staging Tag)
+        run: npm publish --tag staging
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Release Candidate
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: "Release Candidate ${{ env.VERSION }}"
+          prerelease: true
+          generate_release_notes: true

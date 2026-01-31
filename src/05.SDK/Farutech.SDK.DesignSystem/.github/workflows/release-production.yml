@@ -1,0 +1,62 @@
+# .github/workflows/release-production.yml
+name: Release to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "RELEASE" to confirm production deployment'
+        required: true
+        default: ''
+
+jobs:
+  release-prod:
+    if: github.event.inputs.confirm == 'RELEASE'
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://npm.pkg.github.com'
+      
+      - name: Create Production Branch
+        run: |
+          git checkout -b production-$(date +%Y%m%d-%H%M%S)
+          git merge staging --no-ff -m "Release to production"
+      
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Update to Release Version
+        run: npm run version:release
+      
+      - name: Publish to GitHub Packages (Latest Tag)
+        run: npm publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Merge to Main
+        run: |
+          git checkout main
+          git merge --no-ff production-$(date +%Y%m%d-%H%M%S) -m "Release ${{ env.VERSION }}"
+          git push origin main
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: "Release ${{ env.VERSION }}"
+          generate_release_notes: true

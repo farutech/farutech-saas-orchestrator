@@ -1,0 +1,66 @@
+# .github/workflows/publish-dev.yml
+name: Publish Dev Package
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+    types: [closed]
+    if: github.event.pull_request.merged == true
+
+jobs:
+  publish-dev:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged)
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://npm.pkg.github.com'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Tests
+        run: npm test
+      
+      - name: Lint Code
+        run: npm run lint
+      
+      - name: Build Package
+        run: npm run build
+      
+      - name: Update Alpha Version
+        run: npm run version:alpha
+      
+      - name: Publish to GitHub Packages (Dev Tag)
+        run: npm publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Git Tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "v$VERSION" -m "Dev release $VERSION"
+          git push origin "v$VERSION"
+      
+      - name: Update Dev Branch
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to $VERSION [skip ci]"
+          git push origin dev
