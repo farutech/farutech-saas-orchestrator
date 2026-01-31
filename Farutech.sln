@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farutech.ServiceDefaults", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05.SDK", "05.SDK", "{F0A2E46F-8379-2FCC-8513-F939E1148374}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farutech.Orchestrator.SDK", "src\05.SDK\Farutech.Orchestrator.SDK\Farutech.Orchestrator.SDK.csproj", "{96080C3A-2D85-4DED-80DD-2AAB6B8548C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farutech.SDK.Orchestrator", "src\05.SDK\Farutech.Orchestrator.SDK\Farutech.SDK.Orchestrator.csproj", "{96080C3A-2D85-4DED-80DD-2AAB6B8548C3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Farutech", "Farutech", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -50,6 +50,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{1DC4B29F-BC98-45B4-B1BF-6122468E9CA9}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Farutech.Apps.Frontend.Dashboard", "src\02.Apps\Frontend\Dashboard\Farutech.Apps.Frontend.Dashboard.esproj", "{E0564639-BCFD-EDAA-FF08-80800FA68F22}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Farutech.SDK.DesignSystem", "src\05.SDK\Farutech.SDK.DesignSystem\Farutech.SDK.DesignSystem.esproj", "{C205FF55-4DC0-CD57-DD00-67F97B61F300}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -229,6 +231,24 @@ Global
 		{E0564639-BCFD-EDAA-FF08-80800FA68F22}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0564639-BCFD-EDAA-FF08-80800FA68F22}.Release|x86.Build.0 = Release|Any CPU
 		{E0564639-BCFD-EDAA-FF08-80800FA68F22}.Release|x86.Deploy.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x64.Build.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x86.Build.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x64.ActiveCfg = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x64.Build.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x64.Deploy.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x86.ActiveCfg = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x86.Build.0 = Release|Any CPU
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -257,6 +277,7 @@ Global
 		{D2D8E74A-DDCF-40E1-AADF-856DF37A5C95} = {62C82E0C-2569-3542-BA56-7599B0E4A475}
 		{1DC4B29F-BC98-45B4-B1BF-6122468E9CA9} = {62C82E0C-2569-3542-BA56-7599B0E4A475}
 		{E0564639-BCFD-EDAA-FF08-80800FA68F22} = {D2D8E74A-DDCF-40E1-AADF-856DF37A5C95}
+		{C205FF55-4DC0-CD57-DD00-67F97B61F300} = {F0A2E46F-8379-2FCC-8513-F939E1148374}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8ECB26F9-6C30-4EF5-AB99-9F2E511384C9}
