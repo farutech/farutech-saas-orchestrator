@@ -277,14 +277,14 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         foreach (var (schema, table) in criticalTables)
         {
-            // SQL claro y eficiente usando EXISTS
+            // SQL claro y eficiente usando EXISTS con alias explícito para PostgreSQL
             var exists = await _context.Database.SqlQueryRaw<bool>($@"
                 SELECT EXISTS (
                     SELECT 1
                     FROM information_schema.tables
                     WHERE table_schema = {{0}}
                       AND table_name = {{1}}
-                )
+                ) AS ""Value""
             ", schema, table).SingleAsync();
 
             if (!exists)
