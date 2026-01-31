@@ -1,0 +1,3 @@
+import"./react-uv-Ghkqr.js";import{t as e}from"./jsx-runtime-DNZ2e1fB.js";import"./cn-D_2D8x3C.js";import{t}from"./textarea--OK4noIv.js";var n=e(),r={title:`UI/Textarea`,component:t,tags:[`autodocs`],parameters:{layout:`centered`}};const i={render:()=>(0,n.jsx)(t,{})};i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{
+  render: () => <Textarea />
+}`,...i.parameters?.docs?.source}}};const a=[`Default`];export{i as Default,a as __namedExportsOrder,r as default};

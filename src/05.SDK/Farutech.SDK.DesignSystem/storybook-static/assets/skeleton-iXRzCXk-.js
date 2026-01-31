@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DNZ2e1fB.js";import{t}from"./cn-D_2D8x3C.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`animate-pulse rounded-md bg-muted`,e),...r})}try{r.displayName=`Skeleton`,r.__docgenInfo={description:``,displayName:`Skeleton`,props:{}}}catch{}export{r as t};
