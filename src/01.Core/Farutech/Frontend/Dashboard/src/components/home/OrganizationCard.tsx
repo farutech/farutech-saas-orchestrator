@@ -40,7 +40,7 @@ interface OrganizationCardProps {
   organization: Organization;
   isExpanded: boolean;
   onToggle: () => void;
-  onLaunchInstance: (tenantId: string, instanceId: string, isActive: boolean) => void;
+  onLaunchInstance: (tenantId: string, instanceId: string, isActive: boolean, orgCode?: string, instanceCode?: string) => void;
   onCreateInstance: (tenantId: string) => void;
   onEditOrganization: (tenantId: string) => void;
   onToggleStatus: (tenantId: string, currentStatus: boolean) => void;
@@ -186,7 +186,16 @@ export function OrganizationCard({
               {displayInstances.map(instance => (
                 <div 
                   key={instance.instanceId}
-                  onClick={() => onLaunchInstance(organization.organizationId, instance.instanceId, organization.isActive)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLaunchInstance(
+                      organization.organizationId,
+                      instance.instanceId,
+                      organization.isActive,
+                      organization.organizationCode,
+                      (instance as any).code
+                    );
+                  }}
                   className="flex items-center justify-between p-3 rounded-md border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-primary/30 hover:shadow-sm cursor-pointer transition-all group/item min-w-0 w-full"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">

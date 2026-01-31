@@ -2,7 +2,7 @@
 // LAUNCHER PAGE - Unified Dashboard & Instance Selector
 // ============================================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useInstanceNavigation } from '@/hooks/useInstanceNavigation';
 import { useCustomers, useUpdateCustomer } from '@/hooks/useApi';
 import { useQueryModal } from '@/hooks/useQueryModal';
 
@@ -23,6 +24,7 @@ import { CreateInstanceModal } from '@/components/CreateInstanceModal';
 import { OrganizationCard } from '@/components/home/OrganizationCard';
 import { CreateOrganizationModal } from '@/components/modals/CreateOrganizationModal';
 import { EditOrganizationModal } from '@/components/modals/EditOrganizationModal';
+import { Customer } from '@/types/api';
 
 // Helper Functions
 // ============================================================================
@@ -142,41 +144,65 @@ export default function HomePage() {
   }, [customersData, availableTenants, requiresContextSelection, user]);
 
   // Handle Selection
-  const handleInstanceClick = async (tenantId: string, instanceId: string, isActive: boolean) => {
-      // Prevenir selección de organizaciones inactivas
-      if (!isActive) {
-        return;
-      }
+  const { navigateToInstance, navigateToInstanceSelection } = useInstanceNavigation();
 
-      // Find the target instance to get its URL
-      const targetOrg = organizations.find(o => o.organizationId === tenantId);
-      const targetInstance = targetOrg?.instances.find(i => i.instanceId === instanceId);
-      
-      // Default to /app/:instanceId or the instance URL
-      const url = targetInstance?.url || undefined;
+  const handleInstanceClick = async (
+    tenantId: string,
+    instanceId: string,
+    isActive: boolean,
+    orgCode?: string,
+    instanceCode?: string
+  ) => {
+    console.log('🖱️ Click en instancia:', {
+      tenantId,
+      instanceId,
+      isActive,
+      orgCode,
+      instanceCode
+    });
+    
+    if (!isActive) {
+      console.log('⛔ Instancia inactiva, no hacer nada');
+      return;
+    }
 
-      // Build constructed external URL using last segment of instance.code and organization code
-      const orgCode = targetOrg?.organizationCode || undefined;
-      const instanceCodeRaw = targetInstance?.code || undefined;
-      const instanceLastSegment = instanceCodeRaw ? String(instanceCodeRaw).split('-').pop() : undefined;
-      const constructedExternalUrl = (instanceLastSegment && orgCode)
-        ? `https://${instanceLastSegment}.${orgCode}.app.farutech.io`
-        : undefined;
+    // Buscar datos si no vienen como parámetros
+    const targetOrg = organizations.find(o => o.organizationId === tenantId);
+    const targetInstance = targetOrg?.instances.find(i => i.instanceId === instanceId);
 
-      const finalUrl = constructedExternalUrl || url || `/app/${instanceId}`;
+    const resolvedOrgCode = orgCode || targetOrg?.organizationCode || '';
+    const resolvedInstanceCode = instanceCode || targetInstance?.code || '';
 
-      // Store preferred instance
-      sessionStorage.setItem('farutech_last_instance', instanceId);
+    console.log('🔍 Datos resueltos:', {
+      resolvedOrgCode,
+      resolvedInstanceCode,
+      targetOrg: !!targetOrg,
+      targetInstance: !!targetInstance
+    });
 
-      // If finalUrl is an external absolute URL (different host), select context then redirect
-      if (finalUrl.startsWith('http') && !finalUrl.includes(window.location.hostname)) {
-        await selectContext(tenantId, window.location.pathname, instanceId);
-        window.location.href = finalUrl;
-        return;
-      }
+    if (!resolvedInstanceCode) {
+      console.error('❌ No se pudo obtener código de instancia');
+      toast.error('No se pudo obtener información de la aplicación');
+      return;
+    }
 
-      // Fallback: local navigation to app route
-      await selectContext(tenantId, `/app/${instanceId}`, instanceId);
+    try {
+      console.log('🚀 Llamando a navigateToInstance...');
+      await navigateToInstance(
+        tenantId,
+        instanceId,
+        resolvedOrgCode,
+        resolvedInstanceCode,
+        { 
+          preserveSession: true, 
+          openInNewTab: false,
+          method: 'POST'
+        }
+      );
+    } catch (e) {
+      console.error('❌ Error en navigateToInstance:', e);
+      toast.error('Error al cargar la aplicación');
+    }
   };
 
   // Handle Create Instance - Open modal instead of navigating
@@ -218,7 +244,7 @@ export default function HomePage() {
 
   // Handle Edit Organization
   const handleEditOrganization = (organizationId: string) => {
-    let orgData;
+    let orgData: Customer;
     if (requiresContextSelection) {
       const tenant = availableTenants?.find(t => t.tenantId === organizationId);
       if (tenant) {
@@ -298,11 +324,10 @@ export default function HomePage() {
 
 
   // Handle View All Apps
-  const handleViewAll = (orgId: string) => {
-    // Ensure tenant context and available instances are set, then open selector
-    // This triggers AppContext to set `availableInstances` and `requiresInstanceSelection`.
-    selectContext(orgId, '/select-instance');
-  };
+  const handleViewAll = useCallback((orgId: string) => {
+    console.log('📋 Ver todas las aplicaciones para org:', orgId);
+    navigateToInstanceSelection(orgId);
+  }, [navigateToInstanceSelection]);
 
 
   // Handle Create Organization

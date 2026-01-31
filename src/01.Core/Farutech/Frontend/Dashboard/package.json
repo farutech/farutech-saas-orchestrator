@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "vite",
     "dev:update": "npx update-browserslist-db@latest && vite",
-    "build": "vite build",
+    "dev:debug": "vite --debug",
+    "build": "tsc && vite build",
+    "build:staging": "cross-env NODE_ENV=staging vite build",
+    "build:production": "cross-env NODE_ENV=production vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:navigation": "node scripts/test-navigation.cjs",
     "update-browserslist": "npm update caniuse-lite browserslist"
   },
   "dependencies": {

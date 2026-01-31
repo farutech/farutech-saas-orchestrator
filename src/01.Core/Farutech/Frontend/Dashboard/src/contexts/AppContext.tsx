@@ -191,6 +191,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Select Context Action
   // ============================================================================
     const selectContext = async (tenantId: string, redirectPath: string = '/home', preferredInstanceId?: string) => {
+      console.log('selectContext llamado con:', { tenantId, redirectPath, preferredInstanceId });
+      
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken) {
           toast.error('Sesión expirada.');
@@ -203,6 +205,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setSelectedTenant(tenant);
       sessionStorage.setItem('farutech_selected_tenant', JSON.stringify(tenant));
+
+      // Si el redirectPath es una URL externa (de aplicación tenant), NO navegar internamente
+      const isExternalUrl = redirectPath?.startsWith('http') || 
+                           redirectPath?.includes('.app.');
+      
+      if (isExternalUrl) {
+        console.log('URL externa detectada, no navegar internamente');
+        // Solo actualizar el estado, pero NO llamar a navigate
+        return;
+      }
 
         // Multi-instance check
         if (tenant.instances && tenant.instances.length > 1) {
@@ -262,7 +274,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             } as any)
       });
 
-      navigate(redirectPath);
+      // Solo navegar internamente si es una ruta del dashboard
+      if (redirectPath && !isExternalUrl) {
+        navigate(redirectPath);
+      }
   };
 
   // ============================================================================
