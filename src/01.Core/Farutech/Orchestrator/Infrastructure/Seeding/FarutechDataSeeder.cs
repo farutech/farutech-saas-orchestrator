@@ -473,6 +473,8 @@ public class FarutechDataSeeder(
         {
             UserId = superAdmin.Id,
             RoleId = SuperAdminRoleId,
+            TenantId = Guid.Empty, // Global tenant for SuperAdmin
+            ScopeId = Guid.Empty,  // Global scope
             AssignedBy = "System",
             AssignedAt = DateTime.UtcNow
         };
