@@ -119,7 +119,7 @@ public static class DatabaseMigrator
             SELECT 1
             FROM information_schema.tables
             WHERE table_schema = 'identity'
-              AND table_name = 'AspNetRoles'
+              AND table_name = 'Roles'
             LIMIT 1
         """);
 

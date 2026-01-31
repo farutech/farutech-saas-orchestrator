@@ -176,10 +176,10 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
     {
         var criticalTables = new[]
         {
-            ("identity", "AspNetUsers"),
+            ("identity", "Users"),
             ("tenants", "TenantInstances"),
             ("catalog", "Products"),
-            ("identity", "permissions")
+            ("identity", "Roles")
         };
 
         foreach (var (schema, table) in criticalTables)
