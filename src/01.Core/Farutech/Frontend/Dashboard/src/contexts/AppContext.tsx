@@ -268,17 +268,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // ============================================================================
   // Select Instance Action
   // ============================================================================
-  const selectInstance = async (instanceId: string) => {
+    const selectInstance = async (instanceId: string) => {
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken || !selectedTenant) return;
 
       const instance = availableInstances.find(i => i.instanceId === instanceId);
       if (!instance) throw new Error('Instancia no encontrada');
 
-      await selectInstanceInternal(selectedTenant.tenantId, instance, intermediateToken);
-  };
+      await selectInstanceInternal(selectedTenant.tenantId, instance, intermediateToken, false);
+    };
 
-  const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string) => {
+    const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string, skipNavigation: boolean = false) => {
       const request: SelectContextRequest = { intermediateToken, tenantId }; // Note: API might need instanceId if it supports direct instance selection? 
       // Current API seems to perform SelectContext on Tenant, then we assume instance context implies using that tenant token + knowing the instance ID.
       // Wait, original AuthContext Logic:
@@ -328,13 +328,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
 
       toast.success(`Accediendo a ${instance.name}`);
-      
-      if (instance.url) {
-        const isExternal = instance.url.startsWith('http') && !instance.url.includes(window.location.hostname);
-        if (isExternal) window.location.href = instance.url;
-        else navigate(`/app/${instance.instanceId}`); // Navigate to app route with instance id
-      } else {
-        navigate(`/app/${instance.instanceId}`);
+
+      if (!skipNavigation) {
+        if (instance.url) {
+          const isExternal = instance.url.startsWith('http') && !instance.url.includes(window.location.hostname);
+          if (isExternal) window.location.href = instance.url;
+          else navigate(`/app/${instance.instanceId}`);
+        } else {
+          navigate(`/app/${instance.instanceId}`);
+        }
       }
   };
 

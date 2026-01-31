@@ -299,9 +299,9 @@ export default function HomePage() {
 
   // Handle View All Apps
   const handleViewAll = (orgId: string) => {
-    // Always open the instance selector when user clicks "Ver las ..."
-    // The visible instances (<=3) are selectable directly from the card.
-    navigate('/select-instance');
+    // Ensure tenant context and available instances are set, then open selector
+    // This triggers AppContext to set `availableInstances` and `requiresInstanceSelection`.
+    selectContext(orgId, '/select-instance');
   };
 
 
