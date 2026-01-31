@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Infrastructure.Persistence;
@@ -535,74 +536,38 @@ public static class DbSeeder
         var allPermissions = await context.Permissions.ToListAsync();
 
         // Define roles
-        var superAdminRole = new Role
+        var superAdminRole = new IdentityRole<Guid>("Super Administrador")
         {
-            Id = Guid.NewGuid(),
-            Code = "super_admin",
-            Name = "Super Administrador",
-            Description = "Acceso total al sistema",
-            Level = 1,
-            IsSystemRole = true,
-            IsActive = true,
-            Scope = "Global"
+            NormalizedName = "SUPER ADMINISTRADOR"
         };
 
-        var managerRole = new Role
+        var managerRole = new IdentityRole<Guid>("Gerente")
         {
-            Id = Guid.NewGuid(),
-            Code = "manager",
-            Name = "Gerente",
-            Description = "Gestión de sucursal/tenant completo",
-            Level = 2,
-            IsSystemRole = true,
-            IsActive = true,
-            Scope = "Tenant"
+            NormalizedName = "GERENTE"
         };
 
-        var cashierRole = new Role
+        var cashierRole = new IdentityRole<Guid>("Cajero")
         {
-            Id = Guid.NewGuid(),
-            Code = "cashier",
-            Name = "Cajero",
-            Description = "Operación de caja y ventas",
-            Level = 3,
-            IsSystemRole = true,
-            IsActive = true,
-            Scope = "Warehouse"
+            NormalizedName = "CAJERO"
         };
 
-        var salespersonRole = new Role
+        var salespersonRole = new IdentityRole<Guid>("Vendedor")
         {
-            Id = Guid.NewGuid(),
-            Code = "salesperson",
-            Name = "Vendedor",
-            Description = "Ventas sin acceso a caja",
-            Level = 4,
-            IsSystemRole = true,
-            IsActive = true,
-            Scope = "Warehouse"
+            NormalizedName = "VENDEDOR"
         };
 
-        var auditorRole = new Role
+        var auditorRole = new IdentityRole<Guid>("Auditor")
         {
-            Id = Guid.NewGuid(),
-            Code = "auditor",
-            Name = "Auditor",
-            Description = "Solo lectura y reportes",
-            Level = 5,
-            IsSystemRole = true,
-            IsActive = true,
-            Scope = "Tenant"
+            NormalizedName = "AUDITOR"
         };
 
         await context.Roles.AddRangeAsync(
-        [
             superAdminRole, 
             managerRole, 
             cashierRole, 
             salespersonRole, 
             auditorRole 
-        ]);
+        );
 
         await context.SaveChangesAsync(); // Save to get IDs
 

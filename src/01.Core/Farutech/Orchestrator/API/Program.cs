@@ -324,9 +324,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
-        var seeder = new FarutechDataSeeder(context, userManager, seederLogger);
+        var seeder = new FarutechDataSeeder(context, userManager, roleManager, seederLogger);
         await seeder.SeedAsync();
     }
     catch (Exception ex)

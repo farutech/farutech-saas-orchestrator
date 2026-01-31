@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.AspNetCore.Identity;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 
 namespace Farutech.Orchestrator.Infrastructure.Persistence.Configurations;
@@ -13,9 +14,9 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
         // Composite primary key
         builder.HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
-        // Relationship: Role -> RolePermissions
+        // Relationship: IdentityRole -> RolePermissions
         builder.HasOne(rp => rp.Role)
-            .WithMany(r => r.RolePermissions)
+            .WithMany() // IdentityRole doesn't have navigation to RolePermissions
             .HasForeignKey(rp => rp.RoleId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false); // Make navigation optional to avoid filter conflicts
@@ -29,7 +30,6 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
 
         // Add matching query filters to avoid conflicts with parent entity filters
         builder.HasQueryFilter(rp =>
-            rp.Role != null && !rp.Role.IsDeleted &&
             rp.Permission != null && !rp.Permission.IsDeleted);
 
         builder.Property(rp => rp.GrantedAt)

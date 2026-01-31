@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Infrastructure.Persistence;
@@ -10,10 +12,14 @@ namespace Farutech.Orchestrator.Infrastructure.Services;
 /// Implementación del servicio de permisos RBAC con caché
 /// </summary>
 public class PermissionService(OrchestratorDbContext context,
-                               IMemoryCache cache) : IPermissionService
+                               IMemoryCache cache,
+                               UserManager<ApplicationUser> userManager,
+                               RoleManager<IdentityRole<Guid>> roleManager) : IPermissionService
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IMemoryCache _cache = cache;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager = roleManager;
     private const int CacheExpirationMinutes = 15;
 
     public async Task<bool> HasPermissionAsync(
@@ -30,34 +36,42 @@ public class PermissionService(OrchestratorDbContext context,
             return cachedResult;
         }
 
-        // Query: Get user roles for the tenant/scope
-        var userRolesQuery = _context.UserRoles
-            .Include(ur => ur.Role)
-                .ThenInclude(r => r.RolePermissions)
-                    .ThenInclude(rp => rp.Permission)
-            .Where(ur => ur.UserId == userId && ur.IsActive);
-
-        if (tenantId.HasValue)
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
         {
-            userRolesQuery = userRolesQuery.Where(ur => ur.TenantId == tenantId.Value);
+            _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            return false;
         }
 
-        if (scopeId.HasValue)
+        var roleNames = await _userManager.GetRolesAsync(user);
+        var userClaims = await _userManager.GetClaimsAsync(user);
+
+        foreach (var roleName in roleNames)
         {
-            userRolesQuery = userRolesQuery.Where(ur => ur.ScopeId == scopeId.Value);
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null) continue;
+
+            // Check tenant/scope via user claims for this role
+            var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+            if (tenantId.HasValue && tenantClaim?.Value != tenantId.Value.ToString()) continue;
+
+            var scopeClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:scope");
+            if (scopeId.HasValue && scopeClaim?.Value != scopeId.Value.ToString()) continue;
+
+            // Check if role has the permission
+            var hasPermissionInRole = await _context.RolePermissions
+                .Include(rp => rp.Permission)
+                .AnyAsync(rp => rp.RoleId == role.Id && rp.Permission.Code == permissionCode && rp.Permission.IsActive);
+
+            if (hasPermissionInRole)
+            {
+                _cache.Set(cacheKey, true, TimeSpan.FromMinutes(CacheExpirationMinutes));
+                return true;
+            }
         }
 
-        var userRoles = await userRolesQuery.ToListAsync();
-
-        // Check if any role has the required permission
-        var hasPermission = userRoles
-            .SelectMany(ur => ur.Role.RolePermissions)
-            .Any(rp => rp.Permission.Code == permissionCode && rp.Permission.IsActive);
-
-        // Cache the result
-        _cache.Set(cacheKey, hasPermission, TimeSpan.FromMinutes(CacheExpirationMinutes));
-
-        return hasPermission;
+        _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+        return false;
     }
 
     public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(
@@ -72,31 +86,37 @@ public class PermissionService(OrchestratorDbContext context,
             return cachedPermissions;
         }
 
-        // Query: Get user roles and their permissions
-        var userRolesQuery = _context.UserRoles
-            .Include(ur => ur.Role)
-                .ThenInclude(r => r.RolePermissions)
-                    .ThenInclude(rp => rp.Permission)
-            .Where(ur => ur.UserId == userId && ur.IsActive);
-
-        if (tenantId.HasValue)
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
         {
-            userRolesQuery = userRolesQuery.Where(ur => ur.TenantId == tenantId.Value);
+            return Enumerable.Empty<Permission>();
         }
 
-        if (scopeId.HasValue)
+        var roleNames = await _userManager.GetRolesAsync(user);
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var roleIds = new List<Guid>();
+
+        foreach (var roleName in roleNames)
         {
-            userRolesQuery = userRolesQuery.Where(ur => ur.ScopeId == scopeId.Value);
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null) continue;
+
+            // Check tenant/scope
+            var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+            if (tenantId.HasValue && tenantClaim?.Value != tenantId.Value.ToString()) continue;
+
+            var scopeClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:scope");
+            if (scopeId.HasValue && scopeClaim?.Value != scopeId.Value.ToString()) continue;
+
+            roleIds.Add(role.Id);
         }
 
-        var userRoles = await userRolesQuery.ToListAsync();
-
-        var permissions = userRoles
-            .SelectMany(ur => ur.Role.RolePermissions)
+        var permissions = await _context.RolePermissions
+            .Include(rp => rp.Permission)
+            .Where(rp => roleIds.Contains(rp.RoleId) && rp.Permission.IsActive)
             .Select(rp => rp.Permission)
-            .Where(p => p.IsActive)
             .Distinct()
-            .ToList();
+            .ToListAsync();
 
         _cache.Set(cacheKey, permissions, TimeSpan.FromMinutes(CacheExpirationMinutes));
 
@@ -210,21 +230,28 @@ public class PermissionService(OrchestratorDbContext context,
         return true;
     }
 
-    public async Task<IEnumerable<Role>> GetRolesForPermissionAsync(Guid permissionId)
+    public async Task<IEnumerable<IdentityRole<Guid>>> GetRolesForPermissionAsync(Guid permissionId)
     {
         var cacheKey = $"roles_permission:{permissionId}";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
+        if (_cache.TryGetValue<IEnumerable<IdentityRole<Guid>>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
 
-        var roles = await _context.RolePermissions
-            .Include(rp => rp.Role)
-            .Where(rp => rp.PermissionId == permissionId && rp.Role.IsActive)
-            .Select(rp => rp.Role)
-            .OrderBy(r => r.Name)
+        var roleIds = await _context.RolePermissions
+            .Where(rp => rp.PermissionId == permissionId)
+            .Select(rp => rp.RoleId)
             .ToListAsync();
+
+        var roles = new List<IdentityRole<Guid>>();
+        foreach (var roleId in roleIds)
+        {
+            var role = await _roleManager.FindByIdAsync(roleId.ToString());
+            if (role != null) roles.Add(role);
+        }
+
+        roles = roles.OrderBy(r => r.Name).ToList();
 
         _cache.Set(cacheKey, roles, TimeSpan.FromMinutes(CacheExpirationMinutes));
 
@@ -286,30 +313,38 @@ public class PermissionService(OrchestratorDbContext context,
         return await GetUserPermissionsAsync(userId, tenantId, null);
     }
 
-    public async Task<IEnumerable<Role>> GetUserRolesAsync(
+    public async Task<IEnumerable<IdentityRole<Guid>>> GetUserRolesAsync(
         Guid userId, 
         Guid? tenantId = null)
     {
         var cacheKey = $"user_roles:{userId}:{tenantId}";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
+        if (_cache.TryGetValue<IEnumerable<IdentityRole<Guid>>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
 
-        var userRolesQuery = _context.UserRoles
-            .Include(ur => ur.Role)
-            .Where(ur => ur.UserId == userId && ur.IsActive);
-
-        if (tenantId.HasValue)
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
         {
-            userRolesQuery = userRolesQuery.Where(ur => ur.TenantId == tenantId.Value);
+            return Enumerable.Empty<IdentityRole<Guid>>();
         }
 
-        var roles = await userRolesQuery
-            .Select(ur => ur.Role)
-            .Where(r => r.IsActive)
-            .ToListAsync();
+        var roleNames = await _userManager.GetRolesAsync(user);
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var roles = new List<IdentityRole<Guid>>();
+
+        foreach (var roleName in roleNames)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null) continue;
+
+            // Check tenant
+            var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+            if (tenantId.HasValue && tenantClaim?.Value != tenantId.Value.ToString()) continue;
+
+            roles.Add(role);
+        }
 
         _cache.Set(cacheKey, roles, TimeSpan.FromMinutes(CacheExpirationMinutes));
 
@@ -324,30 +359,56 @@ public class PermissionService(OrchestratorDbContext context,
         string? scopeType = null,
         string? assignedBy = null)
     {
-        // Check if assignment already exists
-        var existing = await _context.UserRoles
-            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId && 
-                                     ur.TenantId == tenantId && ur.ScopeId == scopeId);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
 
-        if (existing != null)
+        var role = await _roleManager.FindByIdAsync(roleId.ToString());
+        if (role == null) return false;
+
+        // Check if already assigned
+        if (await _userManager.IsInRoleAsync(user, role.Name!))
         {
-            return true; // Already assigned
+            // Check if claims match
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+            var scopeClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:scope");
+
+            if ((tenantId.HasValue && tenantClaim?.Value == tenantId.Value.ToString()) ||
+                (!tenantId.HasValue && tenantClaim == null))
+            {
+                if ((scopeId.HasValue && scopeClaim?.Value == scopeId.Value.ToString()) ||
+                    (!scopeId.HasValue && scopeClaim == null))
+                {
+                    return true; // Already assigned with same context
+                }
+            }
         }
 
-        var userRole = new UserRole
-        {
-            UserId = userId,
-            RoleId = roleId,
-            TenantId = tenantId,
-            ScopeId = scopeId,
-            ScopeType = scopeType,
-            AssignedBy = assignedBy ?? "System",
-            AssignedAt = DateTime.UtcNow,
-            IsActive = true
-        };
+        // Add to role
+        var result = await _userManager.AddToRoleAsync(user, role.Name!);
+        if (!result.Succeeded) return false;
 
-        _context.UserRoles.Add(userRole);
-        await _context.SaveChangesAsync();
+        // Add claims for tenant/scope
+        var claimsToAdd = new List<Claim>();
+        if (tenantId.HasValue)
+        {
+            claimsToAdd.Add(new Claim($"role:{role.Id}:tenant", tenantId.Value.ToString()));
+        }
+        if (scopeId.HasValue)
+        {
+            claimsToAdd.Add(new Claim($"role:{role.Id}:scope", scopeId.Value.ToString()));
+        }
+        if (scopeType != null)
+        {
+            claimsToAdd.Add(new Claim($"role:{role.Id}:scopeType", scopeType));
+        }
+        if (assignedBy != null)
+        {
+            claimsToAdd.Add(new Claim($"role:{role.Id}:assignedBy", assignedBy));
+        }
+        claimsToAdd.Add(new Claim($"role:{role.Id}:assignedAt", DateTime.UtcNow.ToString("O")));
+
+        await _userManager.AddClaimsAsync(user, claimsToAdd);
 
         // Invalidate caches
         await InvalidateUserCachesAsync(userId);
@@ -360,19 +421,26 @@ public class PermissionService(OrchestratorDbContext context,
         Guid roleId, 
         Guid? tenantId = null)
     {
-        var userRole = await _context.UserRoles
-            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId && 
-                                     ur.TenantId == tenantId && ur.IsActive);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
 
-        if (userRole == null)
-        {
-            return false; // Not assigned
-        }
+        var role = await _roleManager.FindByIdAsync(roleId.ToString());
+        if (role == null) return false;
 
-        userRole.IsActive = false;
-        // Note: UserRole doesn't have RemovedAt/RemovedBy fields, only IsActive
+        // Check if assigned with matching tenant
+        if (!await _userManager.IsInRoleAsync(user, role.Name!)) return false;
 
-        await _context.SaveChangesAsync();
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+        if (tenantId.HasValue && tenantClaim?.Value != tenantId.Value.ToString()) return false;
+
+        // Remove from role
+        var result = await _userManager.RemoveFromRoleAsync(user, role.Name!);
+        if (!result.Succeeded) return false;
+
+        // Remove related claims
+        var claimsToRemove = userClaims.Where(c => c.Type.StartsWith($"role:{role.Id}:")).ToList();
+        await _userManager.RemoveClaimsAsync(user, claimsToRemove);
 
         // Invalidate caches
         await InvalidateUserCachesAsync(userId);
@@ -405,30 +473,53 @@ public class PermissionService(OrchestratorDbContext context,
             return cachedResult;
         }
 
-        var hasRole = await _context.UserRoles
-            .Include(ur => ur.Role)
-            .AnyAsync(ur => ur.UserId == userId && ur.Role.Code == roleCode && 
-                           ur.IsActive && ur.Role.IsActive &&
-                           (tenantId == null || ur.TenantId == tenantId));
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+        {
+            _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            return false;
+        }
 
-        _cache.Set(cacheKey, hasRole, TimeSpan.FromMinutes(CacheExpirationMinutes));
+        var role = await _roleManager.FindByNameAsync(roleCode);
+        if (role == null)
+        {
+            _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            return false;
+        }
 
-        return hasRole;
+        if (!await _userManager.IsInRoleAsync(user, role.Name!))
+        {
+            _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            return false;
+        }
+
+        // Check tenant
+        if (tenantId.HasValue)
+        {
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var tenantClaim = userClaims.FirstOrDefault(c => c.Type == $"role:{role.Id}:tenant");
+            if (tenantClaim?.Value != tenantId.Value.ToString())
+            {
+                _cache.Set(cacheKey, false, TimeSpan.FromMinutes(CacheExpirationMinutes));
+                return false;
+            }
+        }
+
+        _cache.Set(cacheKey, true, TimeSpan.FromMinutes(CacheExpirationMinutes));
+        return true;
     }
 
-    public async Task<IEnumerable<Role>> GetAllRolesAsync()
+    public async Task<IEnumerable<IdentityRole<Guid>>> GetAllRolesAsync()
     {
         const string cacheKey = "all_roles";
 
-        if (_cache.TryGetValue<IEnumerable<Role>>(cacheKey, out var cachedRoles) && cachedRoles != null)
+        if (_cache.TryGetValue<IEnumerable<IdentityRole<Guid>>>(cacheKey, out var cachedRoles) && cachedRoles != null)
         {
             return cachedRoles;
         }
 
-        var roles = await _context.Roles
-            .Where(r => r.IsActive)
-            .OrderBy(r => r.Level)
-            .ThenBy(r => r.Name)
+        var roles = await _roleManager.Roles
+            .OrderBy(r => r.Name)
             .ToListAsync();
 
         _cache.Set(cacheKey, roles, TimeSpan.FromMinutes(CacheExpirationMinutes));

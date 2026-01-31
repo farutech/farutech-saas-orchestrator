@@ -32,24 +32,22 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     public DbSet<UserInvitation> UserInvitations => Set<UserInvitation>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
-    // RBAC Schema (Security)
-    public new DbSet<Role> Roles => Set<Role>();
+    // RBAC Schema (Security) - Permissions extend Identity without duplicating roles
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
-    public new DbSet<UserRole> UserRoles => Set<UserRole>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Configure Identity schema
-        modelBuilder.Entity<ApplicationUser>().ToTable("AspNetUsers", "identity");
-        modelBuilder.Entity<IdentityRole<Guid>>().ToTable("AspNetRoles", "identity");
-        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("AspNetUserRoles", "identity");
-        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AspNetUserClaims", "identity");
-        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("AspNetUserLogins", "identity");
-        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("AspNetUserTokens", "identity");
-        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("AspNetRoleClaims", "identity");
+        modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
+        modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles", "identity");
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
+        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
+        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
+        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
+        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
 
         // Apply all configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Infrastructure.Persistence;
@@ -13,10 +14,12 @@ namespace Farutech.Orchestrator.Infrastructure.Seeding;
 public class FarutechDataSeeder(
     OrchestratorDbContext context,
     UserManager<ApplicationUser> userManager,
+    RoleManager<IdentityRole<Guid>> roleManager,
     ILogger<FarutechDataSeeder> logger)
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager = roleManager;
     private readonly ILogger<FarutechDataSeeder> _logger = logger;
 
     // Predefined GUIDs for deterministic seeding
@@ -152,7 +155,8 @@ public class FarutechDataSeeder(
 
     private async Task SeedRolesAsync()
     {
-        if (await _context.Roles.AnyAsync())
+        // Check if roles exist using RoleManager
+        if (_context.Roles.Any())
         {
             _logger.LogInformation("⏭️  Roles ya existen, omitiendo...");
             return;
@@ -160,19 +164,40 @@ public class FarutechDataSeeder(
 
         _logger.LogInformation("👥 Seeding Roles...");
 
-        var roles = new List<Role>
+        var rolesData = new[]
         {
-            new() { Id = SuperAdminRoleId, Code = "super_admin", Name = "Super Administrador", Description = "Acceso total al sistema", Level = 1, IsSystemRole = true, IsActive = true, Scope = "Global", CreatedBy = "System" },
-            new() { Id = ManagerRoleId, Code = "manager", Name = "Gerente", Description = "Gestión de sucursal/tenant completo", Level = 2, IsSystemRole = true, IsActive = true, Scope = "Tenant", CreatedBy = "System" },
-            new() { Id = CashierRoleId, Code = "cashier", Name = "Cajero", Description = "Operación de caja y ventas", Level = 3, IsSystemRole = true, IsActive = true, Scope = "Warehouse", CreatedBy = "System" },
-            new() { Id = SalespersonRoleId, Code = "salesperson", Name = "Vendedor", Description = "Ventas sin acceso a caja", Level = 4, IsSystemRole = true, IsActive = true, Scope = "Warehouse", CreatedBy = "System" },
-            new() { Id = AuditorRoleId, Code = "auditor", Name = "Auditor", Description = "Solo lectura y reportes", Level = 5, IsSystemRole = true, IsActive = true, Scope = "Tenant", CreatedBy = "System" }
+            (Id: SuperAdminRoleId, Name: "Super Administrador", Description: "Acceso total al sistema", Level: 1, Scope: "Global"),
+            (Id: ManagerRoleId, Name: "Gerente", Description: "Gestión de sucursal/tenant completo", Level: 2, Scope: "Tenant"),
+            (Id: CashierRoleId, Name: "Cajero", Description: "Operación de caja y ventas", Level: 3, Scope: "Warehouse"),
+            (Id: SalespersonRoleId, Name: "Vendedor", Description: "Ventas sin acceso a caja", Level: 4, Scope: "Warehouse"),
+            (Id: AuditorRoleId, Name: "Auditor", Description: "Solo lectura y reportes", Level: 5, Scope: "Tenant")
         };
 
-        await _context.Roles.AddRangeAsync(roles);
-        await _context.SaveChangesAsync();
+        foreach (var (id, name, description, level, scope) in rolesData)
+        {
+            var role = new IdentityRole<Guid>
+            {
+                Id = id,
+                Name = name,
+                NormalizedName = name.ToUpperInvariant()
+            };
 
-        _logger.LogInformation($"✅ {roles.Count} Roles creados");
+            var result = await _roleManager.CreateAsync(role);
+            if (result.Succeeded)
+            {
+                // Add custom claims for additional properties
+                await _roleManager.AddClaimAsync(role, new Claim("Level", level.ToString()));
+                await _roleManager.AddClaimAsync(role, new Claim("Scope", scope));
+                await _roleManager.AddClaimAsync(role, new Claim("IsSystemRole", "true"));
+                await _roleManager.AddClaimAsync(role, new Claim("Description", description));
+            }
+            else
+            {
+                _logger.LogError("Error creando rol {RoleName}: {Errors}", name, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+
+        _logger.LogInformation($"✅ {rolesData.Length} Roles creados");
     }
 
     private async Task SeedRolePermissionsAsync()
@@ -468,19 +493,17 @@ public class FarutechDataSeeder(
             throw new Exception($"Error creando usuario SuperAdmin: {errors}");
         }
 
-        // Assign SuperAdmin role
-        var userRole = new UserRole
+        // Assign SuperAdmin role using Identity
+        var addRoleResult = await _userManager.AddToRoleAsync(superAdmin, "Super Administrador");
+        if (!addRoleResult.Succeeded)
         {
-            UserId = superAdmin.Id,
-            RoleId = SuperAdminRoleId,
-            TenantId = Guid.Empty, // Global tenant for SuperAdmin
-            ScopeId = Guid.Empty,  // Global scope
-            AssignedBy = "System",
-            AssignedAt = DateTime.UtcNow
-        };
+            var errors = string.Join(", ", addRoleResult.Errors.Select(e => e.Description));
+            throw new Exception($"Error asignando rol SuperAdmin: {errors}");
+        }
 
-        await _context.UserRoles.AddAsync(userRole);
-        await _context.SaveChangesAsync();
+        // Add custom claims for tenant and scope
+        await _userManager.AddClaimAsync(superAdmin, new Claim("TenantId", Guid.Empty.ToString()));
+        await _userManager.AddClaimAsync(superAdmin, new Claim("ScopeId", Guid.Empty.ToString()));
 
         _logger.LogInformation($"✅ Usuario SuperAdmin creado: {superAdminEmail}");
     }
