@@ -16,18 +16,14 @@ public class CatalogRepository(OrchestratorDbContext context) : ICatalogReposito
     #region Products
 
     public async Task<IEnumerable<Product>> GetAllProductsAsync()
-    {
-        return await _context.Products
+        => await _context.Products
             .Where(p => !p.IsDeleted)
             .OrderBy(p => p.Name)
             .ToListAsync();
-    }
 
     public async Task<Product?> GetProductByIdAsync(Guid id)
-    {
-        return await _context.Products
+        => await _context.Products
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
-    }
 
     public async Task<Product> CreateProductAsync(Product product)
     {
@@ -61,19 +57,15 @@ public class CatalogRepository(OrchestratorDbContext context) : ICatalogReposito
     #region Modules
 
     public async Task<IEnumerable<Module>> GetModulesByProductIdAsync(Guid productId)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Where(m => m.ProductId == productId && !m.IsDeleted)
             .OrderBy(m => m.Name)
             .ToListAsync();
-    }
 
     public async Task<Module?> GetModuleByIdAsync(Guid id)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Include(m => m.Product)
             .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
-    }
 
     public async Task<Module> CreateModuleAsync(Module module)
     {
@@ -107,19 +99,15 @@ public class CatalogRepository(OrchestratorDbContext context) : ICatalogReposito
     #region Features
 
     public async Task<IEnumerable<Feature>> GetFeaturesByModuleIdAsync(Guid moduleId)
-    {
-        return await _context.Features
+        => await _context.Features
             .Where(f => f.ModuleId == moduleId && !f.IsDeleted)
             .OrderBy(f => f.Name)
             .ToListAsync();
-    }
 
     public async Task<Feature?> GetFeatureByIdAsync(Guid id)
-    {
-        return await _context.Features
+        => await _context.Features
             .Include(f => f.Module)
             .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
-    }
 
     public async Task<Feature> CreateFeatureAsync(Feature feature)
     {
@@ -152,14 +140,27 @@ public class CatalogRepository(OrchestratorDbContext context) : ICatalogReposito
 
     #region Permissions
 
-    public async Task<IEnumerable<Permission>> GetAllPermissionsAsync()
-    {
-        return await _context.Permissions
-            .Where(p => p.IsActive)
-            .OrderBy(p => p.Module)
-            .ThenBy(p => p.Name)
+    public async Task<IEnumerable<Permission>> GetAllPermissionsAsync() =>
+        // Custom permissions removed, return empty
+        await Task.FromResult(new List<Permission>());
+
+    #endregion
+
+    #region Subscription Plans
+
+    public async Task<IEnumerable<Subscription>> GetSubscriptionPlansByProductIdAsync(Guid productId)
+        => await _context.SubscriptionPlans
+            .Where(sp => sp.ProductId == productId && sp.IsActive)
+            .Include(sp => sp.SubscriptionFeatures)
+            .ThenInclude(sf => sf.Feature)
+            .OrderBy(sp => sp.DisplayOrder)
             .ToListAsync();
-    }
+
+    public async Task<Subscription?> GetSubscriptionPlanByIdAsync(Guid id)
+        => await _context.SubscriptionPlans
+            .Include(sp => sp.SubscriptionFeatures)
+            .ThenInclude(sf => sf.Feature)
+            .FirstOrDefaultAsync(sp => sp.Id == id && sp.IsActive);
 
     #endregion
 }

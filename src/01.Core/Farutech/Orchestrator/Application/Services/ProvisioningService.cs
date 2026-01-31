@@ -5,43 +5,36 @@ using Farutech.Orchestrator.Application.DTOs.Provisioning;
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Microsoft.Extensions.Configuration;
+using Farutech.Orchestrator.Application.Extensions;
 
 namespace Farutech.Orchestrator.Application.Services;
 
 /// <summary>
 /// Service for managing tenant provisioning lifecycle
 /// </summary>
-public class ProvisioningService(IRepository repository, IMessageBus messageBus, IConfiguration configuration) : IProvisioningService
+public partial class ProvisioningService(IRepository repository, IMessageBus messageBus, IConfiguration configuration, IDatabaseProvisioner databaseProvisioner) : IProvisioningService
 {
     private readonly IRepository _repository = repository;
     private readonly IMessageBus _messageBus = messageBus;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IDatabaseProvisioner _databaseProvisioner = databaseProvisioner;
 
     public async Task<ProvisionTenantResponse> ProvisionTenantAsync(ProvisionTenantRequest request)
     {
         // ===== VALIDATION PHASE =====
-        
+
         // Validate customer exists and is active
-        var customer = await _repository.GetCustomerByIdAsync(request.CustomerId);
-        if (customer == null)
-            throw new InvalidOperationException($"❌ Customer con ID {request.CustomerId} no existe en la base de datos. Asegúrese de crear primero la organización.");
-        
+        var customer = await _repository.GetCustomerByIdAsync(request.CustomerId) ?? throw new InvalidOperationException($"❌ Customer con ID {request.CustomerId} no existe en la base de datos. Asegúrese de crear primero la organización.");
         if (!customer.IsActive)
             throw new InvalidOperationException($"❌ Customer '{customer.CompanyName}' (ID: {customer.Id}) está inactivo. No se pueden crear instancias para organizaciones inactivas.");
 
         // Validate product exists and is active
-        var product = await _repository.GetProductByIdAsync(request.ProductId);
-        if (product == null)
-            throw new InvalidOperationException($"❌ Product con ID {request.ProductId} no existe en el catálogo. Verifique que el producto esté correctamente cargado en la base de datos.");
-        
+        var product = await _repository.GetProductByIdAsync(request.ProductId) ?? throw new InvalidOperationException($"❌ Product con ID {request.ProductId} no existe en el catálogo. Verifique que el producto esté correctamente cargado en la base de datos.");
         if (!product.IsActive)
             throw new InvalidOperationException($"❌ Product '{product.Name}' (ID: {product.Id}) está inactivo y no puede ser aprovisionado.");
 
         // Validate subscription plan exists and is active
-        var subscriptionPlan = await _repository.GetSubscriptionPlanByIdAsync(request.SubscriptionPlanId);
-        if (subscriptionPlan == null)
-            throw new InvalidOperationException($"❌ SubscriptionPlan con ID {request.SubscriptionPlanId} no existe. Verifique que los planes de suscripción estén correctamente cargados.");
-        
+        var subscriptionPlan = await _repository.GetSubscriptionPlanByIdAsync(request.SubscriptionPlanId) ?? throw new InvalidOperationException($"❌ SubscriptionPlan con ID {request.SubscriptionPlanId} no existe. Verifique que los planes de suscripción estén correctamente cargados.");
         if (!subscriptionPlan.IsActive)
             throw new InvalidOperationException($"❌ Plan de suscripción '{subscriptionPlan.Name}' (ID: {subscriptionPlan.Id}) está inactivo.");
 
@@ -56,7 +49,7 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
             var code = request.Code.Trim();
             
             // Check format: only alphanumeric, dash, and underscore
-            if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^[A-Za-z0-9\-_]+$"))
+            if (!MyRegex().IsMatch(code))
             {
                 throw new InvalidOperationException("❌ El código solo puede contener letras, números, guiones y guión bajo (sin espacios ni caracteres especiales)");
             }
@@ -70,10 +63,8 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
         }
 
         // Validate name
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new InvalidOperationException("❌ El nombre de la instancia es requerido.");
-        }
+        _ = request.Name?.Trim() 
+            ?? throw new InvalidOperationException("❌ El nombre de la instancia es requerido.");
 
         // ===== PROVISIONING PHASE =====
         
@@ -105,6 +96,47 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
         await _repository.AddTenantInstanceAsync(tenantInstance);
         await _repository.SaveChangesAsync();
 
+        // === DATABASE LIFECYCLE: Ensure DB exists and create schema for tenant ===
+        // Decide target database name depending on deployment type
+        var isDedicated = string.Equals(request.DeploymentType, "Dedicated", StringComparison.OrdinalIgnoreCase);
+
+        var commonDbName = _configuration["Database:CommonName"] ?? "farutech_db_customers";
+        var dedicatedPrefix = _configuration["Database:DedicatedPrefix"] ?? "farutech_db_customer_";
+
+        var targetDatabase = isDedicated
+            ? ($"{dedicatedPrefix}{customer.Code?.ToLowerInvariant()}")
+            : commonDbName;
+
+        // Schema name requested by product owner: use TenantCode from TenantInstances
+        var schemaName = tenantInstance.TenantCode;
+
+        try
+        {
+            var baseConn = _configuration.GetConnectionString("DefaultConnection")
+                           ?? throw new InvalidOperationException("DefaultConnection is not configured");
+
+            // Use infrastructure implementation to prepare DB/schema and obtain tenant-scoped connection string
+            var tenantConn = await _databaseProvisioner.PrepareDatabaseAndGetConnectionStringAsync(baseConn, targetDatabase, schemaName);
+
+            tenantInstance.ConnectionString = tenantConn;
+            tenantInstance.Status = "provisioning"; // reaffirm status
+            tenantInstance.UpdatedAt = DateTime.UtcNow;
+
+            await _repository.UpdateTenantInstanceAsync(tenantInstance);
+            await _repository.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // If DB lifecycle fails, mark tenant as failed and rethrow
+            tenantInstance.Status = "provisioning_failed";
+            tenantInstance.UpdatedAt = DateTime.UtcNow;
+            tenantInstance.UpdatedBy = "system";
+            await _repository.UpdateTenantInstanceAsync(tenantInstance);
+            await _repository.SaveChangesAsync();
+
+            throw new InvalidOperationException($"Error provisioning database/schema: {ex.Message}", ex);
+        }
+
         // Get modules included in the subscription plan (through features)
         var moduleIds = subscriptionPlan.SubscriptionFeatures
             .Where(sf => sf.IsEnabled && !sf.Feature.IsDeleted)
@@ -112,16 +144,13 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
             .Distinct()
             .ToList();
 
-        if (!moduleIds.Any())
-        {
-            throw new InvalidOperationException($"⚠️  El plan de suscripción '{subscriptionPlan.Name}' no tiene módulos/features habilitados. Verifique la configuración del plan.");
-        }
+        moduleIds.ThrowIfEmpty($"⚠️  El plan de suscripción '{subscriptionPlan.Name}' no tiene módulos/features habilitados. Verifique la configuración del plan.");
 
         // Publish provisioning tasks to NATS for each module
         foreach (var moduleId in moduleIds)
         {
             var taskId = Guid.NewGuid().ToString();
-            var task = new ProvisioningTaskMessage
+                var task = new ProvisioningTaskMessage
             {
                 TaskId = taskId,
                 TenantId = tenantInstance.Id.ToString(),
@@ -134,7 +163,10 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
                     ["deployment_type"] = request.DeploymentType, // Shared or Dedicated
                     ["subscription_plan_id"] = request.SubscriptionPlanId.ToString(),
                     ["subscription_plan_name"] = subscriptionPlan.Name,
-                    ["custom_features"] = request.CustomFeatures ?? new Dictionary<string, object>()
+                        ["custom_features"] = request.CustomFeatures ?? [],
+                        // Inform the worker which physical DB and schema were prepared (no credentials)
+                        ["database"] = targetDatabase,
+                        ["schema"] = schemaName
                 },
                 Attempt = 1,
                 MaxRetries = 5,
@@ -257,4 +289,9 @@ public class ProvisioningService(IRepository repository, IMessageBus messageBus,
             return $"https://{tenantCode}.{productionDomain}";
         }
     }
+
+    // Database lifecycle operations are delegated to IDatabaseProvisioner implemented in Infrastructure
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"^[A-Za-z0-9\-_]+$")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
 }

@@ -15,10 +15,9 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CustomersController(
-    OrchestratorDbContext context,
-    IAuthService authService,
-    ILogger<CustomersController> logger) : ControllerBase
+public class CustomersController(OrchestratorDbContext context,
+                                 IAuthService authService,
+                                 ILogger<CustomersController> logger) : ControllerBase
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IAuthService _authService = authService;
@@ -505,8 +504,8 @@ public record OrganizationDto
     public string? Code { get; init; }
     public required bool IsActive { get; init; }
     public required DateTime CreatedAt { get; init; }
-    public List<TenantInstanceDto> TenantInstances { get; init; } = new();
-    public List<UserMembershipDto> UserMemberships { get; init; } = new();
+    public List<TenantInstanceDto> TenantInstances { get; init; } = [];
+    public List<UserMembershipDto> UserMemberships { get; init; } = [];
 }
 
 public record TenantInstanceDto

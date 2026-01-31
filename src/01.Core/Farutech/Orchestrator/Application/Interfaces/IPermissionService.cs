@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 
 namespace Farutech.Orchestrator.Application.Interfaces;
@@ -31,7 +32,7 @@ public interface IPermissionService
     /// <summary>
     /// Obtiene todos los roles de un usuario en un tenant
     /// </summary>
-    Task<IEnumerable<Role>> GetUserRolesAsync(
+    Task<IEnumerable<ApplicationRole>> GetUserRolesAsync(
         Guid userId, 
         Guid? tenantId = null);
 
@@ -88,5 +89,5 @@ public interface IPermissionService
     /// <summary>
     /// Obtiene todos los roles disponibles en el sistema
     /// </summary>
-    Task<IEnumerable<Role>> GetAllRolesAsync();
+    Task<IEnumerable<ApplicationRole>> GetAllRolesAsync();
 }

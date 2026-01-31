@@ -135,4 +135,9 @@ public interface ICatalogRepository
     #region Permissions
     Task<IEnumerable<Permission>> GetAllPermissionsAsync();
     #endregion
+
+    #region Subscription Plans
+    Task<IEnumerable<Subscription>> GetSubscriptionPlansByProductIdAsync(Guid productId);
+    Task<Subscription?> GetSubscriptionPlanByIdAsync(Guid id);
+    #endregion
 }

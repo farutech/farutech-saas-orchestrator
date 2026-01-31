@@ -12,12 +12,14 @@ public class InstanceRepository(OrchestratorDbContext context) : IInstanceReposi
 {
     private readonly OrchestratorDbContext _context = context;
 
-    public async Task<IEnumerable<TenantInstance>> GetAllByCustomerAsync(Guid customerId) => await _context.TenantInstances
+    public async Task<IEnumerable<TenantInstance>> GetAllByCustomerAsync(Guid customerId)
+        => await _context.TenantInstances
             .Where(t => t.CustomerId == customerId && !t.IsDeleted)
             .Include(t => t.Customer)
             .ToListAsync();
 
-    public async Task<TenantInstance?> GetByIdAsync(Guid instanceId) => await _context.TenantInstances
+    public async Task<TenantInstance?> GetByIdAsync(Guid instanceId)
+        => await _context.TenantInstances
             .Include(t => t.Customer)
             .FirstOrDefaultAsync(t => t.Id == instanceId && !t.IsDeleted);
 

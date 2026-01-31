@@ -18,7 +18,7 @@ public class ProductDto
     /// <summary>
     /// Módulos asociados a este producto.
     /// </summary>
-    public List<ModuleDto> Modules { get; set; } = new();
+    public List<ModuleDto> Modules { get; set; } = [];
 }
 
 /// <summary>

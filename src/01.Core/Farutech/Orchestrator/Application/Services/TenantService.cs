@@ -7,26 +7,16 @@ namespace Farutech.Orchestrator.Application.Services;
 /// <summary>
 /// Service implementation for Tenant business operations
 /// </summary>
-public class TenantService : ITenantService
+public class TenantService(ITenantRepository tenantRepository, ICustomerRepository customerRepository) : ITenantService
 {
-    private readonly ITenantRepository _tenantRepository;
-    private readonly ICustomerRepository _customerRepository;
-
-    public TenantService(ITenantRepository tenantRepository, ICustomerRepository customerRepository)
-    {
-        _tenantRepository = tenantRepository;
-        _customerRepository = customerRepository;
-    }
+    private readonly ITenantRepository _tenantRepository = tenantRepository;
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <inheritdoc />
     public async Task<TenantInstance> CreateTenantAsync(CreateTenantRequest request, CancellationToken cancellationToken = default)
     {
         // Validate customer exists
-        var customer = await _customerRepository.GetByIdAsync(request.CustomerId, cancellationToken);
-        if (customer == null)
-        {
-            throw new KeyNotFoundException($"Customer with ID {request.CustomerId} not found.");
-        }
+        var customer = await _customerRepository.GetByIdAsync(request.CustomerId, cancellationToken) ?? throw new KeyNotFoundException($"Customer with ID {request.CustomerId} not found.");
 
         // Validate code uniqueness (only if code is provided)
         if (request.Code != null && !await IsCodeAvailableAsync(request.Code, cancellationToken: cancellationToken))
@@ -53,31 +43,21 @@ public class TenantService : ITenantService
 
     /// <inheritdoc />
     public async Task<TenantInstance?> GetTenantByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByIdAsync(id, cancellationToken);
-    }
+        => await _tenantRepository.GetByIdAsync(id, cancellationToken);
 
     /// <inheritdoc />
     public async Task<TenantInstance?> GetTenantByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByCodeAsync(code, cancellationToken);
-    }
+        => await _tenantRepository.GetByCodeAsync(code, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<TenantInstance>> GetTenantsByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByCustomerIdAsync(customerId, cancellationToken);
-    }
+        => await _tenantRepository.GetByCustomerIdAsync(customerId, cancellationToken);
 
     /// <inheritdoc />
     public async Task<TenantInstance> UpdateTenantAsync(Guid id, UpdateTenantRequest request, CancellationToken cancellationToken = default)
     {
-        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken);
-        if (tenant == null)
-        {
-            throw new KeyNotFoundException($"Tenant with ID {id} not found.");
-        }
-
+        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Tenant with ID {id} not found.");
+        
         if (!string.IsNullOrWhiteSpace(request.Name))
         {
             tenant.Name = request.Name;
@@ -122,24 +102,14 @@ public class TenantService : ITenantService
     /// <inheritdoc />
     public async Task DeleteTenantAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken);
-        if (tenant == null)
-        {
-            throw new KeyNotFoundException($"Tenant with ID {id} not found.");
-        }
-
+        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Tenant with ID {id} not found.");
         await _tenantRepository.DeleteAsync(tenant, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<TenantInstance> ChangeTenantStatusAsync(Guid id, string status, CancellationToken cancellationToken = default)
     {
-        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken);
-        if (tenant == null)
-        {
-            throw new KeyNotFoundException($"Tenant with ID {id} not found.");
-        }
-
+        var tenant = await _tenantRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Tenant with ID {id} not found.");
         tenant.Status = status;
         tenant.UpdatedAt = DateTime.UtcNow;
 

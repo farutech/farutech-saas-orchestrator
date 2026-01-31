@@ -25,16 +25,16 @@ public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerato
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
-            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.GivenName, user.FirstName),
+            new(JwtRegisteredClaimNames.FamilyName, user.LastName),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             
             // Claims específicos de multitenencia
-            new Claim("tenant_id", customerId.ToString()),
-            new Claim("company_name", companyName),
-            new Claim(ClaimTypes.Role, role)
+            new("tenant_id", customerId.ToString()),
+            new("company_name", companyName),
+            new(ClaimTypes.Role, role)
         };
 
         var token = new JwtSecurityToken(

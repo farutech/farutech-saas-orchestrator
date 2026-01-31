@@ -16,7 +16,8 @@ public class AuthMutations
     public async Task<SecureLoginResponse?> Login(
         [Service] IAuthService authService,
         string email,
-        string password) => await authService.LoginAsync(email, password);
+        string password)
+        => await authService.LoginAsync(email, password);
 
     /// <summary>
     /// Seleccionar contexto empresarial: intercambia token intermedio por token de acceso completo.
@@ -24,7 +25,8 @@ public class AuthMutations
     public async Task<SelectContextResponse?> SelectContext(
         [Service] IAuthService authService,
         string intermediateToken,
-        Guid tenantId) => await authService.SelectContextAsync(intermediateToken, tenantId);
+        Guid tenantId)
+        => await authService.SelectContextAsync(intermediateToken, tenantId);
 
     /// <summary>
     /// Registrar nuevo usuario (con opción de crear organización por defecto).
@@ -50,7 +52,8 @@ public class AuthMutations
         Guid userId,
         Guid customerId,
         string role,
-        Guid grantedBy) => await authService.AssignUserToCompanyAsync(userId, customerId, role, grantedBy);
+        Guid grantedBy)
+        => await authService.AssignUserToCompanyAsync(userId, customerId, role, grantedBy);
 
     // ===== LEGACY MUTATIONS (Mantener por compatibilidad, marcar como obsoleto) =====
 
@@ -63,12 +66,11 @@ public class AuthMutations
     public async Task<LoginResponse?> LoginLegacy(
         [Service] IAuthService authService,
         string email,
-        string password)
-    {
+        string password) =>
 #pragma warning disable CS0618 // Type or member is obsolete
-        return await authService.AuthenticateAsync(email, password);
+        await authService.AuthenticateAsync(email, password);
 #pragma warning restore CS0618 // Type or member is obsolete
-    }
+
 
     /// <summary>
     /// [LEGACY] Seleccionar empresa: genera token JWT para empresa específica.
@@ -79,10 +81,9 @@ public class AuthMutations
     public async Task<TokenResponse?> SelectContextLegacy(
         [Service] IAuthService authService,
         Guid userId,
-        Guid customerId)
-    {
+        Guid customerId) =>
 #pragma warning disable CS0618 // Type or member is obsolete
-        return await authService.GenerateTokenAsync(userId, customerId);
+        await authService.GenerateTokenAsync(userId, customerId);
 #pragma warning restore CS0618 // Type or member is obsolete
-    }
+
 }

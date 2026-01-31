@@ -2,14 +2,11 @@ import "@testing-library/jest-dom";
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: (query: string) => ({
-    matches: false,
+  value: (query: string) => : false,
     media: query,
     onchange: null,
     addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
+    removeListener) => tListener: () => {},
+    removeEventListen) => hEvent: () => {},
+  }),) => 
+) => ) => 

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { AppProvider } from "@/contexts/AppContext";
+import { SessionBridgeProvider } from "@/contexts/SessionBridgeContext";
 import { FarutechProvider } from "@/contexts/FarutechContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AuthenticatedRoute } from "@/components/auth/AuthenticatedRoute";
@@ -24,6 +25,8 @@ import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
 import SelectInstance from "./pages/SelectInstance";
 import OrganizationAppsPage from "./pages/OrganizationAppsPage";
+import { NavigationDebugPanel } from '@/components/debug/NavigationDebugPanel';
+import SessionReceiver from '@/components/SessionReceiver';
 
 // ...
 
@@ -59,9 +62,10 @@ const App = () => (
 
       <SessionProvider>
         <AppProvider>
-          <AuthProvider>
-            <FarutechProvider>
-              <TooltipProvider>
+          <SessionBridgeProvider>
+            <AuthProvider>
+              <FarutechProvider>
+                <TooltipProvider>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
@@ -72,12 +76,12 @@ const App = () => (
 
                   {/* Instance Selection (semi-protected) */}
                   <Route path="/select-instance" element={<SelectInstance />} />
+                  <Route path="/session-receive" element={<SessionReceiver />} />
 
                   {/* Protected Routes */}
                   <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/organizations" element={<OrganizationsManagementPage />} />
-                    <Route path="/organizations/:orgId/apps" element={<OrganizationAppsPage />} />
                   </Route>
                   {/* AppHome route removed */}
                   <Route
@@ -144,9 +148,11 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster />
-              </TooltipProvider>
-            </FarutechProvider>
-          </AuthProvider>
+                {import.meta.env.DEV && <NavigationDebugPanel />}
+                </TooltipProvider>
+              </FarutechProvider>
+            </AuthProvider>
+          </SessionBridgeProvider>
         </AppProvider>
       </SessionProvider>
     </BrowserRouter>

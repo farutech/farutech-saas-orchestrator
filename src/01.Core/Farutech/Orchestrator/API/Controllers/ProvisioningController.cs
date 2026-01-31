@@ -6,9 +6,8 @@ namespace Farutech.Orchestrator.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProvisioningController(
-    IProvisioningService provisioningService,
-    ILogger<ProvisioningController> logger) : ControllerBase
+public class ProvisioningController(IProvisioningService provisioningService,
+                                    ILogger<ProvisioningController> logger) : ControllerBase
 {
     private readonly IProvisioningService _provisioningService = provisioningService;
     private readonly ILogger<ProvisioningController> _logger = logger;

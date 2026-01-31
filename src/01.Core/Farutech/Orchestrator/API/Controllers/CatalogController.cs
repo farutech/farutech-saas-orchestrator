@@ -12,9 +12,8 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Requiere autenticación
-public class CatalogController(
-    ICatalogService catalogService,
-    ILogger<CatalogController> logger) : ControllerBase
+public class CatalogController(ICatalogService catalogService,
+                               ILogger<CatalogController> logger) : ControllerBase
 {
     private readonly ICatalogService _catalogService = catalogService;
     private readonly ILogger<CatalogController> _logger = logger;
@@ -169,6 +168,7 @@ public class CatalogController(
     /// Obtiene el manifiesto completo de un producto incluyendo módulos, features y permisos.
     /// </summary>
     [HttpGet("products/{productId:guid}/manifest")]
+    [AllowAnonymous] // Permitimos acceso anónimo en desarrollo para obtener el manifiesto público
     [ProducesResponseType(typeof(ProductManifestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductManifestDto>> GetProductManifest(Guid productId)

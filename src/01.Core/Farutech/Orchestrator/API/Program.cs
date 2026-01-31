@@ -35,7 +35,7 @@ if (string.IsNullOrEmpty(connectionString))
     // Fallback para desarrollo local cuando no hay Aspire
     if (builder.Environment.IsDevelopment())
     {
-        connectionString = "Host=localhost;Port=5432;Database=farutec_db;Username=postgres;Password=SuperSecurePassword123";
+        connectionString = "Host=localhost;Port=5432;Database=farutec_db;Username=farutec_admin;Password=SuperSecurePassword123";
         Console.WriteLine("⚠️  Usando cadena de conexión de desarrollo local");
         Console.WriteLine($"   Connection: {connectionString.Replace("SuperSecurePassword123", "***")}");
     }
@@ -49,6 +49,9 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 var postgresPassword = builder.Configuration["postgres-password"] ?? string.Empty;
+// ========== HEALTH CHECKS ==========
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connectionString, name: "postgresql");
 var safeConnectionString = postgresPassword.Length > 0
     ? connectionString.Replace(postgresPassword, "***")
     : connectionString;
@@ -66,7 +69,7 @@ builder.Services.AddDbContext<OrchestratorDbContext>(options =>
 // }
 
 // ========== IDENTITY ==========
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
@@ -179,6 +182,9 @@ builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICatalogService, Farutech.Orchestrator.Infrastructure.Services.CatalogService>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 
+// Database provisioner: creates DB/schema and returns tenant-scoped connection string
+builder.Services.AddScoped<IDatabaseProvisioner, DatabaseProvisioner>();
+
 // ========== DATABASE CONNECTION FACTORY (Hybrid Tenancy) ==========
 builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 
@@ -221,6 +227,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Use fully-qualified type names for schema IDs to avoid collisions
+    options.CustomSchemaIds(type =>
+    {
+        // Use FullName when available, fallback to Name. Replace '+' for nested types.
+        var id = type.FullName ?? type.Name;
+        return id.Replace('+', '.');
+    });
+
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Farutech SaaS Orchestrator API",
@@ -284,9 +298,9 @@ if (app.Environment.IsDevelopment())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ ERROR CRÍTICO: Fallaron las migraciones EF Core: {ex.Message}");
-        Console.WriteLine("La aplicación no puede iniciar sin migraciones aplicadas.");
-        throw; // FAIL-FAST: Detener aplicación si migraciones fallan
+        Console.WriteLine($"⚠️ Advertencia: Fallaron las migraciones EF Core en Development: {ex.Message}");
+        Console.WriteLine("Continuando sin aplicar migraciones (parche temporal de desarrollo).");
+        // En Development no hacemos FAIL-FAST para facilitar depuración local (temporal)
     }
 }
 else
@@ -310,8 +324,16 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"❌ Error crítico durante el bootstrap post-migración: {ex.Message}");
-    Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
-    throw; // FAIL-FAST: Detener aplicación si bootstrap falla
+    if (app.Environment.IsDevelopment())
+    {
+        Console.WriteLine("Continuando sin bootstrap post-migración en Development (parche temporal).");
+        // No re-lanzamos la excepción en Development para permitir arranque y diagnóstico
+    }
+    else
+    {
+        Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
+        throw; // FAIL-FAST en entornos no-development
+    }
 }
 
 // ========== IDEMPOTENT DATA SEEDING ==========
@@ -321,9 +343,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
-        var seeder = new FarutechDataSeeder(context, userManager, seederLogger);
+        var seeder = new FarutechDataSeeder(context, userManager, roleManager, seederLogger);
         await seeder.SeedAsync();
     }
     catch (Exception ex)
@@ -384,6 +407,9 @@ if (app.Environment.IsDevelopment())
 }
 
 Console.WriteLine("Application configured successfully, starting...");
+
+// ========== HEALTH CHECK ENDPOINT ==========
+app.MapHealthChecks("/health/live");
 
 // ========== INICIO DE LA APLICACIÓN ==========
 try

@@ -196,9 +196,7 @@ public class IntegrationTestBase : IAsyncLifetime
         var loginResponse = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
         loginResponse.EnsureSuccessStatusCode();
 
-        var loginResult = await loginResponse.Content.ReadFromJsonAsync<SecureLoginResponse>();
-        if (loginResult == null)
-            throw new Exception("Login failed");
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<SecureLoginResponse>() ?? throw new Exception("Login failed");
 
         // If user has multiple tenants, select context
         if (loginResult.IntermediateToken != null)
@@ -220,7 +218,5 @@ public class IntegrationTestBase : IAsyncLifetime
     /// Set authorization header with access token
     /// </summary>
     protected void SetAuthorizationHeader(string token)
-    {
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-    }
+        => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 }

@@ -11,11 +11,8 @@ namespace Farutech.Orchestrator.Infrastructure.Services;
 /// <summary>
 /// Implementación del servicio de invitaciones de usuarios a empresas.
 /// </summary>
-public class InvitationService(
-    OrchestratorDbContext context,
-    UserManager<ApplicationUser> userManager,
-    IAuthRepository authRepository,
-    ILogger<InvitationService> logger) : IInvitationService
+public class InvitationService(OrchestratorDbContext context, UserManager<ApplicationUser> userManager,
+                               IAuthRepository authRepository, ILogger<InvitationService> logger) : IInvitationService
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -194,15 +191,13 @@ public class InvitationService(
     }
 
     public async Task<List<UserInvitation>> GetPendingInvitationsAsync(string email)
-    {
-        return await _context.UserInvitations
-            .Where(i => 
-                i.Email == email && 
+        => await _context.UserInvitations
+            .Where(i =>
+                i.Email == email &&
                 i.Status == InvitationStatus.Pending &&
                 i.ExpirationDate > DateTime.UtcNow)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
-    }
 
     public async Task<bool> CancelInvitationAsync(Guid invitationId, Guid cancelledBy)
     {

@@ -1,5 +1,6 @@
 @host = http://localhost:5098
 @email = webmaster@farutech.com
+# Use an env var or change the value below; avoid embedding greetings in passwords
 @password = Holamundo1*
 @admin_token = ...
 # Variables que se llenarán automáticamente

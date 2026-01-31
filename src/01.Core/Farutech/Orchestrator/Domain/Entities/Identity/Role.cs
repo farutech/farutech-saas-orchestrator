@@ -48,10 +48,10 @@ public class Role : BaseEntity
     /// <summary>
     /// Permisos asignados a este rol (Many-to-Many)
     /// </summary>
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RolePermission> RolePermissions { get; set; } = [];
 
     /// <summary>
     /// Usuarios que tienen este rol (Many-to-Many)
     /// </summary>
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<UserRole> UserRoles { get; set; } = [];
 }

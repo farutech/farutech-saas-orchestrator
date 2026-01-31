@@ -2,47 +2,15 @@
 // DATA ORCHESTRATOR - Universal Data Management Component with Render Props
 // ============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState, useEffect, useCallback } from "react";
+import { Search, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ============================================================================
 // Types
 // ============================================================================
-
-export interface DataOrchestratorProps<T> {
-  /** Función para obtener los datos (debe manejar paginación y filtrado) */
-  fetchData: (params: FetchParams) => Promise<PagedResponse<T>>;
-  
-  /** Render prop: cómo renderizar cada item */
-  renderItem: (item: T, index: number) => React.ReactNode;
-  
-  /** Render prop opcional: skeleton loader personalizado */
-  renderSkeleton?: () => React.ReactNode;
-  
-  /** Número de skeletons a mostrar durante la carga */
-  skeletonCount?: number;
-  
-  /** Tamaño de página por defecto */
-  defaultPageSize?: number;
-  
-  /** Placeholder para el buscador */
-  searchPlaceholder?: string;
-  
-  /** Debounce delay en ms para el buscador */
-  searchDebounce?: number;
-  
-  /** Mensaje cuando no hay resultados */
-  emptyMessage?: string;
-  
-  /** Clase CSS para el contenedor de items */
-  containerClassName?: string;
-  
-  /** Forzar recarga de datos */
-  refreshTrigger?: number;
-}
 
 export interface FetchParams {
   pageNumber: number;
@@ -51,11 +19,24 @@ export interface FetchParams {
 }
 
 export interface PagedResponse<T> {
-  organizations: T[];
+  items: T[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;
   totalPages: number;
+}
+
+export interface DataOrchestratorProps<T> {
+  fetchData: (params: FetchParams) => Promise<PagedResponse<T>>;
+  renderItem: (item: T, index: number) => React.ReactNode;
+  renderSkeleton?: () => React.ReactNode;
+  skeletonCount?: number;
+  defaultPageSize?: number;
+  searchPlaceholder?: string;
+  searchDebounce?: number;
+  emptyMessage?: string;
+  containerClassName?: string;
+  refreshTrigger?: number;
 }
 
 // ============================================================================
@@ -76,69 +57,55 @@ export function DataOrchestrator<T>({
 }: DataOrchestratorProps<T>) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce del search
+  // Debounce searchTerm
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm.trim());
-      setPageNumber(1); // Reset a página 1 cuando cambia el filtro
+      setPageNumber(1);
     }, searchDebounce);
 
     return () => clearTimeout(timer);
   }, [searchTerm, searchDebounce]);
 
-  // Fetch de datos
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
-    try {
-      const response = await fetchData({
-        pageNumber,
-        pageSize: defaultPageSize,
-        filter: debouncedSearch || undefined,
-      });
 
-      setData(response.organizations);
-      setTotalPages(response.totalPages);
-      setTotalCount(response.totalCount);
+    try {
+      const res = await fetchData({ pageNumber, pageSize: defaultPageSize, filter: debouncedSearch || undefined });
+      setData(res.items);
+      setTotalPages(res.totalPages);
+      setTotalCount(res.totalCount);
     } catch (err) {
-      console.error('[DataOrchestrator] Error fetching data:', err);
-      setError(err instanceof Error ? err.message : 'Error al cargar datos');
+      console.error("[DataOrchestrator] Error fetching data:", err);
+      setError(err instanceof Error ? err.message : "Error al cargar datos");
       setData([]);
     } finally {
       setLoading(false);
     }
   }, [fetchData, pageNumber, defaultPageSize, debouncedSearch]);
 
-  // Effect para cargar datos cuando cambian los parámetros
   useEffect(() => {
     loadData();
   }, [loadData, refreshTrigger]);
 
-  // Handlers de paginación
   const handlePrevPage = () => {
-    if (pageNumber > 1) {
-      setPageNumber(pageNumber - 1);
-    }
+    setPageNumber((p) => Math.max(1, p - 1));
   };
 
   const handleNextPage = () => {
-    if (pageNumber < totalPages) {
-      setPageNumber(pageNumber + 1);
-    }
+    setPageNumber((p) => Math.min(totalPages, p + 1));
   };
 
-  // Default skeleton
   const defaultSkeleton = () => (
     <div className="space-y-3 p-6 bg-white rounded-xl border border-slate-200">
-      <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-1/2" />
       <Skeleton className="h-20 w-full" />
     </div>
@@ -146,31 +113,24 @@ export function DataOrchestrator<T>({
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm((e.target as HTMLInputElement).value)}
             className="pl-10 bg-white border-slate-200 focus-visible:ring-[#8B5CF6]"
           />
         </div>
-        
+
         {debouncedSearch && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearchTerm('')}
-            className="text-slate-500"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setSearchTerm("")} className="text-slate-500">
             Limpiar
           </Button>
         )}
       </div>
 
-      {/* Results Count */}
       {!loading && (
         <div className="text-sm text-slate-500">
           {totalCount > 0 ? (
@@ -184,18 +144,13 @@ export function DataOrchestrator<T>({
         </div>
       )}
 
-      {/* Content */}
       {loading ? (
-        // Loading State
         <div className={containerClassName}>
           {Array.from({ length: skeletonCount }).map((_, i) => (
-            <div key={i}>
-              {renderSkeleton ? renderSkeleton() : defaultSkeleton()}
-            </div>
+            <div key={i}>{renderSkeleton ? renderSkeleton() : defaultSkeleton()}</div>
           ))}
         </div>
       ) : error ? (
-        // Error State
         <div className="text-center py-20">
           <div className="bg-red-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
             <Loader2 className="h-10 w-10 text-red-500" />
@@ -207,20 +162,18 @@ export function DataOrchestrator<T>({
           </Button>
         </div>
       ) : data.length === 0 ? (
-        // Empty State
         <div className="text-center py-20">
           <div className="bg-slate-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
             <Search className="h-10 w-10 text-slate-400" />
           </div>
           <h3 className="text-lg font-medium text-slate-900">{emptyMessage}</h3>
           {debouncedSearch && (
-            <Button variant="link" onClick={() => setSearchTerm('')} className="text-[#8B5CF6] mt-2">
+            <Button variant="link" onClick={() => setSearchTerm("")} className="text-[#8B5CF6] mt-2">
               Limpiar filtros
             </Button>
           )}
         </div>
       ) : (
-        // Data Grid
         <div className={containerClassName}>
           {data.map((item, index) => (
             <div key={index}>{renderItem(item, index)}</div>
@@ -228,18 +181,10 @@ export function DataOrchestrator<T>({
         </div>
       )}
 
-      {/* Pagination */}
-      {!loading && data.length > 0 && totalPages > 1 && (
+      {data.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 pt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrevPage}
-            disabled={pageNumber === 1}
-            className="gap-1"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Anterior
+          <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={pageNumber === 1} className="gap-1">
+            <ChevronLeft className="h-4 w-4" /> Anterior
           </Button>
 
           <div className="flex items-center gap-2 text-sm">
@@ -249,15 +194,8 @@ export function DataOrchestrator<T>({
             <span className="font-semibold text-slate-900">{totalPages}</span>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={pageNumber === totalPages}
-            className="gap-1"
-          >
-            Siguiente
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={handleNextPage} disabled={pageNumber === totalPages} className="gap-1">
+            Siguiente <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       )}

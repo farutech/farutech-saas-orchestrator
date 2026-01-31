@@ -14,10 +14,9 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class FeaturesController(
-    OrchestratorDbContext context,
-    IPermissionService permissionService,
-    ILogger<FeaturesController> logger) : ControllerBase
+public class FeaturesController(OrchestratorDbContext context,
+                                IPermissionService permissionService,
+                                ILogger<FeaturesController> logger) : ControllerBase
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IPermissionService _permissionService = permissionService;

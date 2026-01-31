@@ -31,7 +31,7 @@ export interface AppContextType {
 
   // Actions
   loginWithFlow: (credentials: LoginRequest) => Promise<void>; // Orchestrates login + context checks
-  selectContext: (tenantId: string, redirectPath?: string) => Promise<void>;
+  selectContext: (tenantId: string, redirectPath?: string, preferredInstanceId?: string) => Promise<void>;
   selectInstance: (instanceId: string) => Promise<void>;
   refreshAvailableTenants: () => Promise<void>;
   
@@ -80,7 +80,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [currentModule, setCurrentModule] = useState(() => {
-     return localStorage.getItem('farutech_current_module') || 'pos';
+    return localStorage.getItem('farutech_current_module') || 'pos';
   });
 
   const { refetch: refetchTenants } = useAvailableTenants({ enabled: false });
@@ -190,7 +190,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // ============================================================================
   // Select Context Action
   // ============================================================================
-  const selectContext = async (tenantId: string, redirectPath: string = '/home') => {
+    const selectContext = async (tenantId: string, redirectPath: string = '/home', preferredInstanceId?: string) => {
+      console.log('selectContext llamado con:', { tenantId, redirectPath, preferredInstanceId });
+      
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken) {
           toast.error('Sesión expirada.');
@@ -204,19 +206,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSelectedTenant(tenant);
       sessionStorage.setItem('farutech_selected_tenant', JSON.stringify(tenant));
 
-      // Multi-instance check
-      if (tenant.instances && tenant.instances.length > 1) {
+      // Si el redirectPath es una URL externa (de aplicación tenant), NO navegar internamente
+      const isExternalUrl = redirectPath?.startsWith('http') || 
+                           redirectPath?.includes('.app.');
+      
+      if (isExternalUrl) {
+        console.log('URL externa detectada, no navegar internamente');
+        // Solo actualizar el estado, pero NO llamar a navigate
+        return;
+      }
+
+        // Multi-instance check
+        if (tenant.instances && tenant.instances.length > 1) {
+          // If caller requested a specific instance, select it directly
+          if (preferredInstanceId) {
+            const preferred = tenant.instances.find(i => i.instanceId === preferredInstanceId);
+            if (preferred) {
+              // Delegate to internal selection flow
+              await selectInstanceInternal(tenantId, preferred, intermediateToken);
+              return;
+            }
+          }
+
           setAvailableInstances(tenant.instances);
           sessionStorage.setItem('farutech_available_instances', JSON.stringify(tenant.instances));
           setRequiresInstanceSelection(true);
           setRequiresContextSelection(false);
           toast.info('Selecciona la aplicación');
-          navigate('/select-instance'); // Warning: We wanted to remove this route? 
-          // Actually, Phase 1 said remove /select-instance logic, but here we might still need it 
-          // OR better: use the new HomePage logic for it.
-          // For now, let's stick to existing flow until strictly replaced.
+          navigate('/select-instance');
           return;
-      }
+        }
 
       // Single instance
       if (tenant.instances && tenant.instances.length === 1) {
@@ -255,23 +274,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             } as any)
       });
 
-      navigate(redirectPath);
+      // Solo navegar internamente si es una ruta del dashboard
+      if (redirectPath && !isExternalUrl) {
+        navigate(redirectPath);
+      }
   };
 
   // ============================================================================
   // Select Instance Action
   // ============================================================================
-  const selectInstance = async (instanceId: string) => {
+    const selectInstance = async (instanceId: string) => {
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken || !selectedTenant) return;
 
       const instance = availableInstances.find(i => i.instanceId === instanceId);
       if (!instance) throw new Error('Instancia no encontrada');
 
-      await selectInstanceInternal(selectedTenant.tenantId, instance, intermediateToken);
-  };
+      await selectInstanceInternal(selectedTenant.tenantId, instance, intermediateToken, false);
+    };
 
-  const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string) => {
+    const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string, skipNavigation: boolean = false) => {
       const request: SelectContextRequest = { intermediateToken, tenantId }; // Note: API might need instanceId if it supports direct instance selection? 
       // Current API seems to perform SelectContext on Tenant, then we assume instance context implies using that tenant token + knowing the instance ID.
       // Wait, original AuthContext Logic:
@@ -321,13 +343,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
 
       toast.success(`Accediendo a ${instance.name}`);
-      
-      if (instance.url) {
-        const isExternal = instance.url.startsWith('http') && !instance.url.includes(window.location.hostname);
-        if (isExternal) window.location.href = instance.url;
-        else navigate('/dashboard'); // Normalized path
-      } else {
-        navigate('/dashboard');
+
+      if (!skipNavigation) {
+        if (instance.url) {
+          const isExternal = instance.url.startsWith('http') && !instance.url.includes(window.location.hostname);
+          if (isExternal) window.location.href = instance.url;
+          else navigate(`/app/${instance.instanceId}`);
+        } else {
+          navigate(`/app/${instance.instanceId}`);
+        }
       }
   };
 
@@ -335,15 +359,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Utilities
   // ============================================================================
   const refreshAvailableTenants = async () => {
-       const result = await refetchTenants();
-       if (result.data) {
-           setAvailableTenants(result.data);
-           sessionStorage.setItem('farutech_available_tenants', JSON.stringify(result.data));
-       }
+    const result = await refetchTenants();
+    if (result.data) {
+      setAvailableTenants(result.data);
+      sessionStorage.setItem('farutech_available_tenants', JSON.stringify(result.data));
+    }
   };
 
   const isOrchestrator = () => {
-      return user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'admin';
+    return user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'admin';
   };
 
   return (
@@ -366,7 +390,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 };
 
 export const useAppContext = () => {
-    const context = useContext(AppContext);
-    if (!context) throw new Error('useAppContext must be used within AppProvider');
-    return context;
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useAppContext must be used within AppProvider');
+  return context;
 };

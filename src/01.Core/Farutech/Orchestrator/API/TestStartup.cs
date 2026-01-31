@@ -12,14 +12,9 @@ namespace Farutech.Orchestrator.API;
 /// <summary>
 /// Clase Startup simplificada para pruebas de integración
 /// </summary>
-public class TestStartup
+public class TestStartup(IConfiguration configuration)
 {
-    public TestStartup(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
-
-    public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -33,7 +28,7 @@ public class TestStartup
             options.UseNpgsql("Host=localhost;Port=5432;Database=test_db;Username=test;Password=test"));
 
         // Identity
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
         {
             options.Password.RequireDigit = true;
             options.Password.RequiredLength = 8;

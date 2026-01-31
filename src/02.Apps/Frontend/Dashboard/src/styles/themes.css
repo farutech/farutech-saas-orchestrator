@@ -1,0 +1,295 @@
+/* ============================================================================
+   FARUTECH DESIGN SYSTEM - Application Themes
+   ============================================================================
+   
+   Each application type has its own color theme that automatically applies
+   based on the data-app-theme attribute on the document element.
+   
+   Theme switching:
+   document.documentElement.setAttribute('data-app-theme', 'erp')
+   ============================================================================ */
+
+/* ============================================================================
+   DEFAULT THEME (Farutech Core)
+   ============================================================================ */
+:root {
+  /* Primary Brand Colors - Farutech Purple */
+  --primary: 250 89% 60%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 250 89% 55%;
+  --primary-active: 250 89% 50%;
+  --primary-subtle: 250 89% 95%;
+  
+  /* Secondary */
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --secondary-hover: 220 14% 92%;
+  
+  /* Status Colors */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --success-subtle: 142 76% 95%;
+  
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --warning-subtle: 38 92% 95%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-subtle: 0 84% 95%;
+  
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+  --info-subtle: 199 89% 95%;
+  
+  /* Surfaces */
+  --background: 220 20% 97%;
+  --foreground: 222 47% 11%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  
+  /* Form elements */
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+  
+  --accent: 220 14% 96%;
+  --accent-foreground: 222 47% 11%;
+  
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 250 89% 60%;
+  
+  /* Sidebar */
+  --sidebar-background: 222 47% 11%;
+  --sidebar-foreground: 220 14% 96%;
+  --sidebar-primary: 250 89% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 30% 18%;
+  --sidebar-accent-foreground: 220 14% 96%;
+  --sidebar-border: 222 30% 18%;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(250 89% 60%) 0%, hsl(280 87% 57%) 100%);
+  --gradient-subtle: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 100%);
+}
+
+/* ============================================================================
+   DARK MODE
+   ============================================================================ */
+.dark {
+  --background: 222 47% 6%;
+  --foreground: 220 14% 96%;
+  
+  --card: 222 47% 9%;
+  --card-foreground: 220 14% 96%;
+  
+  --popover: 222 47% 9%;
+  --popover-foreground: 220 14% 96%;
+  
+  --primary: 250 89% 65%;
+  --primary-hover: 250 89% 70%;
+  --primary-active: 250 89% 60%;
+  --primary-subtle: 250 89% 15%;
+  
+  --secondary: 222 30% 18%;
+  --secondary-foreground: 220 14% 96%;
+  --secondary-hover: 222 30% 22%;
+  
+  --muted: 222 30% 18%;
+  --muted-foreground: 220 9% 64%;
+  
+  --accent: 222 30% 18%;
+  --accent-foreground: 220 14% 96%;
+  
+  --destructive: 0 62% 50%;
+  --destructive-subtle: 0 62% 15%;
+  
+  --success-subtle: 142 76% 15%;
+  --warning-subtle: 38 92% 15%;
+  --info-subtle: 199 89% 15%;
+  
+  --border: 222 30% 18%;
+  --input: 222 30% 18%;
+  --ring: 250 89% 65%;
+  
+  --sidebar-background: 222 47% 6%;
+  --sidebar-border: 222 30% 14%;
+  --sidebar-accent: 222 30% 14%;
+}
+
+/* ============================================================================
+   ERP THEME - Corporate Blue/Indigo
+   ============================================================================ */
+[data-app-theme="erp"] {
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 221 83% 48%;
+  --primary-active: 221 83% 43%;
+  --primary-subtle: 221 83% 95%;
+  --ring: 221 83% 53%;
+  --sidebar-primary: 221 83% 53%;
+  --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(224 76% 48%) 100%);
+}
+
+[data-app-theme="erp"].dark {
+  --primary: 221 83% 60%;
+  --primary-hover: 221 83% 65%;
+  --primary-active: 221 83% 55%;
+  --primary-subtle: 221 83% 15%;
+  --ring: 221 83% 60%;
+  --sidebar-primary: 221 83% 60%;
+}
+
+/* ============================================================================
+   POS THEME - Vibrant Violet/Fuchsia
+   ============================================================================ */
+[data-app-theme="pos"] {
+  --primary: 280 87% 57%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 280 87% 52%;
+  --primary-active: 280 87% 47%;
+  --primary-subtle: 280 87% 95%;
+  --ring: 280 87% 57%;
+  --sidebar-primary: 280 87% 57%;
+  --gradient-primary: linear-gradient(135deg, hsl(280 87% 57%) 0%, hsl(292 84% 52%) 100%);
+}
+
+[data-app-theme="pos"].dark {
+  --primary: 280 87% 65%;
+  --primary-hover: 280 87% 70%;
+  --primary-active: 280 87% 60%;
+  --primary-subtle: 280 87% 15%;
+  --ring: 280 87% 65%;
+  --sidebar-primary: 280 87% 65%;
+}
+
+/* ============================================================================
+   CRM THEME - Warm Orange/Amber
+   ============================================================================ */
+[data-app-theme="crm"] {
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 25 95% 48%;
+  --primary-active: 25 95% 43%;
+  --primary-subtle: 25 95% 95%;
+  --ring: 25 95% 53%;
+  --sidebar-primary: 25 95% 53%;
+  --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(38 92% 50%) 100%);
+}
+
+[data-app-theme="crm"].dark {
+  --primary: 25 95% 60%;
+  --primary-hover: 25 95% 65%;
+  --primary-active: 25 95% 55%;
+  --primary-subtle: 25 95% 15%;
+  --ring: 25 95% 60%;
+  --sidebar-primary: 25 95% 60%;
+}
+
+/* ============================================================================
+   MEDICAL THEME - Clean Teal/Cyan
+   ============================================================================ */
+[data-app-theme="medical"] {
+  --primary: 174 72% 46%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 174 72% 41%;
+  --primary-active: 174 72% 36%;
+  --primary-subtle: 174 72% 95%;
+  --ring: 174 72% 46%;
+  --sidebar-primary: 174 72% 46%;
+  --gradient-primary: linear-gradient(135deg, hsl(174 72% 46%) 0%, hsl(168 76% 42%) 100%);
+}
+
+[data-app-theme="medical"].dark {
+  --primary: 174 72% 55%;
+  --primary-hover: 174 72% 60%;
+  --primary-active: 174 72% 50%;
+  --primary-subtle: 174 72% 15%;
+  --ring: 174 72% 55%;
+  --sidebar-primary: 174 72% 55%;
+}
+
+/* ============================================================================
+   VET THEME - Natural Green/Orange
+   ============================================================================ */
+[data-app-theme="vet"] {
+  --primary: 142 69% 45%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 142 69% 40%;
+  --primary-active: 142 69% 35%;
+  --primary-subtle: 142 69% 95%;
+  --ring: 142 69% 45%;
+  --sidebar-primary: 142 69% 45%;
+  --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(142 69% 45%) 100%);
+}
+
+[data-app-theme="vet"].dark {
+  --primary: 142 69% 55%;
+  --primary-hover: 142 69% 60%;
+  --primary-active: 142 69% 50%;
+  --primary-subtle: 142 69% 15%;
+  --ring: 142 69% 55%;
+  --sidebar-primary: 142 69% 55%;
+}
+
+/* ============================================================================
+   MARKETING THEME - Bold Pink/Rose
+   ============================================================================ */
+[data-app-theme="marketing"] {
+  --primary: 340 82% 52%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 340 82% 47%;
+  --primary-active: 340 82% 42%;
+  --primary-subtle: 340 82% 95%;
+  --ring: 340 82% 52%;
+  --sidebar-primary: 340 82% 52%;
+  --gradient-primary: linear-gradient(135deg, hsl(340 82% 52%) 0%, hsl(350 89% 60%) 100%);
+}
+
+[data-app-theme="marketing"].dark {
+  --primary: 340 82% 60%;
+  --primary-hover: 340 82% 65%;
+  --primary-active: 340 82% 55%;
+  --primary-subtle: 340 82% 15%;
+  --ring: 340 82% 60%;
+  --sidebar-primary: 340 82% 60%;
+}
+
+/* ============================================================================
+   PRODUCTION THEME - Industrial Gray/Steel
+   ============================================================================ */
+[data-app-theme="production"] {
+  --primary: 215 25% 45%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 215 25% 40%;
+  --primary-active: 215 25% 35%;
+  --primary-subtle: 215 25% 95%;
+  --ring: 215 25% 45%;
+  --sidebar-primary: 215 25% 45%;
+  --gradient-primary: linear-gradient(135deg, hsl(215 25% 45%) 0%, hsl(220 20% 35%) 100%);
+}
+
+[data-app-theme="production"].dark {
+  --primary: 215 25% 55%;
+  --primary-hover: 215 25% 60%;
+  --primary-active: 215 25% 50%;
+  --primary-subtle: 215 25% 15%;
+  --ring: 215 25% 55%;
+  --sidebar-primary: 215 25% 55%;
+}
+
+/* ============================================================================
+   CUSTOM TENANT THEME (Applied via CSS variables at runtime)
+   ============================================================================ */
+[data-app-theme="custom"] {
+  /* These get overridden by inline styles from tenant config */
+  --primary: var(--tenant-primary, 250 89% 60%);
+  --primary-foreground: var(--tenant-primary-foreground, 0 0% 100%);
+  --primary-hover: var(--tenant-primary-hover, 250 89% 55%);
+  --ring: var(--tenant-primary, 250 89% 60%);
+  --sidebar-primary: var(--tenant-primary, 250 89% 60%);
+}

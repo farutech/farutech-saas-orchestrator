@@ -62,7 +62,7 @@ public class ProvisioningTaskMessage
     public string TenantId { get; set; } = string.Empty;
     public string TaskType { get; set; } = string.Empty;
     public string ModuleId { get; set; } = string.Empty;
-    public Dictionary<string, object> Payload { get; set; } = new();
+    public Dictionary<string, object> Payload { get; set; } = [];
     public int Attempt { get; set; } = 1;
     public int MaxRetries { get; set; } = 5;
     public DateTime CreatedAt { get; set; }

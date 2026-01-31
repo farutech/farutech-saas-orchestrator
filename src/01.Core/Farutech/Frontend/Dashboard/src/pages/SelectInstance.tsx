@@ -1,10 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInstanceNavigation } from '@/hooks/useInstanceNavigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Store, ShoppingBag, Warehouse, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 const getInstanceIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -50,10 +53,23 @@ export default function SelectInstance() {
   const { 
     availableInstances, 
     selectedTenant,
-    selectInstance, 
     isLoading,
     requiresInstanceSelection,
   } = useAuth();
+
+  const { navigateToInstance, navigateToInstanceSelection } = useInstanceNavigation();
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredInstances = useMemo(() => {
+    if (!searchTerm.trim()) return availableInstances;
+    const q = searchTerm.toLowerCase().trim();
+    return availableInstances.filter(i =>
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.code || '').toLowerCase().includes(q) ||
+      (i.type || '').toLowerCase().includes(q)
+    );
+  }, [availableInstances, searchTerm]);
 
   useEffect(() => {
     // Si no hay instancias disponibles o no hay tenant seleccionado, redirigir
@@ -62,11 +78,44 @@ export default function SelectInstance() {
     }
   }, [requiresInstanceSelection, availableInstances, navigate]);
 
-  const handleSelectInstance = async (instanceId: string) => {
+  const handleSelectInstance = async (instance: typeof availableInstances[0]) => {
+    console.log('🖱️ Seleccionando instancia en select-instance:', instance);
+    
+    if (!selectedTenant || !instance) {
+      console.error('❌ No hay tenant o instancia seleccionada');
+      return;
+    }
+
+    const isActive = instance.status.toLowerCase() === 'active' || 
+                    instance.status.toLowerCase() === 'running';
+    
+    if (!isActive) {
+      toast.info('Esta aplicación está siendo configurada');
+      return;
+    }
+
     try {
-      await selectInstance(instanceId);
+      console.log('🚀 Navegando a instancia desde select-instance:', {
+        tenantId: selectedTenant.tenantId,
+        instanceId: instance.instanceId,
+        orgCode: selectedTenant.companyCode,
+        instanceCode: instance.code
+      });
+
+      await navigateToInstance(
+        selectedTenant.tenantId,
+        instance.instanceId,
+        selectedTenant.companyCode || '',
+        instance.code,
+        { 
+          preserveSession: true, 
+          openInNewTab: false,
+          method: 'POST'
+        }
+      );
     } catch (error) {
-      console.error('Error selecting instance:', error);
+      console.error('❌ Error selecting instance:', error);
+      toast.error('Error al cargar la aplicación');
     }
   };
 
@@ -111,8 +160,20 @@ export default function SelectInstance() {
         </div>
 
         {/* Instances Grid */}
+        <div className="mb-4 max-w-md mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar aplicación por nombre, código o tipo..."
+              className="pl-10"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableInstances.map((instance) => {
+          {filteredInstances.map((instance) => {
             const isActive = instance.status.toLowerCase() === 'active' || instance.status.toLowerCase() === 'running';
             
             return (
@@ -122,7 +183,7 @@ export default function SelectInstance() {
                   relative overflow-hidden transition-all duration-300 hover:shadow-xl
                   ${!isActive ? 'opacity-75' : 'hover:scale-105 cursor-pointer'}
                 `}
-                onClick={() => isActive && handleSelectInstance(instance.instanceId)}
+                onClick={() => isActive && handleSelectInstance(instance)}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-blue-100 rounded-bl-full opacity-50" />
                 
@@ -152,7 +213,7 @@ export default function SelectInstance() {
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleSelectInstance(instance.instanceId);
+                        handleSelectInstance(instance);
                       }}
                     >
                       Ingresar
@@ -171,7 +232,7 @@ export default function SelectInstance() {
         </div>
 
         {/* Empty State */}
-        {availableInstances.length === 0 && (
+        {filteredInstances.length === 0 && (
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle>No hay aplicaciones disponibles</CardTitle>

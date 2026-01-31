@@ -590,7 +590,8 @@ public abstract class Entity
         return Id == other.Id;
     }
 
-    public override int GetHashCode() => Id.GetHashCode();
+    public override int GetHashCode()
+        => Id.GetHashCode();
 }
 ```
 
@@ -630,7 +631,8 @@ public sealed record Feature
     public bool IsPremium { get; init; }                // Feature premium o standard
     public required Guid ModuleId { get; init; }        // Pertenece a un módulo
 
-    public override string ToString() => $"{Code} ({Name})";
+    public override string ToString()
+        => $"{Code} ({Name})";
 }
 ```
 
@@ -653,7 +655,8 @@ public sealed record Module
     public required string Description { get; init; }
     public required List<Feature> Features { get; init; } = new();
 
-    public IReadOnlyList<Feature> GetFeatures() => Features.AsReadOnly();
+    public IReadOnlyList<Feature> GetFeatures()
+        => Features.AsReadOnly();
 
     public void AddFeature(Feature feature)
     {
@@ -663,7 +666,8 @@ public sealed record Module
         Features.Add(feature);
     }
 
-    public override string ToString() => $"{Code} ({Name}) - {Features.Count} features";
+    public override string ToString()
+        => $"{Code} ({Name}) - {Features.Count} features";
 }
 ```
 
@@ -928,7 +932,8 @@ public sealed record GlobalInstanceId
     public static GlobalInstanceId Create(string instanceCode) 
         => new(instanceCode, Guid.NewGuid());
 
-    public override string ToString() => Value;
+    public override string ToString()
+        => Value;
 }
 ```
 

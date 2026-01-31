@@ -12,21 +12,14 @@ namespace Farutech.Orchestrator.Infrastructure.Workers;
 /// <summary>
 /// Worker que escucha eventos de provisioning de instancias y sincroniza el usuario Owner
 /// </summary>
-public class UserSyncWorker : BackgroundService
+public class UserSyncWorker(
+    ILogger<UserSyncWorker> logger,
+    NatsConnection natsConnection,
+    IServiceProvider serviceProvider) : BackgroundService
 {
-    private readonly ILogger<UserSyncWorker> _logger;
-    private readonly NatsConnection _natsConnection;
-    private readonly IServiceProvider _serviceProvider;
-
-    public UserSyncWorker(
-        ILogger<UserSyncWorker> logger,
-        NatsConnection natsConnection,
-        IServiceProvider serviceProvider)
-    {
-        _logger = logger;
-        _natsConnection = natsConnection;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly ILogger<UserSyncWorker> _logger = logger;
+    private readonly NatsConnection _natsConnection = natsConnection;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

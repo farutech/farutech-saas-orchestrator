@@ -46,8 +46,10 @@ public class TenantInstance : BaseEntity
     public Customer Customer { get; set; } = null!;
 
     // Helper methods
-    public Dictionary<string, object> GetActiveFeatures() => JsonSerializer.Deserialize<Dictionary<string, object>>(ActiveFeaturesJson)
+    public Dictionary<string, object> GetActiveFeatures()
+        => JsonSerializer.Deserialize<Dictionary<string, object>>(ActiveFeaturesJson)
                ?? [];
 
-    public void SetActiveFeatures(Dictionary<string, object> features) => ActiveFeaturesJson = JsonSerializer.Serialize(features);
+    public void SetActiveFeatures(Dictionary<string, object> features)
+        => ActiveFeaturesJson = JsonSerializer.Serialize(features);
 }

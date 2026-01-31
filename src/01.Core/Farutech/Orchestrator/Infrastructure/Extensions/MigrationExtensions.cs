@@ -124,7 +124,7 @@ public class DatabaseStatus
     public bool CanConnect { get; set; }
     public int PendingMigrationsCount { get; set; }
     public int AppliedMigrationsCount { get; set; }
-    public List<string> PendingMigrations { get; set; } = new();
-    public List<string> AppliedMigrations { get; set; } = new();
+    public List<string> PendingMigrations { get; set; } = [];
+    public List<string> AppliedMigrations { get; set; } = [];
     public string? Error { get; set; }
 }

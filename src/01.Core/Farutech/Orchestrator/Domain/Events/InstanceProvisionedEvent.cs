@@ -48,7 +48,7 @@ public class InstanceProvisionedEvent
     /// <summary>
     /// IDs de las features activas para esta instancia
     /// </summary>
-    public List<Guid> ActiveFeatureIds { get; set; } = new();
+    public List<Guid> ActiveFeatureIds { get; set; } = [];
 
     /// <summary>
     /// Timestamp del evento

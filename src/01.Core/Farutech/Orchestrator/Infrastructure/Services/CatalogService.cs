@@ -10,9 +10,8 @@ namespace Farutech.Orchestrator.Infrastructure.Services;
 /// <summary>
 /// Servicio para gestión de catálogos maestros (Products, Modules, Features).
 /// </summary>
-public class CatalogService(
-    OrchestratorDbContext context,
-    ILogger<CatalogService> logger) : ICatalogService
+public class CatalogService(OrchestratorDbContext context,
+                            ILogger<CatalogService> logger) : ICatalogService
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly ILogger<CatalogService> _logger = logger;
@@ -20,8 +19,7 @@ public class CatalogService(
     #region Products
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
-    {
-        return await _context.Products
+        => await _context.Products
             .Include(p => p.Modules)
                 .ThenInclude(m => m.Features)
             .Where(p => !p.IsDeleted)
@@ -61,11 +59,9 @@ public class CatalogService(
                     }).ToList()
             })
             .ToListAsync();
-    }
 
     public async Task<ProductDto?> GetProductByIdAsync(Guid id)
-    {
-        return await _context.Products
+        => await _context.Products
             .Include(p => p.Modules)
                 .ThenInclude(m => m.Features)
             .Where(p => p.Id == id && !p.IsDeleted)
@@ -105,7 +101,6 @@ public class CatalogService(
                     }).ToList()
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<ProductDto> CreateProductAsync(CreateProductDto request)
     {
@@ -140,7 +135,7 @@ public class CatalogService(
             Description = product.Description,
             IsActive = product.IsActive,
             CreatedAt = product.CreatedAt,
-            Modules = new List<ModuleDto>()
+            Modules = []
         };
     }
 
@@ -211,11 +206,7 @@ public class CatalogService(
         if (product == null)
             return null;
 
-        // Get all permissions (since permissions are global)
-        var allPermissions = await _context.Permissions
-            .Where(p => p.IsActive)
-            .ToListAsync();
-
+        // Permisos eliminados, solo devolver manifest sin permisos
         var manifest = new ProductManifestDto
         {
             Id = product.Id,
@@ -248,120 +239,47 @@ public class CatalogService(
                             AdditionalCost = f.AdditionalCost,
                             CreatedAt = f.CreatedAt,
                             UpdatedAt = f.UpdatedAt,
-                            Permissions = f.Code switch
-                            {
-                                "customers_management" => allPermissions
-                                    .Where(p => p.Code.StartsWith("customers:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "pos_inventory" => allPermissions
-                                    .Where(p => p.Code.StartsWith("products:") || p.Code.StartsWith("stock:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "pos_sales" => allPermissions
-                                    .Where(p => p.Code.StartsWith("pos:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "dashboard" => allPermissions
-                                    .Where(p => p.Code.StartsWith("dashboard:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                _ => new List<PermissionDto>()
-                            }
-                        })
-                        .ToList()
-                })
-                .ToList()
+                            Permissions = []
+                        }).ToList()
+                }).ToList()
         };
 
-        // Get subscription plans for this product
+        // Load subscription plans for this product (include features)
         var subscriptionPlans = await _context.SubscriptionPlans
-            .Include(s => s.SubscriptionFeatures)
+            .Where(sp => sp.ProductId == productId && sp.IsActive)
+            .Include(sp => sp.SubscriptionFeatures)
                 .ThenInclude(sf => sf.Feature)
-            .Where(s => s.ProductId == productId && !s.IsDeleted && s.IsActive)
-            .OrderBy(s => s.DisplayOrder)
+            .OrderBy(sp => sp.DisplayOrder)
             .ToListAsync();
 
-        manifest.SubscriptionPlans = subscriptionPlans.Select(s => new SubscriptionPlanDto
+        // Map to DTOs
+        manifest.SubscriptionPlans = subscriptionPlans.Select(sp => new SubscriptionPlanDto
         {
-            Id = s.Id,
-            ProductId = s.ProductId,
-            Code = s.Code,
-            Name = s.Name,
-            Description = s.Description,
-            IsFullAccess = s.IsFullAccess,
-            MonthlyPrice = s.MonthlyPrice,
-            AnnualPrice = s.AnnualPrice,
-            IsActive = s.IsActive,
-            IsRecommended = s.IsRecommended,
-            DisplayOrder = s.DisplayOrder,
-            Limits = string.IsNullOrEmpty(s.LimitsConfig)
-                ? null
-                : System.Text.Json.JsonSerializer.Deserialize<SubscriptionLimitsDto>(s.LimitsConfig),
-            Features = s.SubscriptionFeatures
-                .Where(sf => sf.IsEnabled && !sf.Feature.IsDeleted)
-                .Select(sf => new FeatureDto
-                {
-                    Id = sf.Feature.Id,
-                    ModuleId = sf.Feature.ModuleId,
-                    Code = sf.Feature.Code,
-                    Name = sf.Feature.Name,
-                    Description = sf.Feature.Description,
-                    IsActive = sf.Feature.IsActive,
-                    RequiresLicense = sf.Feature.RequiresLicense,
-                    AdditionalCost = sf.Feature.AdditionalCost ?? 0,
-                    CreatedAt = sf.Feature.CreatedAt,
-                    UpdatedAt = sf.Feature.UpdatedAt
-                })
-                .ToList()
+            Id = sp.Id,
+            ProductId = sp.ProductId,
+            Code = sp.Code,
+            Name = sp.Name,
+            Description = sp.Description,
+            IsFullAccess = sp.IsFullAccess,
+            MonthlyPrice = sp.MonthlyPrice,
+            AnnualPrice = sp.AnnualPrice,
+            IsActive = sp.IsActive,
+            IsRecommended = sp.IsRecommended,
+            DisplayOrder = sp.DisplayOrder,
+            Limits = string.IsNullOrEmpty(sp.LimitsConfig) ? null : System.Text.Json.JsonSerializer.Deserialize<SubscriptionLimitsDto>(sp.LimitsConfig),
+            Features = sp.SubscriptionFeatures?.Where(sf => sf.IsEnabled).Select(sf => new FeatureDto
+            {
+                Id = sf.Feature.Id,
+                ModuleId = sf.Feature.ModuleId,
+                Code = sf.Feature.Code,
+                Name = sf.Feature.Name,
+                Description = sf.Feature.Description,
+                RequiresLicense = sf.Feature.RequiresLicense,
+                AdditionalCost = sf.Feature.AdditionalCost ?? 0,
+                IsActive = sf.Feature.IsActive,
+                CreatedAt = sf.Feature.CreatedAt,
+                UpdatedAt = sf.Feature.UpdatedAt
+            }).ToList() ?? []
         }).ToList();
 
         return manifest;
@@ -372,8 +290,7 @@ public class CatalogService(
     #region Modules
 
     public async Task<IEnumerable<ModuleDto>> GetModulesByProductIdAsync(Guid productId)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Include(m => m.Product)
             .Include(m => m.Features)
             .Where(m => m.ProductId == productId && !m.IsDeleted)
@@ -402,11 +319,9 @@ public class CatalogService(
                     }).ToList()
             })
             .ToListAsync();
-    }
 
     public async Task<ModuleDto?> GetModuleByIdAsync(Guid id)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Include(m => m.Product)
             .Include(m => m.Features)
             .Where(m => m.Id == id && !m.IsDeleted)
@@ -435,18 +350,12 @@ public class CatalogService(
                     }).ToList()
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto request)
     {
         // Verificar que el producto exista
         var product = await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == request.ProductId && !p.IsDeleted);
-
-        if (product == null)
-        {
-            throw new InvalidOperationException($"El producto con ID {request.ProductId} no existe");
-        }
+            .FirstOrDefaultAsync(p => p.Id == request.ProductId && !p.IsDeleted) ?? throw new InvalidOperationException($"El producto con ID {request.ProductId} no existe");
 
         // Validar que no exista otro módulo con el mismo nombre en el mismo producto
         var existingModule = await _context.Modules
@@ -485,7 +394,7 @@ public class CatalogService(
             Description = module.Description,
             IsActive = module.IsActive,
             CreatedAt = module.CreatedAt,
-            Features = new List<FeatureDto>()
+            Features = []
         };
     }
 
@@ -556,8 +465,7 @@ public class CatalogService(
     #region Features
 
     public async Task<IEnumerable<FeatureDto>> GetFeaturesByModuleIdAsync(Guid moduleId)
-    {
-        return await _context.Features
+        => await _context.Features
             .Include(f => f.Module)
             .Where(f => f.ModuleId == moduleId && !f.IsDeleted)
             .Select(f => new FeatureDto
@@ -572,11 +480,9 @@ public class CatalogService(
                 UpdatedAt = f.UpdatedAt
             })
             .ToListAsync();
-    }
 
     public async Task<FeatureDto?> GetFeatureByIdAsync(Guid id)
-    {
-        return await _context.Features
+        => await _context.Features
             .Include(f => f.Module)
             .Where(f => f.Id == id && !f.IsDeleted)
             .Select(f => new FeatureDto
@@ -591,18 +497,12 @@ public class CatalogService(
                 UpdatedAt = f.UpdatedAt
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<FeatureDto> CreateFeatureAsync(CreateFeatureDto request)
     {
         // Verificar que el módulo exista
         var module = await _context.Modules
-            .FirstOrDefaultAsync(m => m.Id == request.ModuleId && !m.IsDeleted);
-
-        if (module == null)
-        {
-            throw new InvalidOperationException($"El módulo con ID {request.ModuleId} no existe");
-        }
+            .FirstOrDefaultAsync(m => m.Id == request.ModuleId && !m.IsDeleted) ?? throw new InvalidOperationException($"El módulo con ID {request.ModuleId} no existe");
 
         // Validar que no exista otra feature con el mismo nombre en el mismo módulo
         var existingFeature = await _context.Features

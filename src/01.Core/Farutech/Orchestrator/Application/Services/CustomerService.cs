@@ -7,14 +7,9 @@ namespace Farutech.Orchestrator.Application.Services;
 /// <summary>
 /// Service implementation for Customer business operations
 /// </summary>
-public class CustomerService : ICustomerService
+public class CustomerService(ICustomerRepository customerRepository) : ICustomerService
 {
-    private readonly ICustomerRepository _customerRepository;
-
-    public CustomerService(ICustomerRepository customerRepository)
-    {
-        _customerRepository = customerRepository;
-    }
+    private readonly ICustomerRepository _customerRepository = customerRepository;
 
     /// <inheritdoc />
     public async Task<Customer> CreateCustomerAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
@@ -49,31 +44,20 @@ public class CustomerService : ICustomerService
 
     /// <inheritdoc />
     public async Task<Customer?> GetCustomerByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByIdAsync(id, cancellationToken);
-    }
+        => await _customerRepository.GetByIdAsync(id, cancellationToken);
 
     /// <inheritdoc />
     public async Task<Customer?> GetCustomerByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByCodeAsync(code, cancellationToken);
-    }
+        => await _customerRepository.GetByCodeAsync(code, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<Customer>> GetCustomersByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
-    }
+        => await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
 
     /// <inheritdoc />
     public async Task<Customer> UpdateCustomerAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
-        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-        if (customer == null)
-        {
-            throw new KeyNotFoundException($"Customer with ID {id} not found.");
-        }
-
+        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Customer with ID {id} not found.");
         if (!string.IsNullOrWhiteSpace(request.CompanyName))
         {
             customer.CompanyName = request.CompanyName;
@@ -108,12 +92,7 @@ public class CustomerService : ICustomerService
     /// <inheritdoc />
     public async Task DeleteCustomerAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-        if (customer == null)
-        {
-            throw new KeyNotFoundException($"Customer with ID {id} not found.");
-        }
-
+        var customer = await _customerRepository.GetByIdAsync(id, cancellationToken) ?? throw new KeyNotFoundException($"Customer with ID {id} not found.");
         await _customerRepository.DeleteAsync(customer, cancellationToken);
     }
 

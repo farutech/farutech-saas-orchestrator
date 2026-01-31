@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyName>Farutech.Apps.Ordeon.API</AssemblyName>
+    <RootNamespace>Farutech.Apps.Ordeon.API</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.1" />
+    <ProjectReference Include="..\Application\Farutech.Apps.Ordeon.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\Farutech.Apps.Ordeon.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\03.Platform\Farutech.ServiceDefaults\Farutech.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

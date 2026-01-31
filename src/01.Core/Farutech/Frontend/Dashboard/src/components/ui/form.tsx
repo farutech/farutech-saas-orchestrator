@@ -22,8 +22,7 @@ const FormField = <
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
-}: ControllerProps<TFieldValues, TName>) => {
-  return (
+}: ControllerProps<TFieldValues, TName>) => 
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
     </FormFieldContext.Provider>
@@ -31,8 +30,7 @@ const FormField = <
 };
 
 const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
+  const fieldContext =) => mContext = React.useContext(FormItemContext);
   const { getFieldState, formState } = useFormContext();
 
   const fieldState = getFieldState(fieldContext.name, formState);
@@ -62,8 +60,7 @@ const FormItemContext = React.createContext<FormItemContextValue>({} as FormItem
 const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
     const id = React.useId();
-
-    return (
+) => (
       <FormItemContext.Provider value={{ id }}>
         <div ref={ref} className={cn("space-y-2", className)} {...props} />
       </FormItemContext.Provider>
@@ -78,8 +75,7 @@ const FormLabel = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField();
 
-  return <Label ref={ref} className={cn(error && "text-destructive", className)} htmlFor={formItemId} {...props} />;
-});
+  return <Label ref={ref} class) => 
 FormLabel.displayName = "FormLabel";
 
 const FormControl = React.forwardRef<React.ElementRef<typeof Slot>, React.ComponentPropsWithoutRef<typeof Slot>>(
@@ -87,8 +83,7 @@ const FormControl = React.forwardRef<React.ElementRef<typeof Slot>, React.Compon
     const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
     return (
-      <Slot
-        ref={ref}
+      <Slot) => ={ref}
         id={formItemId}
         aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
         aria-invalid={!!error}
@@ -105,8 +100,7 @@ const FormDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 
     return <p ref={ref} id={formDescriptionId} className={cn("text-sm text-muted-foreground", className)} {...props} />;
   },
-);
-FormDescription.displayName = "FormDescription";
+);) => tion.displayName = "FormDescription";
 
 const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, children, ...props }, ref) => {
@@ -115,8 +109,7 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
 
     if (!body) {
       return null;
-    }
-
+    }) => 
     return (
       <p ref={ref} id={formMessageId} className={cn("text-sm font-medium text-destructive", className)} {...props}>
         {body}

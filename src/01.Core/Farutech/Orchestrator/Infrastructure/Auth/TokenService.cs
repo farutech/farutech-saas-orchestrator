@@ -28,9 +28,9 @@ public class TokenService(IConfiguration configuration) : ITokenService
         // Token intermedio con claims mínimos para selección de contexto
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("purpose", "context_selection") // Claim que identifica el propósito del token
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("purpose", "context_selection") // Claim que identifica el propósito del token
         };
 
         // SEGURIDAD: Incluir los tenantIds permitidos en el token para validación posterior
@@ -77,12 +77,12 @@ public class TokenService(IConfiguration configuration) : ITokenService
         // Token de acceso con claims completos para autorización
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
-            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("purpose", "access") // Indica que este token es para acceso completo
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.GivenName, user.FirstName),
+            new(JwtRegisteredClaimNames.FamilyName, user.LastName),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("purpose", "access") // Indica que este token es para acceso completo
         };
 
         // Claims opcionales de multitenencia (solo si el usuario tiene tenant asignado)

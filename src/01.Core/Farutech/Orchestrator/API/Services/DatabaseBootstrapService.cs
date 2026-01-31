@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
 using Farutech.Orchestrator.Infrastructure.Persistence;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -12,21 +14,19 @@ namespace Farutech.Orchestrator.API.Services;
 /// Servicio de bootstrap inteligente para inicialización de base de datos.
 /// Garantiza que la base de datos se cree en el orden correcto: Esquemas -> Estructura -> Datos.
 /// </summary>
-public class DatabaseBootstrapService
+public class DatabaseBootstrapService(OrchestratorDbContext context,
+                                      ILogger<DatabaseBootstrapService> logger,
+                                      IServiceProvider serviceProvider,
+                                      IConfiguration configuration)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly ILogger<DatabaseBootstrapService> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly OrchestratorDbContext _context = context;
+    private readonly ILogger<DatabaseBootstrapService> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IConfiguration _configuration = configuration;
+    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
 
-    public DatabaseBootstrapService(
-        OrchestratorDbContext context,
-        ILogger<DatabaseBootstrapService> logger,
-        IServiceProvider serviceProvider)
-    {
-        _context = context;
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
+    private string CommonDatabaseName => _configuration["Database:CommonName"] ?? "farutech_db_custs";
+    private string DedicatedDatabasePrefix => _configuration["Database:DedicatedPrefix"] ?? "farutech_db_cust_";
 
     /// <summary>
     /// Ejecuta el bootstrap completo de la base de datos en orden estricto.
@@ -98,7 +98,7 @@ public class DatabaseBootstrapService
 
             try
             {
-                var schemas = new[] { "identity", "tenants", "catalog", "core" };
+                var schemas = stringArray;
 
                 foreach (var schema in schemas)
                 {
@@ -107,6 +107,44 @@ public class DatabaseBootstrapService
                     command.CommandText = createSchemaQuery;
                     await command.ExecuteNonQueryAsync();
                     _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
+                }
+
+                // Asegurar que exista la base de datos para customers (configurable)
+                try
+                {
+                    var connStringBuilder = new NpgsqlConnectionStringBuilder(connection.ConnectionString)
+                    {
+                        Database = "postgres"
+                    };
+
+                    await using var adminConn = new NpgsqlConnection(connStringBuilder.ConnectionString);
+                    await adminConn.OpenAsync();
+
+                    try
+                    {
+                        await using var checkCmd = adminConn.CreateCommand();
+                        checkCmd.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{CommonDatabaseName}'";
+                        var exists = await checkCmd.ExecuteScalarAsync();
+                        if (exists == null)
+                        {
+                            await using var createCmd = adminConn.CreateCommand();
+                            createCmd.CommandText = $"CREATE DATABASE \"{CommonDatabaseName}\"";
+                            await createCmd.ExecuteNonQueryAsync();
+                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' creada");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' ya existe");
+                        }
+                    }
+                    finally
+                    {
+                        await adminConn.CloseAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"No se pudo crear/verificar la base '{CommonDatabaseName}' -- continuando");
                 }
 
                 _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
@@ -142,28 +180,21 @@ public class DatabaseBootstrapService
     private async Task SeedInitialDataAsync()
     {
         _logger.LogInformation("🌱 Verificando necesidad de seeding inicial...");
+        // Ejecutar el seeder idempotente siempre para garantizar que los datos críticos
+        // (producto 'ordeon', roles, SuperAdmin, etc.) existan después de reinicios
+        // o recreaciones del servicio en Aspire/Podman.
+        _logger.LogInformation("📝 Ejecutando seeding idempotente (asegura datos críticos)...");
 
-        // Verificar si ya hay datos (productos como indicador)
-        var hasData = await _context.Products.AnyAsync();
+        // Crear scope para obtener servicios necesarios
+        using var scope = _serviceProvider.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+        var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
-        if (!hasData)
-        {
-            _logger.LogInformation("📝 Base de datos vacía detectada. Ejecutando seeding inicial...");
+        var seeder = new FarutechDataSeeder(_context, userManager, roleManager, seederLogger);
+        await seeder.SeedAsync();
 
-            // Crear scope para obtener servicios necesarios
-            using var scope = _serviceProvider.CreateScope();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
-
-            var seeder = new FarutechDataSeeder(_context, userManager, seederLogger);
-            await seeder.SeedAsync();
-
-            _logger.LogInformation("✅ Seeding inicial completado");
-        }
-        else
-        {
-            _logger.LogInformation("ℹ️  Base de datos ya contiene datos. Saltando seeding.");
-        }
+        _logger.LogInformation("✅ Seeding idempotente completado (datos críticos verificados/creados)");
     }
 
     /// <summary>
@@ -238,29 +269,39 @@ public class DatabaseBootstrapService
     {
         var criticalTables = new[]
         {
-            ("identity", "AspNetUsers"),
+            ("identity", "Users"),
             ("tenants", "TenantInstances"),
             ("catalog", "Products"),
-            ("identity", "permissions")
+            ("identity", "Roles")
         };
 
         foreach (var (schema, table) in criticalTables)
         {
-            var exists = await _context.Database.SqlQueryRaw<int>($@"
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = {{0}}
-                AND table_name = {{1}}
-            ", schema, table).SingleAsync() > 0;
+            // SQL claro y eficiente usando EXISTS con alias explícito para PostgreSQL
+            var exists = await _context.Database.SqlQueryRaw<bool>($@"
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = {{0}}
+                      AND table_name = {{1}}
+                ) AS ""Value""
+            ", schema, table).SingleAsync();
 
             if (!exists)
             {
-                _logger.LogError($"❌ Tabla crítica faltante: {schema}.{table}");
-                throw new InvalidOperationException($"Tabla crítica faltante: {schema}.{table}");
+                _logger.LogCritical(
+                    "❌ Tabla crítica faltante: {Schema}.{Table}. " +
+                    "Esto indica que las migraciones de EF Core no se aplicaron correctamente. " +
+                    "Verifique la configuración de Identity y el schema '{Schema}'.",
+                    schema, table, schema);
+
+                throw new InvalidOperationException(
+                    $"Tabla crítica faltante: {schema}.{table}. " +
+                    "Las migraciones de EF Core fallaron o Identity no está configurado correctamente.");
             }
             else
             {
-                _logger.LogInformation($"✅ Tabla crítica verificada: {schema}.{table}");
+                _logger.LogInformation("✅ Tabla crítica verificada: {Schema}.{Table}", schema, table);
             }
         }
     }
