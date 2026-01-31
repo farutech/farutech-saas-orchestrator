@@ -294,6 +294,16 @@ export default function HomePage() {
 
   // Handle View All Apps
   const handleViewAll = (orgId: string) => {
+    // If the organization has more than 3 instances, open the instance selector
+    const org = organizations.find(o => o.organizationId === orgId);
+    const instancesCount = org?.instances?.length ?? 0;
+
+    if (instancesCount > 3) {
+      navigate('/select-instance');
+      return;
+    }
+
+    // Otherwise navigate to the organization apps page (preserves existing behavior)
     navigate(`/organizations/${orgId}/apps`);
   };
 

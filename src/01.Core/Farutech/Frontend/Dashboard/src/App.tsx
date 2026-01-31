@@ -77,7 +77,6 @@ const App = () => (
                   <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/organizations" element={<OrganizationsManagementPage />} />
-                    <Route path="/organizations/:orgId/apps" element={<OrganizationAppsPage />} />
                   </Route>
                   {/* AppHome route removed */}
                   <Route

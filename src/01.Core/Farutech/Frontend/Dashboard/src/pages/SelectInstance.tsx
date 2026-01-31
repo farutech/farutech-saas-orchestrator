@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Store, ShoppingBag, Warehouse, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 const getInstanceIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -54,6 +56,18 @@ export default function SelectInstance() {
     isLoading,
     requiresInstanceSelection,
   } = useAuth();
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredInstances = useMemo(() => {
+    if (!searchTerm.trim()) return availableInstances;
+    const q = searchTerm.toLowerCase().trim();
+    return availableInstances.filter(i =>
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.code || '').toLowerCase().includes(q) ||
+      (i.type || '').toLowerCase().includes(q)
+    );
+  }, [availableInstances, searchTerm]);
 
   useEffect(() => {
     // Si no hay instancias disponibles o no hay tenant seleccionado, redirigir
@@ -111,8 +125,20 @@ export default function SelectInstance() {
         </div>
 
         {/* Instances Grid */}
+        <div className="mb-4 max-w-md mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar aplicación por nombre, código o tipo..."
+              className="pl-10"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableInstances.map((instance) => {
+          {filteredInstances.map((instance) => {
             const isActive = instance.status.toLowerCase() === 'active' || instance.status.toLowerCase() === 'running';
             
             return (
@@ -171,7 +197,7 @@ export default function SelectInstance() {
         </div>
 
         {/* Empty State */}
-        {availableInstances.length === 0 && (
+        {filteredInstances.length === 0 && (
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle>No hay aplicaciones disponibles</CardTitle>
