@@ -3,8 +3,7 @@ import { IndustryMode } from '@/types/dashboard';
 
 interface IndustryContextType {
   industry: IndustryMode;
-  setIndustry: (industry: IndustryMode)
-        => void;
+  setIndustry: (industry: IndustryMode) => void;
   isTransitioning: boolean;
 }
 
@@ -14,21 +13,17 @@ export function IndustryProvider({ children }: { children: ReactNode }) {
   const [industry, setIndustryState] = useState<IndustryMode>('erp');
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const setIndustry = (newIndustry: IndustryMode)
-        => {
+  const setIndustry = (newIndustry: IndustryMode) => {
     if (newIndustry !== industry) {
       setIsTransitioning(true);
-      setTimeout(()
-        => {
+      setTimeout(() => {
         setIndustryState(newIndustry);
-        setTimeout(()
-        => setIsTransitioning(false), 300);
+        setTimeout(() => setIsTransitioning(false), 300);
       }, 200);
     }
   };
 
-  useEffect(()
-        => {
+  useEffect(() => {
     document.documentElement.setAttribute('data-industry', industry);
   }, [industry]);
 

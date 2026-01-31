@@ -11,10 +11,8 @@ import type { ProductDto, ModuleDto } from '@/types/api';
 
 interface ModulesViewProps {
   product: ProductDto;
-  onSelectModule: (module: ModuleDto)
-        => void;
-  onBack: ()
-        => void;
+  onSelectModule: (module: ModuleDto) => void;
+  onBack: () => void;
 }
 
 export function ModulesView({ product, onSelectModule, onBack }: ModulesViewProps) {
@@ -40,13 +38,11 @@ export function ModulesView({ product, onSelectModule, onBack }: ModulesViewProp
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {modules?.map((module)
-        => (
+        {modules?.map((module) => (
           <Card
             key={module.id}
             className="bg-slate-900/50 border-white/10 hover:border-primary/50 transition-all cursor-pointer"
-            onClick={()
-        => onSelectModule(module)}
+            onClick={() => onSelectModule(module)}
           >
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">

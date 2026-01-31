@@ -44,8 +44,7 @@ export default function Dashboard() {
   const hasDashboardAccess = hasPermission('dashboard:access');
 
   // Validate Route Context vs Session Context
-  useEffect(()
-        => {
+  useEffect(() => {
     // If we have an appId in URL but it doesn't match the session's instanceId
     if (appId && user?.instanceId && appId !== user.instanceId) {
       console.warn(`[Dashboard] Context mismatch. URL: ${appId}, Session: ${user.instanceId}`);
@@ -55,8 +54,7 @@ export default function Dashboard() {
   }, [appId, user]);
 
   // Redirect to home if no module selected
-  useEffect(()
-        => {
+  useEffect(() => {
     if (!currentModule) {
       navigate('/home'); // Redirect to /home instead of /
     }

@@ -12,8 +12,7 @@ export default function SelectContext() {
   const navigate = useNavigate();
 
   // Redirect to home since context selection is now integrated there
-  useEffect(()
-        => {
+  useEffect(() => {
     navigate('/home');
   }, [navigate]);
 

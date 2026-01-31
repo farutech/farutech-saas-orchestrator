@@ -13,15 +13,13 @@ export function useQueryModal() {
    * @param modalName The unique name of the modal to open.
    * @param params Optional additional parameters to store in the URL.
    */
-  const open = useCallback((modalName: string, params?: Record<string, string>)
-        => {
+  const open = useCallback((modalName: string, params?: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('modal', modalName);
     
     // Set additional params if provided
     if (params) {
-      Object.entries(params).forEach(([key, value])
-        => {
+      Object.entries(params).forEach(([key, value]) => {
         newParams.set(key, value);
       });
     }
@@ -33,8 +31,7 @@ export function useQueryModal() {
    * Closes the currently open modal by removing the 'modal' query parameter.
    * Also cleans up any associated parameters if needed (optional implementation).
    */
-  const close = useCallback(()
-        => {
+  const close = useCallback(() => {
     const newParams = new URLSearchParams(searchParams);
     newParams.delete('modal');
     // Optionally we could verify which params belong to the modal and remove them
@@ -47,8 +44,7 @@ export function useQueryModal() {
    * @param modalName The name of the modal to check.
    * @returns True if the modal is open, false otherwise.
    */
-  const isOpen = useCallback((modalName: string)
-        => {
+  const isOpen = useCallback((modalName: string) => {
     return searchParams.get('modal') === modalName;
   }, [searchParams]);
 
@@ -57,8 +53,7 @@ export function useQueryModal() {
    * @param key The parameter key.
    * @returns The value or null.
    */
-  const getParam = useCallback((key: string)
-        => {
+  const getParam = useCallback((key: string) => {
     return searchParams.get(key);
   }, [searchParams]);
 

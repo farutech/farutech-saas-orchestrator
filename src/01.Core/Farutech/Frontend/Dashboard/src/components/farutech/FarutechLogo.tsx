@@ -35,8 +35,7 @@ export function FarutechLogo({
           alt="Farutech Logo" 
           style={{ height: imgSize, width: 'auto' }}
           className="object-contain"
-          onError={(e)
-        => {
+          onError={(e) => {
             // Fallback: si falla, ocultar imagen y usar el icono
             e.currentTarget.style.display = 'none';
           }}

@@ -41,8 +41,7 @@ export default function CustomersPage() {
     taxId: '',
   });
 
-  const handleCreate = async ()
-        => {
+  const handleCreate = async () => {
     await createMutation.mutateAsync(formData);
     setIsDialogOpen(false);
     setFormData({ companyName: '', email: '', phone: '', address: '', taxId: '' });
@@ -65,8 +64,7 @@ export default function CustomersPage() {
             Administra tus clientes y organizaciones
           </p>
         </div>
-        <Button onClick={()
-        => setIsDialogOpen(true)}>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Cliente
         </Button>
@@ -80,8 +78,7 @@ export default function CustomersPage() {
               <Input
                 placeholder="Buscar clientes..."
                 value={searchTerm}
-                onChange={(e)
-        => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-slate-800 border-white/10 text-white"
               />
             </div>
@@ -99,8 +96,7 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCustomers?.map((customer)
-        => (
+              {filteredCustomers?.map((customer) => (
                 <TableRow key={customer.id} className="border-white/10">
                   <TableCell className="text-white font-medium">
                     <div className="flex items-center gap-2">
@@ -146,8 +142,7 @@ export default function CustomersPage() {
               <Label className="text-white">Nombre de la Empresa</Label>
               <Input
                 value={formData.companyName}
-                onChange={(e)
-        => setFormData({ ...formData, companyName: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                 className="bg-slate-800 border-white/10 text-white"
               />
             </div>
@@ -156,8 +151,7 @@ export default function CustomersPage() {
               <Input
                 type="email"
                 value={formData.email}
-                onChange={(e)
-        => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="bg-slate-800 border-white/10 text-white"
               />
             </div>
@@ -165,8 +159,7 @@ export default function CustomersPage() {
               <Label className="text-white">Teléfono</Label>
               <Input
                 value={formData.phone}
-                onChange={(e)
-        => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="bg-slate-800 border-white/10 text-white"
               />
             </div>
@@ -174,15 +167,13 @@ export default function CustomersPage() {
               <Label className="text-white">Tax ID</Label>
               <Input
                 value={formData.taxId}
-                onChange={(e)
-        => setFormData({ ...formData, taxId: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
                 className="bg-slate-800 border-white/10 text-white"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={()
-        => setIsDialogOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleCreate}>Crear Cliente</Button>
           </DialogFooter>
         </DialogContent>

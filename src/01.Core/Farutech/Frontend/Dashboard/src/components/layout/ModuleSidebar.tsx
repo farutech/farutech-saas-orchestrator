@@ -89,8 +89,7 @@ export function ModuleSidebar() {
 
       {/* Navigation */}
       <nav className="p-3 space-y-1">
-        {navItems.map((item, index)
-        => {
+        {navItems.map((item, index) => {
           const isActive = location.pathname === item.href;
           
           return (

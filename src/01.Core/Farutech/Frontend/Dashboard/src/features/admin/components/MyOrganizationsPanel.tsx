@@ -14,14 +14,12 @@ export function MyOrganizationsPanel() {
 
   // Filter tenants based on search term
   const filteredTenants = availableTenants
-    .filter((t)
-        => 
+    .filter((t) => 
       t.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .slice(0, 5); // Show max 5
 
-  const handleSwitch = async (tenantId: string)
-        => {
+  const handleSwitch = async (tenantId: string) => {
     await selectContext(tenantId);
   };
 
@@ -49,8 +47,7 @@ export function MyOrganizationsPanel() {
                             Comienza ahora para activar tu organización.
                         </p>
                         <Button 
-                            onClick={()
-        => navigate('/provisioning')}
+                            onClick={() => navigate('/provisioning')}
                             className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg transition-all hover:scale-[1.02]"
                         >
                             <Plus className="mr-2 h-4 w-4" />
@@ -95,20 +92,17 @@ export function MyOrganizationsPanel() {
                 placeholder="Buscar organización..."
                 className="pl-8"
                 value={searchTerm}
-                onChange={(e)
-        => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
             />
             </div>
         )}
 
         <div className="space-y-3">
-          {filteredTenants.map((tenant)
-        => (
+          {filteredTenants.map((tenant) => (
             <div
               key={tenant.tenantId}
               className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer group"
-              onClick={()
-        => handleSwitch(tenant.tenantId)}
+              onClick={() => handleSwitch(tenant.tenantId)}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-md group-hover:bg-primary/20">

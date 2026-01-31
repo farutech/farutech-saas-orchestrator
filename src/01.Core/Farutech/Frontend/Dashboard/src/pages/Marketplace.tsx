@@ -18,13 +18,11 @@ export default function Marketplace() {
   const [manifestLoading, setManifestLoading] = useState(false);
   const { hasPermission } = usePermissions();
 
-  useEffect(()
-        => {
+  useEffect(() => {
     loadProducts();
   }, []);
 
-  const loadProducts = async ()
-        => {
+  const loadProducts = async () => {
     try {
       setLoading(true);
       const productList = await catalogService.getProducts();
@@ -36,8 +34,7 @@ export default function Marketplace() {
     }
   };
 
-  const loadProductManifest = async (productId: string)
-        => {
+  const loadProductManifest = async (productId: string) => {
     try {
       setManifestLoading(true);
       const manifest = await catalogService.getProductManifest(productId);
@@ -65,8 +62,7 @@ export default function Marketplace() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product)
-        => (
+        {products.map((product) => (
           <Card key={product.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -89,8 +85,7 @@ export default function Marketplace() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={()
-        => loadProductManifest(product.id)}
+                  onClick={() => loadProductManifest(product.id)}
                   disabled={manifestLoading}
                 >
                   {manifestLoading ? (
@@ -124,15 +119,13 @@ export default function Marketplace() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {selectedManifest.modules?.map((module)
-        => (
+              {selectedManifest.modules?.map((module) => (
                 <div key={module.id} className="border rounded-lg p-4">
                   <h3 className="font-semibold text-lg mb-2">{module.name}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{module.description}</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {module.features?.map((feature)
-        => (
+                    {module.features?.map((feature) => (
                       <div key={feature.id} className="border rounded p-3 bg-muted/50">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-medium">{feature.name}</h4>
@@ -153,8 +146,7 @@ export default function Marketplace() {
                           <div className="mt-2">
                             <p className="text-xs font-medium mb-1">Required Permissions:</p>
                             <div className="flex flex-wrap gap-1">
-                              {feature.permissions.map((permission)
-        => (
+                              {feature.permissions.map((permission) => (
                                 <Badge key={permission.id} variant="secondary" className="text-xs">
                                   {permission.code}
                                 </Badge>

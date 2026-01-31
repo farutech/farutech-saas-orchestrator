@@ -30,18 +30,13 @@ export interface AppContextType {
   currentModule: string; // 'erp', 'pos', etc.
 
   // Actions
-  loginWithFlow: (credentials: LoginRequest)
-        => Promise<void>; // Orchestrates login + context checks
-  selectContext: (tenantId: string, redirectPath?: string)
-        => Promise<void>;
-  selectInstance: (instanceId: string)
-        => Promise<void>;
-  refreshAvailableTenants: ()
-        => Promise<void>;
+  loginWithFlow: (credentials: LoginRequest) => Promise<void>; // Orchestrates login + context checks
+  selectContext: (tenantId: string, redirectPath?: string) => Promise<void>;
+  selectInstance: (instanceId: string) => Promise<void>;
+  refreshAvailableTenants: () => Promise<void>;
   
   // Utilities
-  isOrchestrator: ()
-        => boolean;
+  isOrchestrator: () => boolean;
 }
 
 // ============================================================================
@@ -54,8 +49,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Provider
 // ============================================================================
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
-        => {
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user, login: sessionLogin, setUser, logout: sessionLogout } = useSession();
   const navigate = useNavigate();
   
@@ -64,50 +58,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [requiresInstanceSelection, setRequiresInstanceSelection] = useState(false);
   
   // Persisted state for restoration
-  const [availableTenants, setAvailableTenants] = useState<TenantOptionDto[]>(()
-        => {
+  const [availableTenants, setAvailableTenants] = useState<TenantOptionDto[]>(() => {
     try {
       const stored = sessionStorage.getItem('farutech_available_tenants');
       return stored ? JSON.parse(stored) : [];
     } catch { return []; }
   });
   
-  const [availableInstances, setAvailableInstances] = useState<InstanceDto[]>(()
-        => {
+  const [availableInstances, setAvailableInstances] = useState<InstanceDto[]>(() => {
     try {
       const stored = sessionStorage.getItem('farutech_available_instances');
       return stored ? JSON.parse(stored) : [];
     } catch { return []; }
   });
   
-  const [selectedTenant, setSelectedTenant] = useState<TenantOptionDto | null>(()
-        => {
+  const [selectedTenant, setSelectedTenant] = useState<TenantOptionDto | null>(() => {
     try {
       const stored = sessionStorage.getItem('farutech_selected_tenant');
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
 
-  const [currentModule, setCurrentModule] = useState(()
-        => {
-     return localStorage.getItem('farutech_current_module') || 'pos';
+  const [currentModule, setCurrentModule] = useState(() => {
+    return localStorage.getItem('farutech_current_module') || 'pos';
   });
 
   const { refetch: refetchTenants } = useAvailableTenants({ enabled: false });
 
   // Update HTML attribute for styling when module changes
-  useEffect(()
-        => {
+  useEffect(() => {
     document.documentElement.setAttribute('data-module', currentModule);
   }, [currentModule]);
 
   // ============================================================================
   // Initialization Logic (Restoring Context State)
   // ============================================================================
-  useEffect(()
-        => {
-    const initializeAppContext = ()
-        => {
+  useEffect(() => {
+    const initializeAppContext = () => {
       const token = TokenManager.getAccessToken();
       const intermediateToken = TokenManager.getIntermediateToken();
 
@@ -138,8 +125,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
     initializeAppContext();
   }, [availableTenants.length]);
 
-  const resetSelectionState = ()
-        => {
+  const resetSelectionState = () => {
       setAvailableTenants([]);
       setAvailableInstances([]);
       setSelectedTenant(null);
@@ -151,8 +137,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ============================================================================
   // Login Flow Orchestration
   // ============================================================================
-  const loginWithFlow = async (credentials: LoginRequest)
-        => {
+  const loginWithFlow = async (credentials: LoginRequest) => {
     // 1. Perform Session Login
     const response = await sessionLogin(credentials);
 
@@ -205,8 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ============================================================================
   // Select Context Action
   // ============================================================================
-  const selectContext = async (tenantId: string, redirectPath: string = '/home')
-        => {
+  const selectContext = async (tenantId: string, redirectPath: string = '/home') => {
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken) {
           toast.error('Sesión expirada.');
@@ -277,8 +261,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ============================================================================
   // Select Instance Action
   // ============================================================================
-  const selectInstance = async (instanceId: string)
-        => {
+  const selectInstance = async (instanceId: string) => {
       const intermediateToken = TokenManager.getIntermediateToken();
       if (!intermediateToken || !selectedTenant) return;
 
@@ -288,8 +271,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
       await selectInstanceInternal(selectedTenant.tenantId, instance, intermediateToken);
   };
 
-  const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string)
-        => {
+  const selectInstanceInternal = async (tenantId: string, instance: InstanceDto, intermediateToken: string) => {
       const request: SelectContextRequest = { intermediateToken, tenantId }; // Note: API might need instanceId if it supports direct instance selection? 
       // Current API seems to perform SelectContext on Tenant, then we assume instance context implies using that tenant token + knowing the instance ID.
       // Wait, original AuthContext Logic:
@@ -352,18 +334,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ============================================================================
   // Utilities
   // ============================================================================
-  const refreshAvailableTenants = async ()
-        => {
-       const result = await refetchTenants();
-       if (result.data) {
-           setAvailableTenants(result.data);
-           sessionStorage.setItem('farutech_available_tenants', JSON.stringify(result.data));
-       }
+  const refreshAvailableTenants = async () => {
+    const result = await refetchTenants();
+    if (result.data) {
+      setAvailableTenants(result.data);
+      sessionStorage.setItem('farutech_available_tenants', JSON.stringify(result.data));
+    }
   };
 
-  const isOrchestrator = ()
-        => {
-      return user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'admin';
+  const isOrchestrator = () => {
+    return user?.role?.toLowerCase() === 'superadmin' || user?.role?.toLowerCase() === 'admin';
   };
 
   return (
@@ -385,9 +365,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children })
   );
 };
 
-export const useAppContext = ()
-        => {
-    const context = useContext(AppContext);
-    if (!context) throw new Error('useAppContext must be used within AppProvider');
-    return context;
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useAppContext must be used within AppProvider');
+  return context;
 };

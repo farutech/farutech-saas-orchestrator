@@ -6,14 +6,12 @@ import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
 import type { PermissionDto } from '@/types/api';
 
-export const usePermissions = ()
-        => {
+export const usePermissions = () => {
   const [permissions, setPermissions] = useState<PermissionDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPermissions = async ()
-        => {
+  const fetchPermissions = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,8 +37,7 @@ export const usePermissions = ()
     return permissionCodes.every(code => hasPermission(code));
   };
 
-  useEffect(()
-        => {
+  useEffect(() => {
     fetchPermissions();
   }, []);
 

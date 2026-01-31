@@ -23,14 +23,10 @@ export interface SessionContextType {
   isLoading: boolean;
   
   // Actions
-  login: (credentials: LoginRequest)
-        => Promise<any>; // Returns full response for AppContext to handle flow
-  register: (data: RegisterRequest)
-        => Promise<void>;
-  logout: ()
-        => void;
-  setUser: (user: SessionUser | null)
-        => void; // Allow AppContext to update user details if needed
+  login: (credentials: LoginRequest) => Promise<any>; // Returns full response for AppContext to handle flow
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => void;
+  setUser: (user: SessionUser | null) => void; // Allow AppContext to update user details if needed
 }
 
 // ============================================================================
@@ -43,10 +39,8 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 // Provider
 // ============================================================================
 
-export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
-        => {
-  const [user, setUser] = useState<SessionUser | null>(()
-        => {
+export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<SessionUser | null>(() => {
     try {
       const stored = localStorage.getItem('farutech_session_user');
       return stored ? JSON.parse(stored) : null;
@@ -58,10 +52,8 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   const navigate = useNavigate();
 
   // Initialize session from tokens
-  useEffect(()
-        => {
-    const initializeSession = async ()
-        => {
+  useEffect(() => {
+    const initializeSession = async () => {
       const token = TokenManager.getAccessToken();
       const intermediateToken = TokenManager.getIntermediateToken();
 
@@ -93,8 +85,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [user?.id]);
 
   // Update storage when user changes
-  useEffect(()
-        => {
+  useEffect(() => {
     if (user) {
       localStorage.setItem('farutech_session_user', JSON.stringify(user));
     } else {
@@ -103,8 +94,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [user]);
 
   // Login Action
-  const login = async (credentials: LoginRequest)
-        => {
+  const login = async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {
       const response = await authService.login(credentials);
@@ -129,8 +119,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   // Register Action
-  const register = async (data: RegisterRequest)
-        => {
+  const register = async (data: RegisterRequest) => {
     setIsLoading(true);
     try {
       await authService.register(data);
@@ -145,8 +134,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   // Logout Action
-  const logout = useCallback(()
-        => {
+  const logout = useCallback(() => {
     TokenManager.clearAllTokens();
     setUser(null);
     localStorage.removeItem('farutech_session_user');

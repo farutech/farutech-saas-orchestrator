@@ -6,15 +6,13 @@ import { Rocket, PlusCircle, Package, ArrowRight } from 'lucide-react';
 
 interface EmptyInstancesStateProps {
   isOwner?: boolean;
-  onCreateInstance?: ()
-        => void;
+  onCreateInstance?: () => void;
 }
 
 export function EmptyInstancesState({ isOwner = false, onCreateInstance }: EmptyInstancesStateProps) {
   const navigate = useNavigate();
 
-  const handleCreateInstance = ()
-        => {
+  const handleCreateInstance = () => {
     if (onCreateInstance) {
       onCreateInstance();
     } else {
@@ -123,8 +121,7 @@ export function EmptyInstancesState({ isOwner = false, onCreateInstance }: Empty
               transition={{ delay: 0.6 }}
               className="mt-6"
             >
-              <Button variant="outline" onClick={()
-        => navigate('/settings')}>
+              <Button variant="outline" onClick={() => navigate('/settings')}>
                 Ver Configuración
               </Button>
             </motion.div>

@@ -26,8 +26,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
               className="text-xs fill-muted-foreground"
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value)
-        => `$${value / 1000}k`}
+              tickFormatter={(value) => `$${value / 1000}k`}
             />
             <Tooltip 
               contentStyle={{ 
@@ -36,8 +35,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px hsl(222 47% 11% / 0.1)'
               }}
-              formatter={(value: number)
-        => [`$${value.toLocaleString()}`, '']}
+              formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
             />
             <Legend />
             <Bar 

@@ -57,8 +57,7 @@ export default function OrganizationsManagementPage() {
   const { toast } = useToast();
 
   // Fetch data function
-  const fetchOrganizations = async (params: FetchParams)
-        => {
+  const fetchOrganizations = async (params: FetchParams) => {
     const response = await apiClient.get<{
       organizations: OrganizationDto[];
       totalCount: number;
@@ -76,8 +75,7 @@ export default function OrganizationsManagementPage() {
   };
 
   // Toggle status
-  const handleToggleStatus = async (org: OrganizationDto)
-        => {
+  const handleToggleStatus = async (org: OrganizationDto) => {
     try {
       await apiClient.patch(`/api/Customers/${org.id}/status`, {
         isActive: !org.isActive,
@@ -100,8 +98,7 @@ export default function OrganizationsManagementPage() {
   };
 
   // Delete organization
-  const handleDelete = async ()
-        => {
+  const handleDelete = async () => {
     if (!selectedOrg) return;
 
     try {
@@ -136,30 +133,26 @@ export default function OrganizationsManagementPage() {
   };
 
   // Open create dialog
-  const handleCreateOrganization = ()
-        => {
+  const handleCreateOrganization = () => {
     setIsEditing(false);
     setSelectedOrg(null);
     setCreateEditDialogOpen(true);
   };
 
   // Open edit dialog
-  const handleEditOrganization = (org: OrganizationDto)
-        => {
+  const handleEditOrganization = (org: OrganizationDto) => {
     setIsEditing(true);
     setSelectedOrg(org);
     setCreateEditDialogOpen(true);
   };
 
   // Handle successful form submission
-  const handleFormSuccess = ()
-        => {
+  const handleFormSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
   // Render each organization as a card
-  const renderOrganizationCard = (org: OrganizationDto)
-        => {
+  const renderOrganizationCard = (org: OrganizationDto) => {
     const canDelete = org.instanceCount === 0;
 
     return (
@@ -237,8 +230,7 @@ export default function OrganizationsManagementPage() {
             variant="outline"
             size="sm"
             className="flex-1 gap-2"
-            onClick={()
-        => handleEditOrganization(org)}
+            onClick={() => handleEditOrganization(org)}
           >
             <Edit className="h-4 w-4" />
             Editar
@@ -249,8 +241,7 @@ export default function OrganizationsManagementPage() {
             variant="outline"
             size="sm"
             className="flex-1 gap-2"
-            onClick={()
-        => handleToggleStatus(org)}
+            onClick={() => handleToggleStatus(org)}
           >
             {org.isActive ? (
               <>
@@ -271,8 +262,7 @@ export default function OrganizationsManagementPage() {
             size="sm"
             className={`gap-2 ${canDelete ? 'text-red-600 hover:bg-red-50 hover:text-red-700' : ''}`}
             disabled={!canDelete}
-            onClick={()
-        => {
+            onClick={() => {
               if (canDelete) {
                 setSelectedOrg(org);
                 setDeleteDialogOpen(true);

@@ -32,8 +32,7 @@ export default function ForgotPassword() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit = async (data: ForgotPasswordForm)
-        => {
+  const onSubmit = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
     setError(null);
     setSuccess(null);

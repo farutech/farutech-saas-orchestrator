@@ -44,6 +44,7 @@ public class TenantRepository(OrchestratorDbContext dbContext) : ITenantReposito
     public async Task<IEnumerable<TenantInstance>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
         => await _dbContext.TenantInstances
             .Where(t => t.CustomerId == customerId)
+            .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
@@ -55,5 +56,6 @@ public class TenantRepository(OrchestratorDbContext dbContext) : ITenantReposito
     public async Task<IEnumerable<TenantInstance>> GetByStatusAsync(string status, CancellationToken cancellationToken = default)
         => await _dbContext.TenantInstances
             .Where(t => t.Status == status)
+            .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 }

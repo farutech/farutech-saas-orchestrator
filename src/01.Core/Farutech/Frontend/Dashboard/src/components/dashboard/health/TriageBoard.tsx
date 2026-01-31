@@ -9,8 +9,7 @@ interface TriageBoardProps {
 }
 
 export function TriageBoard({ patients }: TriageBoardProps) {
-  const sortedPatients = [...patients].sort((a, b)
-        => {
+  const sortedPatients = [...patients].sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
@@ -25,8 +24,7 @@ export function TriageBoard({ patients }: TriageBoardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {sortedPatients.map((patient)
-        => (
+          {sortedPatients.map((patient) => (
             <div 
               key={patient.id} 
               className={cn(

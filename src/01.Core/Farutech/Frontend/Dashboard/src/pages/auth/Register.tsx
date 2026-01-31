@@ -27,13 +27,11 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>)
-        => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent)
-        => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
@@ -119,8 +117,7 @@ export default function Register() {
           </div>
 
           <Button
-            onClick={()
-        => navigate('/login')}
+            onClick={() => navigate('/login')}
             className="w-full gradient-farutech text-white"
           >
             Ir al Login
@@ -258,8 +255,7 @@ export default function Register() {
                   variant="ghost"
                   size="icon"
                   className="absolute right-0 top-0 h-full px-3"
-                  onClick={()
-        => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -290,8 +286,7 @@ export default function Register() {
               <Checkbox
                 id="createOrg"
                 checked={formData.createDefaultOrganization}
-                onCheckedChange={(checked)
-        => setFormData(prev => ({ ...prev, createDefaultOrganization: checked as boolean }))}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, createDefaultOrganization: checked as boolean }))}
                 className="mt-0.5"
               />
               <Label htmlFor="createOrg" className="text-sm font-normal cursor-pointer leading-relaxed flex items-center gap-2">
@@ -304,8 +299,7 @@ export default function Register() {
               <Checkbox
                 id="terms"
                 checked={acceptTerms}
-                onCheckedChange={(checked)
-        => setAcceptTerms(checked as boolean)}
+                onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
                 className="mt-0.5"
               />
               <Label htmlFor="terms" className="text-sm font-normal cursor-pointer leading-relaxed">

@@ -18,8 +18,7 @@ const resetPasswordSchema = z.object({
     .regex(/[a-z]/, 'Debe contener al menos una minúscula')
     .regex(/[0-9]/, 'Debe contener al menos un número'),
   confirmPassword: z.string(),
-}).refine((data)
-        => data.newPassword === data.confirmPassword, {
+}).refine((data) => data.newPassword === data.confirmPassword, {
   message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
 });
@@ -50,10 +49,8 @@ export default function ResetPassword() {
   const newPassword = watch('newPassword');
 
   // Validar token al cargar la página
-  useEffect(()
-        => {
-    const validateToken = async ()
-        => {
+  useEffect(() => {
+    const validateToken = async () => {
       if (!token || !email) {
         setIsValidating(false);
         setIsTokenValid(false);
@@ -127,8 +124,7 @@ export default function ResetPassword() {
     );
   }
 
-  const onSubmit = async (data: ResetPasswordForm)
-        => {
+  const onSubmit = async (data: ResetPasswordForm) => {
     setIsLoading(true);
     setError(null);
 
@@ -137,8 +133,7 @@ export default function ResetPassword() {
       setSuccess(true);
       
       // Redirigir al login después de 3 segundos
-      setTimeout(()
-        => {
+      setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err: unknown) {
@@ -171,8 +166,7 @@ export default function ResetPassword() {
             </div>
           </CardHeader>
           <CardFooter className="justify-center">
-            <Button onClick={()
-        => navigate('/login')}>
+            <Button onClick={() => navigate('/login')}>
               Ir al Inicio de Sesión
             </Button>
           </CardFooter>

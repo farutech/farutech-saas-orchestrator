@@ -17,24 +17,17 @@ import type * as API from '@/types/api';
 
 export const queryKeys = {
   products: ['products'] as const,
-  product: (id: string)
-        => ['products', id] as const,
-  productModules: (productId: string)
-        => ['products', productId, 'modules'] as const,
+  product: (id: string) => ['products', id] as const,
+  productModules: (productId: string) => ['products', productId, 'modules'] as const,
   modules: ['modules'] as const,
-  module: (id: string)
-        => ['modules', id] as const,
-  moduleFeatures: (moduleId: string)
-        => ['modules', moduleId, 'features'] as const,
+  module: (id: string) => ['modules', id] as const,
+  moduleFeatures: (moduleId: string) => ['modules', moduleId, 'features'] as const,
   features: ['features'] as const,
-  feature: (id: string)
-        => ['features', id] as const,
+  feature: (id: string) => ['features', id] as const,
   customers: ['customers'] as const,
-  customer: (id: string)
-        => ['customers', id] as const,
+  customer: (id: string) => ['customers', id] as const,
   instances: ['instances'] as const,
-  instance: (id: string)
-        => ['instances', id] as const,
+  instance: (id: string) => ['instances', id] as const,
   availableTenants: ['available-tenants'] as const,
 };
 
@@ -42,8 +35,7 @@ export const queryKeys = {
 // PRODUCTS
 // ============================================================================
 
-export const useProducts = (options?: UseQueryOptions<API.ProductDto[]>)
-        => {
+export const useProducts = (options?: UseQueryOptions<API.ProductDto[]>) => {
   return useQuery({
     queryKey: queryKeys.products,
     queryFn: catalogService.getProducts,
@@ -51,41 +43,34 @@ export const useProducts = (options?: UseQueryOptions<API.ProductDto[]>)
   });
 };
 
-export const useProduct = (id: string, options?: UseQueryOptions<API.ProductDto>)
-        => {
+export const useProduct = (id: string, options?: UseQueryOptions<API.ProductDto>) => {
   return useQuery({
     queryKey: queryKeys.product(id),
-    queryFn: ()
-        => catalogService.getProduct(id),
+    queryFn: () => catalogService.getProduct(id),
     enabled: !!id,
     ...options,
   });
 };
 
-export const useProductManifest = (id: string, options?: UseQueryOptions<API.ProductManifestDto>)
-        => {
+export const useProductManifest = (id: string, options?: UseQueryOptions<API.ProductManifestDto>) => {
   return useQuery({
     queryKey: [...queryKeys.product(id), 'manifest'],
-    queryFn: ()
-        => catalogService.getProductManifest(id),
+    queryFn: () => catalogService.getProductManifest(id),
     enabled: !!id,
     ...options,
   });
 };
 
-export const useCreateProduct = (options?: UseMutationOptions<API.ProductDto, Error, API.CreateProductDto>)
-        => {
+export const useCreateProduct = (options?: UseMutationOptions<API.ProductDto, Error, API.CreateProductDto>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: catalogService.createProduct,
-    onSuccess: (data)
-        => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products });
       toast.success('Producto creado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al crear producto');
     },
@@ -93,21 +78,17 @@ export const useCreateProduct = (options?: UseMutationOptions<API.ProductDto, Er
   });
 };
 
-export const useUpdateProduct = (options?: UseMutationOptions<API.ProductDto, Error, { id: string; data: API.UpdateProductDto }>)
-        => {
+export const useUpdateProduct = (options?: UseMutationOptions<API.ProductDto, Error, { id: string; data: API.UpdateProductDto }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data })
-        => catalogService.updateProduct(id, data),
-    onSuccess: (_, variables)
-        => {
+    mutationFn: ({ id, data }) => catalogService.updateProduct(id, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products });
       queryClient.invalidateQueries({ queryKey: queryKeys.product(variables.id) });
       toast.success('Producto actualizado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al actualizar producto');
     },
@@ -115,19 +96,16 @@ export const useUpdateProduct = (options?: UseMutationOptions<API.ProductDto, Er
   });
 };
 
-export const useDeleteProduct = (options?: UseMutationOptions<void, Error, string>)
-        => {
+export const useDeleteProduct = (options?: UseMutationOptions<void, Error, string>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: catalogService.deleteProduct,
-    onSuccess: ()
-        => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products });
       toast.success('Producto eliminado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al eliminar producto');
     },
@@ -139,41 +117,34 @@ export const useDeleteProduct = (options?: UseMutationOptions<void, Error, strin
 // MODULES
 // ============================================================================
 
-export const useProductModules = (productId: string, options?: UseQueryOptions<API.ModuleDto[]>)
-        => {
+export const useProductModules = (productId: string, options?: UseQueryOptions<API.ModuleDto[]>) => {
   return useQuery({
     queryKey: queryKeys.productModules(productId),
-    queryFn: ()
-        => catalogService.getProductModules(productId),
+    queryFn: () => catalogService.getProductModules(productId),
     enabled: !!productId,
     ...options,
   });
 };
 
-export const useModule = (id: string, options?: UseQueryOptions<API.ModuleDto>)
-        => {
+export const useModule = (id: string, options?: UseQueryOptions<API.ModuleDto>) => {
   return useQuery({
     queryKey: queryKeys.module(id),
-    queryFn: ()
-        => catalogService.getModule(id),
+    queryFn: () => catalogService.getModule(id),
     enabled: !!id,
     ...options,
   });
 };
 
-export const useCreateModule = (options?: UseMutationOptions<API.ModuleDto, Error, API.CreateModuleDto>)
-        => {
+export const useCreateModule = (options?: UseMutationOptions<API.ModuleDto, Error, API.CreateModuleDto>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: catalogService.createModule,
-    onSuccess: (data)
-        => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.productModules(data.productId) });
       toast.success('Módulo creado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al crear módulo');
     },
@@ -181,21 +152,17 @@ export const useCreateModule = (options?: UseMutationOptions<API.ModuleDto, Erro
   });
 };
 
-export const useUpdateModule = (options?: UseMutationOptions<API.ModuleDto, Error, { id: string; data: API.UpdateModuleDto }>)
-        => {
+export const useUpdateModule = (options?: UseMutationOptions<API.ModuleDto, Error, { id: string; data: API.UpdateModuleDto }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data })
-        => catalogService.updateModule(id, data),
-    onSuccess: (data, variables)
-        => {
+    mutationFn: ({ id, data }) => catalogService.updateModule(id, data),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.module(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.productModules(data.productId) });
       toast.success('Módulo actualizado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al actualizar módulo');
     },
@@ -203,20 +170,16 @@ export const useUpdateModule = (options?: UseMutationOptions<API.ModuleDto, Erro
   });
 };
 
-export const useDeleteModule = (options?: UseMutationOptions<void, Error, { id: string; productId: string }>)
-        => {
+export const useDeleteModule = (options?: UseMutationOptions<void, Error, { id: string; productId: string }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id })
-        => catalogService.deleteModule(id),
-    onSuccess: (_, variables)
-        => {
+    mutationFn: ({ id }) => catalogService.deleteModule(id),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.productModules(variables.productId) });
       toast.success('Módulo eliminado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al eliminar módulo');
     },
@@ -228,41 +191,34 @@ export const useDeleteModule = (options?: UseMutationOptions<void, Error, { id: 
 // FEATURES
 // ============================================================================
 
-export const useModuleFeatures = (moduleId: string, options?: UseQueryOptions<API.FeatureDto[]>)
-        => {
+export const useModuleFeatures = (moduleId: string, options?: UseQueryOptions<API.FeatureDto[]>) => {
   return useQuery({
     queryKey: queryKeys.moduleFeatures(moduleId),
-    queryFn: ()
-        => catalogService.getModuleFeatures(moduleId),
+    queryFn: () => catalogService.getModuleFeatures(moduleId),
     enabled: !!moduleId,
     ...options,
   });
 };
 
-export const useFeature = (id: string, options?: UseQueryOptions<API.FeatureDto>)
-        => {
+export const useFeature = (id: string, options?: UseQueryOptions<API.FeatureDto>) => {
   return useQuery({
     queryKey: queryKeys.feature(id),
-    queryFn: ()
-        => catalogService.getFeature(id),
+    queryFn: () => catalogService.getFeature(id),
     enabled: !!id,
     ...options,
   });
 };
 
-export const useCreateFeature = (options?: UseMutationOptions<API.FeatureDto, Error, API.CreateFeatureDto>)
-        => {
+export const useCreateFeature = (options?: UseMutationOptions<API.FeatureDto, Error, API.CreateFeatureDto>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: catalogService.createFeature,
-    onSuccess: (data)
-        => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.moduleFeatures(data.moduleId) });
       toast.success('Feature creada exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al crear feature');
     },
@@ -270,21 +226,17 @@ export const useCreateFeature = (options?: UseMutationOptions<API.FeatureDto, Er
   });
 };
 
-export const useUpdateFeature = (options?: UseMutationOptions<API.FeatureDto, Error, { id: string; data: API.UpdateFeatureDto }>)
-        => {
+export const useUpdateFeature = (options?: UseMutationOptions<API.FeatureDto, Error, { id: string; data: API.UpdateFeatureDto }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data })
-        => catalogService.updateFeature(id, data),
-    onSuccess: (data, variables)
-        => {
+    mutationFn: ({ id, data }) => catalogService.updateFeature(id, data),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.feature(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.moduleFeatures(data.moduleId) });
       toast.success('Feature actualizada exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al actualizar feature');
     },
@@ -292,20 +244,16 @@ export const useUpdateFeature = (options?: UseMutationOptions<API.FeatureDto, Er
   });
 };
 
-export const useDeleteFeature = (options?: UseMutationOptions<void, Error, { id: string; moduleId: string }>)
-        => {
+export const useDeleteFeature = (options?: UseMutationOptions<void, Error, { id: string; moduleId: string }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id })
-        => catalogService.deleteFeature(id),
-    onSuccess: (_, variables)
-        => {
+    mutationFn: ({ id }) => catalogService.deleteFeature(id),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.moduleFeatures(variables.moduleId) });
       toast.success('Feature eliminada exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al eliminar feature');
     },
@@ -317,8 +265,7 @@ export const useDeleteFeature = (options?: UseMutationOptions<void, Error, { id:
 // CUSTOMERS
 // ============================================================================
 
-export const useCustomers = (options?: Omit<UseQueryOptions<API.PagedOrganizationsResponse>, 'queryKey'>)
-        => {
+export const useCustomers = (options?: Omit<UseQueryOptions<API.PagedOrganizationsResponse>, 'queryKey'>) => {
   return useQuery({
     queryKey: queryKeys.customers,
     queryFn: customersService.getCustomers,
@@ -326,30 +273,25 @@ export const useCustomers = (options?: Omit<UseQueryOptions<API.PagedOrganizatio
   });
 };
 
-export const useCustomer = (id: string, options?: UseQueryOptions<API.Customer>)
-        => {
+export const useCustomer = (id: string, options?: UseQueryOptions<API.Customer>) => {
   return useQuery({
     queryKey: queryKeys.customer(id),
-    queryFn: ()
-        => customersService.getCustomer(id),
+    queryFn: () => customersService.getCustomer(id),
     enabled: !!id,
     ...options,
   });
 };
 
-export const useCreateCustomer = (options?: UseMutationOptions<API.CreateCustomerResponse, Error, API.CreateCustomerRequest>)
-        => {
+export const useCreateCustomer = (options?: UseMutationOptions<API.CreateCustomerResponse, Error, API.CreateCustomerRequest>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: customersService.createCustomer,
-    onSuccess: ()
-        => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers });
       toast.success('Cliente creado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al crear cliente');
     },
@@ -357,21 +299,17 @@ export const useCreateCustomer = (options?: UseMutationOptions<API.CreateCustome
   });
 };
 
-export const useUpdateCustomer = (options?: UseMutationOptions<void, Error, { id: string; data: API.UpdateCustomerRequest }>)
-        => {
+export const useUpdateCustomer = (options?: UseMutationOptions<void, Error, { id: string; data: API.UpdateCustomerRequest }>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data })
-        => customersService.updateCustomer(id, data),
-    onSuccess: (_, variables)
-        => {
+    mutationFn: ({ id, data }) => customersService.updateCustomer(id, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers });
       queryClient.invalidateQueries({ queryKey: queryKeys.customer(variables.id) });
       toast.success('Cliente actualizado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al actualizar cliente');
     },
@@ -379,19 +317,16 @@ export const useUpdateCustomer = (options?: UseMutationOptions<void, Error, { id
   });
 };
 
-export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, string>)
-        => {
+export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, string>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: customersService.deleteCustomer,
-    onSuccess: ()
-        => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers });
       toast.success('Cliente eliminado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al eliminar cliente');
     },
@@ -403,8 +338,7 @@ export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, stri
 // AUTH
 // ============================================================================
 
-export const useAvailableTenants = (options?: Omit<UseQueryOptions<API.TenantOptionDto[]>, 'queryKey'>)
-        => {
+export const useAvailableTenants = (options?: Omit<UseQueryOptions<API.TenantOptionDto[]>, 'queryKey'>) => {
   return useQuery({
     queryKey: queryKeys.availableTenants,
     queryFn: authService.getAvailableTenants,
@@ -412,21 +346,18 @@ export const useAvailableTenants = (options?: Omit<UseQueryOptions<API.TenantOpt
   });
 };
 
-export const useProvisionTenant = (options?: UseMutationOptions<API.ProvisionTenantResponse, Error, API.ProvisionTenantRequest>)
-        => {
+export const useProvisionTenant = (options?: UseMutationOptions<API.ProvisionTenantResponse, Error, API.ProvisionTenantRequest>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: provisioningService.provisionTenant,
-    onSuccess: ()
-        => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers });
       queryClient.invalidateQueries({ queryKey: queryKeys.instances });
       // Note: refreshAvailableTenants will be called from the component
       toast.success('Tenant provisionado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al provisionar tenant');
     },
@@ -434,19 +365,16 @@ export const useProvisionTenant = (options?: UseMutationOptions<API.ProvisionTen
   });
 };
 
-export const useDeprovisionTenant = (options?: UseMutationOptions<void, Error, string>)
-        => {
+export const useDeprovisionTenant = (options?: UseMutationOptions<void, Error, string>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: provisioningService.deprovisionTenant,
-    onSuccess: ()
-        => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.instances });
       toast.success('Tenant desprovisionado exitosamente');
     },
-    onError: (error: unknown)
-        => {
+    onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al desprovisionar tenant');
     },
@@ -458,8 +386,7 @@ export const useDeprovisionTenant = (options?: UseMutationOptions<void, Error, s
 // INSTANCES
 // ============================================================================
 
-export const useInstances = (options?: UseQueryOptions<API.TenantInstance[]>)
-        => {
+export const useInstances = (options?: UseQueryOptions<API.TenantInstance[]>) => {
   return useQuery({
     queryKey: queryKeys.instances,
     queryFn: instancesService.getInstances,
@@ -467,12 +394,10 @@ export const useInstances = (options?: UseQueryOptions<API.TenantInstance[]>)
   });
 };
 
-export const useInstance = (id: string, options?: UseQueryOptions<API.TenantInstance>)
-        => {
+export const useInstance = (id: string, options?: UseQueryOptions<API.TenantInstance>) => {
   return useQuery({
     queryKey: queryKeys.instance(id),
-    queryFn: ()
-        => instancesService.getInstance(id),
+    queryFn: () => instancesService.getInstance(id),
     enabled: !!id,
     ...options,
   });
