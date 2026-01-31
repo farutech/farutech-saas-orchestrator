@@ -55,5 +55,5 @@ public class Permission : BaseEntity
     /// <summary>
     /// Roles que tienen este permiso (Many-to-Many)
     /// </summary>
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RolePermission> RolePermissions { get; set; } = [];
 }

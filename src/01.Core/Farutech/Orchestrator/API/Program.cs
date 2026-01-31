@@ -182,6 +182,9 @@ builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICatalogService, Farutech.Orchestrator.Infrastructure.Services.CatalogService>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 
+// Database provisioner: creates DB/schema and returns tenant-scoped connection string
+builder.Services.AddScoped<IDatabaseProvisioner, DatabaseProvisioner>();
+
 // ========== DATABASE CONNECTION FACTORY (Hybrid Tenancy) ==========
 builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
 

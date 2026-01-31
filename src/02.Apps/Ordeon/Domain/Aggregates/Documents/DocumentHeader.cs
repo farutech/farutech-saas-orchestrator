@@ -17,7 +17,7 @@ public enum DocumentStatus
 /// </summary>
 public sealed class DocumentHeader : Entity, IAggregateRoot
 {
-    private readonly List<DocumentLine> _lines = new();
+    private readonly List<DocumentLine> _lines = [];
 
     public Guid DocumentDefinitionId { get; private set; }
     public string DocumentNumber { get; private set; }
@@ -76,7 +76,7 @@ public sealed class DocumentHeader : Entity, IAggregateRoot
 
     public void Activate()
     {
-        if (!_lines.Any()) throw new InvalidOperationException("Document must have at least one line");
+        if (_lines.Count == 0) throw new InvalidOperationException("Document must have at least one line");
         Status = DocumentStatus.Active;
         MarkAsUpdated();
     }

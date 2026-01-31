@@ -656,7 +656,7 @@ public class AuthService(
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null || !user.IsActive)
         {
-            return new UserContextResponse(userId, "", "", new List<OrganizationContextDto>());
+            return new UserContextResponse(userId, "", "", []);
         }
 
         // Obtener membresías activas del usuario

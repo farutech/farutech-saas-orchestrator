@@ -9,7 +9,7 @@ namespace Farutech.Apps.Ordeon.Domain.Common;
 /// </summary>
 public abstract class Entity
 {
-    private readonly List<IDomainEvent> _domainEvents = new();
+    private readonly List<IDomainEvent> _domainEvents = [];
 
     public Guid Id { get; protected set; } = Guid.NewGuid();
     public DateTime CreatedAtUtc { get; protected set; } = DateTime.UtcNow;

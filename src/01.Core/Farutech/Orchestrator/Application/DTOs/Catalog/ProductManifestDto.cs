@@ -18,17 +18,17 @@ public class ProductManifestDto
     /// <summary>
     /// Módulos con sus features y permisos.
     /// </summary>
-    public List<ModuleManifestDto> Modules { get; set; } = new();
+    public List<ModuleManifestDto> Modules { get; set; } = [];
     
     /// <summary>
     /// Planes de suscripción disponibles para este producto.
     /// </summary>
-    public List<SubscriptionPlanDto> SubscriptionPlans { get; set; } = new();
+    public List<SubscriptionPlanDto> SubscriptionPlans { get; set; } = [];
     
     /// <summary>
     /// Permisos globales asociados al producto.
     /// </summary>
-    public List<PermissionDto> Permissions { get; set; } = new();
+    public List<PermissionDto> Permissions { get; set; } = [];
 }
 
 /// <summary>
@@ -47,7 +47,7 @@ public class ModuleManifestDto
     /// <summary>
     /// Features del módulo con sus permisos.
     /// </summary>
-    public List<FeatureManifestDto> Features { get; set; } = new();
+    public List<FeatureManifestDto> Features { get; set; } = [];
 }
 
 /// <summary>
@@ -68,7 +68,7 @@ public class FeatureManifestDto
     /// <summary>
     /// Permisos asociados a esta feature.
     /// </summary>
-    public List<PermissionDto> Permissions { get; set; } = new();
+    public List<PermissionDto> Permissions { get; set; } = [];
 }
 
 /// <summary>

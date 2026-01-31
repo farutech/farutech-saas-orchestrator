@@ -135,7 +135,7 @@ public class CatalogService(OrchestratorDbContext context,
             Description = product.Description,
             IsActive = product.IsActive,
             CreatedAt = product.CreatedAt,
-            Modules = new List<ModuleDto>()
+            Modules = []
         };
     }
 
@@ -239,7 +239,7 @@ public class CatalogService(OrchestratorDbContext context,
                             AdditionalCost = f.AdditionalCost,
                             CreatedAt = f.CreatedAt,
                             UpdatedAt = f.UpdatedAt,
-                            Permissions = new List<PermissionDto>()
+                            Permissions = []
                         }).ToList()
                 }).ToList()
         };
@@ -279,7 +279,7 @@ public class CatalogService(OrchestratorDbContext context,
                 IsActive = sf.Feature.IsActive,
                 CreatedAt = sf.Feature.CreatedAt,
                 UpdatedAt = sf.Feature.UpdatedAt
-            }).ToList() ?? new List<FeatureDto>()
+            }).ToList() ?? []
         }).ToList();
 
         return manifest;
@@ -394,7 +394,7 @@ public class CatalogService(OrchestratorDbContext context,
             Description = module.Description,
             IsActive = module.IsActive,
             CreatedAt = module.CreatedAt,
-            Features = new List<FeatureDto>()
+            Features = []
         };
     }
 

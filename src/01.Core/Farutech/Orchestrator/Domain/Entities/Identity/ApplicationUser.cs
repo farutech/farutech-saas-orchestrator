@@ -16,7 +16,7 @@ public class ApplicationUser : IdentityUser<Guid>
     /// <summary>
     /// Membresías del usuario en diferentes empresas (multi-tenancy).
     /// </summary>
-    public ICollection<UserCompanyMembership> CompanyMemberships { get; set; } = new List<UserCompanyMembership>();
+    public ICollection<UserCompanyMembership> CompanyMemberships { get; set; } = [];
 
     public string FullName => $"{FirstName} {LastName}".Trim();
 }

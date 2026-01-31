@@ -17,7 +17,7 @@ public enum SessionStatus
 /// </summary>
 public sealed class CashSession : Entity, IAggregateRoot
 {
-    private readonly List<CashMovement> _movements = new();
+    private readonly List<CashMovement> _movements = [];
 
     public Guid CashRegisterId { get; private set; }
     public Guid CashierId { get; private set; }

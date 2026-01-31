@@ -10,7 +10,7 @@ namespace Farutech.Apps.Ordeon.Domain.Aggregates.Identity;
 /// </summary>
 public sealed class User : Entity, IAggregateRoot
 {
-    private readonly List<Role> _roles = new();
+    private readonly List<Role> _roles = [];
 
     public string Email { get; private set; }
     public string FullName { get; private set; }

@@ -25,7 +25,7 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted)
             .ToList();
 
-        if (!entries.Any()) return new ValueTask<InterceptionResult<int>>(result);
+        if (entries.Count == 0) return new ValueTask<InterceptionResult<int>>(result);
 
         // Nota: En un entorno real, obtendríamos el UserId del IHttpContextAccessor
         // Aquí simplificamos o usamos un Guid.Empty si no está disponible en este scope directo

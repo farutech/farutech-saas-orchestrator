@@ -20,7 +20,7 @@ public class ModuleDto
     /// <summary>
     /// Features asociadas a este módulo.
     /// </summary>
-    public List<FeatureDto> Features { get; set; } = new();
+    public List<FeatureDto> Features { get; set; } = [];
 }
 
 /// <summary>

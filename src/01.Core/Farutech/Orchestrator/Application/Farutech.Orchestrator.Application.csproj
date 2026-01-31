@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <!-- Npgsql usage moved to Infrastructure via IDatabaseProvisioner implementation. Removed direct package to avoid warnings in Application build. -->
   </ItemGroup>
 
   <PropertyGroup>

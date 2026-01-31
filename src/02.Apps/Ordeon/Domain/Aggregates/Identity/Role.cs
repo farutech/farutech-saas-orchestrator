@@ -9,7 +9,7 @@ namespace Farutech.Apps.Ordeon.Domain.Aggregates.Identity;
 /// </summary>
 public sealed class Role : Entity, IAggregateRoot
 {
-    private readonly List<Permission> _permissions = new();
+    private readonly List<Permission> _permissions = [];
 
     public string Name { get; private set; }
     public string Description { get; private set; }

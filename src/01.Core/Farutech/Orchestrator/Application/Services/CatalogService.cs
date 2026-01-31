@@ -436,7 +436,7 @@ public class CatalogService(ICatalogRepository catalogRepository, ILogger<Catalo
                 CreatedAt = sf.Feature.CreatedAt,
                 UpdatedAt = sf.Feature.UpdatedAt
             })
-            .ToList() ?? new List<FeatureDto>();
+            .ToList() ?? [];
 
         return new SubscriptionPlanDto
         {

@@ -27,7 +27,7 @@ public class SubscriptionPlanDto
     /// <summary>
     /// Features incluidas en este plan
     /// </summary>
-    public List<FeatureDto> Features { get; set; } = new();
+    public List<FeatureDto> Features { get; set; } = [];
 }
 
 /// <summary>
@@ -78,7 +78,7 @@ public class CreateSubscriptionPlanDto
     /// <summary>
     /// IDs de las features incluidas en este plan
     /// </summary>
-    public List<Guid> FeatureIds { get; set; } = new();
+    public List<Guid> FeatureIds { get; set; } = [];
 }
 
 /// <summary>
