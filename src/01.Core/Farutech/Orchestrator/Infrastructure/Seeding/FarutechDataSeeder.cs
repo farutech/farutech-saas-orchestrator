@@ -25,6 +25,12 @@ public class FarutechDataSeeder
     private static readonly Guid SalespersonRoleId = new("00000000-0000-0000-0001-000000000004");
     private static readonly Guid AuditorRoleId = new("00000000-0000-0000-0001-000000000005");
 
+    // Catalog seeding GUIDs
+    private static readonly Guid FarutechPosProductId = new("10000000-0000-0000-0001-000000000001");
+    private static readonly Guid SalesModuleId = new("10000000-0000-0000-0001-000000000002");
+    private static readonly Guid InventoryModuleId = new("10000000-0000-0000-0001-000000000003");
+    private static readonly Guid SecurityModuleId = new("10000000-0000-0000-0001-000000000004");
+
     public FarutechDataSeeder(
         OrchestratorDbContext context,
         UserManager<ApplicationUser> userManager,
@@ -45,6 +51,9 @@ public class FarutechDataSeeder
 
             // NO ejecutar migraciones aquí - deben ejecutarse ANTES del seeding
             // await _context.Database.MigrateAsync(); // REMOVIDO
+
+            // Seed catalog data first (products, modules, features)
+            await SeedCatalogDataAsync();
 
             // Solo seed de roles y SuperAdmin
             await SeedRolesAsync();
@@ -152,5 +161,198 @@ public class FarutechDataSeeder
         await _userManager.AddClaimAsync(superAdmin, new Claim("ScopeId", Guid.Empty.ToString()));
 
         _logger.LogInformation($"✅ Usuario SuperAdmin creado: {superAdminEmail}");
+    }
+
+    private async Task SeedCatalogDataAsync()
+    {
+        _logger.LogInformation("📦 Iniciando seeding de datos de catálogo...");
+
+        // Seed Product
+        await SeedProductAsync();
+
+        // Seed Modules
+        await SeedModulesAsync();
+
+        // Seed Features
+        await SeedFeaturesAsync();
+
+        _logger.LogInformation("✅ Seeding de catálogo completado");
+    }
+
+    private async Task SeedProductAsync()
+    {
+        var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.Code == "farutech_pos");
+        if (existingProduct != null)
+        {
+            _logger.LogInformation("⏭️  Producto 'Farutech POS & Services' ya existe, omitiendo...");
+            return;
+        }
+
+        var product = new Product
+        {
+            Id = FarutechPosProductId,
+            Code = "farutech_pos",
+            Name = "Farutech POS & Services",
+            Description = "Sistema de gestión de punto de venta, servicios y control de inventario.",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "System"
+        };
+
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("✅ Producto creado: Farutech POS & Services");
+    }
+
+    private async Task SeedModulesAsync()
+    {
+        var modules = new[]
+        {
+            new Module
+            {
+                Id = SalesModuleId,
+                ProductId = FarutechPosProductId,
+                Code = "sales_module",
+                Name = "Ventas",
+                Description = "Módulo de gestión de ventas y punto de venta",
+                IsRequired = true,
+                IsActive = true,
+                DeploymentType = "Shared",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Module
+            {
+                Id = InventoryModuleId,
+                ProductId = FarutechPosProductId,
+                Code = "inventory_module",
+                Name = "Inventario",
+                Description = "Módulo de control de inventario y stock",
+                IsRequired = true,
+                IsActive = true,
+                DeploymentType = "Shared",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Module
+            {
+                Id = SecurityModuleId,
+                ProductId = FarutechPosProductId,
+                Code = "security_module",
+                Name = "Seguridad",
+                Description = "Módulo de gestión de seguridad y permisos",
+                IsRequired = true,
+                IsActive = true,
+                DeploymentType = "Shared",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            }
+        };
+
+        foreach (var module in modules)
+        {
+            var existingModule = await _context.Modules.FirstOrDefaultAsync(m => m.Code == module.Code);
+            if (existingModule == null)
+            {
+                _context.Modules.Add(module);
+                _logger.LogInformation($"✅ Módulo creado: {module.Name}");
+            }
+            else
+            {
+                _logger.LogInformation($"⏭️  Módulo ya existe: {module.Name}, omitiendo...");
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedFeaturesAsync()
+    {
+        var features = new[]
+        {
+            // Sales Module Features
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = SalesModuleId,
+                Code = "pos_terminal",
+                Name = "Terminal de Punto de Venta",
+                Description = "Funcionalidad básica de terminal POS",
+                IsActive = true,
+                RequiresLicense = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = SalesModuleId,
+                Code = "service_orders",
+                Name = "Gestión de Servicios",
+                Description = "Gestión de órdenes de servicio",
+                IsActive = true,
+                RequiresLicense = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+
+            // Inventory Module Features
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = InventoryModuleId,
+                Code = "stock_management",
+                Name = "Control de Stock",
+                Description = "Gestión básica de inventario y stock",
+                IsActive = true,
+                RequiresLicense = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = InventoryModuleId,
+                Code = "warehouses",
+                Name = "Multi-bodega",
+                Description = "Gestión de múltiples bodegas y transferencias",
+                IsActive = true,
+                RequiresLicense = true,
+                AdditionalCost = 50.00m,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+
+            // Security Module Features
+            new Feature
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = SecurityModuleId,
+                Code = "rbac_core",
+                Name = "Roles y Permisos",
+                Description = "Sistema básico de roles y permisos RBAC",
+                IsActive = true,
+                RequiresLicense = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            }
+        };
+
+        foreach (var feature in features)
+        {
+            var existingFeature = await _context.Features.FirstOrDefaultAsync(f => f.Code == feature.Code);
+            if (existingFeature == null)
+            {
+                _context.Features.Add(feature);
+                _logger.LogInformation($"✅ Feature creada: {feature.Name}");
+            }
+            else
+            {
+                _logger.LogInformation($"⏭️  Feature ya existe: {feature.Name}, omitiendo...");
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

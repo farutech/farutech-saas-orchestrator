@@ -35,7 +35,7 @@ if (string.IsNullOrEmpty(connectionString))
     // Fallback para desarrollo local cuando no hay Aspire
     if (builder.Environment.IsDevelopment())
     {
-        connectionString = "Host=localhost;Port=5432;Database=farutec_db;Username=postgres;Password=SuperSecurePassword123";
+        connectionString = "Host=localhost;Port=5432;Database=farutec_db;Username=farutec_admin;Password=SuperSecurePassword123";
         Console.WriteLine("⚠️  Usando cadena de conexión de desarrollo local");
         Console.WriteLine($"   Connection: {connectionString.Replace("SuperSecurePassword123", "***")}");
     }
