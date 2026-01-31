@@ -55,7 +55,8 @@ export const authService = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al seleccionar contexto' }));
+      const error = await response.json().catch(()
+        => ({ message: 'Error al seleccionar contexto' }));
       throw new Error(error.message || 'Error al seleccionar contexto');
     }
 

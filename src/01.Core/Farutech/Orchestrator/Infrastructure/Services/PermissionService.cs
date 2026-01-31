@@ -52,11 +52,9 @@ public class PermissionService(OrchestratorDbContext context,
 
     public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(
         Guid userId,
-        Guid? tenantId = null)
-    {
+        Guid? tenantId = null) =>
         // Since custom permissions are removed, return empty
-        return await Task.FromResult(new List<Permission>());
-    }
+        await Task.FromResult(new List<Permission>());
 
     public async Task<IEnumerable<ApplicationRole>> GetUserRolesAsync(
         Guid userId,
@@ -125,26 +123,20 @@ public class PermissionService(OrchestratorDbContext context,
         return result.Succeeded;
     }
 
-    public async Task<IEnumerable<Permission>> GetRolePermissionsAsync(Guid roleId)
-    {
+    public async Task<IEnumerable<Permission>> GetRolePermissionsAsync(Guid roleId) =>
         // Custom permissions removed, return empty
-        return await Task.FromResult(new List<Permission>());
-    }
+        await Task.FromResult(new List<Permission>());
 
     public async Task<bool> AssignPermissionToRoleAsync(
         Guid roleId,
         Guid permissionId,
-        string? grantedBy = null)
-    {
+        string? grantedBy = null) =>
         // Not implemented since custom permissions removed
-        return await Task.FromResult(false);
-    }
+        await Task.FromResult(false);
 
-    public async Task<bool> RemovePermissionFromRoleAsync(Guid roleId, Guid permissionId)
-    {
+    public async Task<bool> RemovePermissionFromRoleAsync(Guid roleId, Guid permissionId) =>
         // Not implemented since custom permissions removed
-        return await Task.FromResult(false);
-    }
+        await Task.FromResult(false);
 
     public async Task<bool> HasRoleAsync(
         Guid userId,
@@ -157,11 +149,9 @@ public class PermissionService(OrchestratorDbContext context,
         return await _userManager.IsInRoleAsync(user, roleCode);
     }
 
-    public async Task<IEnumerable<Permission>> GetAllPermissionsAsync()
-    {
+    public async Task<IEnumerable<Permission>> GetAllPermissionsAsync() =>
         // Custom permissions removed, return empty
-        return await Task.FromResult(new List<Permission>());
-    }
+        await Task.FromResult(new List<Permission>());
 
     public async Task<IEnumerable<ApplicationRole>> GetAllRolesAsync()
     {
@@ -181,9 +171,7 @@ public class PermissionService(OrchestratorDbContext context,
         return roles;
     }
 
-    private async Task InvalidateUserCachesAsync(Guid userId)
-    {
+    private async Task InvalidateUserCachesAsync(Guid userId) =>
         // Simplified cache invalidation
         await Task.CompletedTask;
-    }
 }

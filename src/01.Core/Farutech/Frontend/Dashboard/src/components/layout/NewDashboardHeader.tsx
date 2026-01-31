@@ -71,27 +71,34 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
   const [commandOpen, setCommandOpen] = useState(false);
 
   // Keyboard shortcut for command palette
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+  useEffect(()
+        => {
+    const down = (e: KeyboardEvent)
+        => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setCommandOpen((open) => !open);
+        setCommandOpen((open)
+        => !open);
       }
     };
     document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    return ()
+        => document.removeEventListener('keydown', down);
   }, []);
 
-  const handleModuleSwitch = (module: ModuleType) => {
+  const handleModuleSwitch = (module: ModuleType)
+        => {
     setCurrentModule(module);
   };
 
-  const handleLogout = () => {
+  const handleLogout = ()
+        => {
     logout();
     navigate('/login');
   };
 
-  const handleBackToHome = () => {
+  const handleBackToHome = ()
+        => {
     setCurrentModule(null);
     navigate('/');
   };
@@ -131,7 +138,8 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
           <Button
             variant="outline"
             className="w-full justify-start text-muted-foreground bg-muted/50 border-0"
-            onClick={() => setCommandOpen(true)}
+            onClick={()
+        => setCommandOpen(true)}
           >
             <Search className="mr-2 h-4 w-4" />
             Buscar...
@@ -155,12 +163,14 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Cambiar Módulo</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {Object.values(moduleConfigs).map((config) => {
+              {Object.values(moduleConfigs).map((config)
+        => {
                 const Icon = iconMap[config.icon];
                 return (
                   <DropdownMenuItem
                     key={config.id}
-                    onClick={() => handleModuleSwitch(config.id)}
+                    onClick={()
+        => handleModuleSwitch(config.id)}
                     className={cn(
                       "gap-2",
                       currentModule === config.id && "bg-primary/10"
@@ -218,10 +228,12 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
                   No hay notificaciones
                 </div>
               ) : (
-                notifications.slice(0, 5).map((notification) => (
+                notifications.slice(0, 5).map((notification)
+        => (
                   <DropdownMenuItem
                     key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={()
+        => markAsRead(notification.id)}
                     className={cn(
                       "flex flex-col items-start gap-1 p-3",
                       !notification.read && "bg-primary/5"
@@ -251,11 +263,13 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
+              <DropdownMenuItem onClick={()
+        => navigate('/settings')}>
                 <User className="mr-2 h-4 w-4" />
                 Perfil
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
+              <DropdownMenuItem onClick={()
+        => navigate('/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 Configuración
               </DropdownMenuItem>
@@ -275,12 +289,14 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
         <CommandList>
           <CommandEmpty>No se encontraron resultados.</CommandEmpty>
           <CommandGroup heading="Módulos">
-            {Object.values(moduleConfigs).map((config) => {
+            {Object.values(moduleConfigs).map((config)
+        => {
               const Icon = iconMap[config.icon];
               return (
                 <CommandItem
                   key={config.id}
-                  onSelect={() => {
+                  onSelect={()
+        => {
                     handleModuleSwitch(config.id);
                     setCommandOpen(false);
                   }}
@@ -292,11 +308,13 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
             })}
           </CommandGroup>
           <CommandGroup heading="Acciones">
-            <CommandItem onSelect={() => { navigate('/settings'); setCommandOpen(false); }}>
+            <CommandItem onSelect={()
+        => { navigate('/settings'); setCommandOpen(false); }}>
               <Settings className="mr-2 h-4 w-4" />
               Configuración
             </CommandItem>
-            <CommandItem onSelect={() => { handleBackToHome(); setCommandOpen(false); }}>
+            <CommandItem onSelect={()
+        => { handleBackToHome(); setCommandOpen(false); }}>
               <LayoutGrid className="mr-2 h-4 w-4" />
               Ir al Home
             </CommandItem>

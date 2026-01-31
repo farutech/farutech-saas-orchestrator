@@ -38,11 +38,9 @@ public sealed class TenantProvisioningService(IServiceProvider serviceProvider) 
         await SeedTenantAsync(dbContext, tenantId);
     }
 
-    private async Task SeedTenantAsync(OrdeonDbContext context, Guid tenantId)
-    {
+    private async Task SeedTenantAsync(OrdeonDbContext context, Guid tenantId) =>
         // Aquí podríamos crear el usuario administrador inicial para este tenant
         // y asignar los roles básicos.
         await Task.CompletedTask;
-    }
 }
 

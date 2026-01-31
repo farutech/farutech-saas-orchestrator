@@ -26,7 +26,8 @@ export default function OrganizationAppsPage() {
   const modal = useQueryModal();
 
   // Find the current organization data
-  const organization = useMemo(() => {
+  const organization = useMemo(()
+        => {
     if (requiresContextSelection) {
       const tenant = availableTenants?.find(t => t.tenantId === orgId);
       if (!tenant) return null;
@@ -63,7 +64,8 @@ export default function OrganizationAppsPage() {
   }, [orgId, customers, availableTenants, requiresContextSelection]);
 
   // Filter instances
-  const filteredInstances = useMemo(() => {
+  const filteredInstances = useMemo(()
+        => {
     if (!organization) return [];
     if (!searchTerm.trim()) return organization.instances;
     
@@ -76,7 +78,8 @@ export default function OrganizationAppsPage() {
   }, [organization, searchTerm]);
 
   // Helper for instance visual config
-  const getInstanceConfig = (type: string) => {
+  const getInstanceConfig = (type: string)
+        => {
     const t = (type || '').toLowerCase();
     if (t.includes('vet')) return { color: 'bg-orange-100 text-orange-600 border-orange-200', label: 'Veterinaria' };
     if (t.includes('erp')) return { color: 'bg-blue-100 text-blue-600 border-blue-200', label: 'ERP' };
@@ -85,7 +88,8 @@ export default function OrganizationAppsPage() {
     return { color: 'bg-slate-100 text-slate-600 border-slate-200', label: t || 'App' };
   };
 
-  const handleLaunch = async (instanceId: string, url: string) => {
+  const handleLaunch = async (instanceId: string, url: string)
+        => {
       if (!organization) return;
       
       const isExternalUrl = url && url.startsWith('http') && 
@@ -108,7 +112,8 @@ export default function OrganizationAppsPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
             <h2 className="text-2xl font-bold text-slate-900">Organización no encontrada</h2>
-            <Button onClick={() => navigate('/home')}>Volver al Inicio</Button>
+            <Button onClick={()
+        => navigate('/home')}>Volver al Inicio</Button>
         </div>
     );
   }
@@ -119,7 +124,8 @@ export default function OrganizationAppsPage() {
         
         {/* Header Navigation */}
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/home')} className="text-slate-500 hover:text-slate-900">
+            <Button variant="ghost" size="sm" onClick={()
+        => navigate('/home')} className="text-slate-500 hover:text-slate-900">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
             </Button>
@@ -142,10 +148,12 @@ export default function OrganizationAppsPage() {
                 placeholder="Buscar aplicación..." 
                 className="pl-10 bg-white"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e)
+        => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button onClick={() => modal.open('new-instance')}>
+            <Button onClick={()
+        => modal.open('new-instance')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva App
             </Button>
@@ -159,7 +167,8 @@ export default function OrganizationAppsPage() {
             {filteredInstances.map(instance => {
                 const config = getInstanceConfig(instance.type);
                 return (
-                    <Card key={instance.id} className="hover:shadow-md transition-all cursor-pointer border-slate-200" onClick={() => handleLaunch(instance.id, instance.url)}>
+                    <Card key={instance.id} className="hover:shadow-md transition-all cursor-pointer border-slate-200" onClick={()
+        => handleLaunch(instance.id, instance.url)}>
                         <CardHeader className="pb-2">
                             <div className="flex justify-between items-start">
                                 <Badge variant="secondary" className={`${config.color} border border-current/20`}>

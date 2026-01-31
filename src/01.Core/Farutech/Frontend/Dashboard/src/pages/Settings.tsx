@@ -43,14 +43,16 @@ export default function Settings() {
     confirm: '',
   });
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = ()
+        => {
     toast({
       title: 'Perfil actualizado',
       description: 'Los cambios han sido guardados exitosamente',
     });
   };
 
-  const handleSavePassword = () => {
+  const handleSavePassword = ()
+        => {
     if (passwords.new !== passwords.confirm) {
       toast({
         title: 'Error',
@@ -134,7 +136,8 @@ export default function Settings() {
                       <Input
                         id="name"
                         value={profile.name}
-                        onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                        onChange={(e)
+        => setProfile({ ...profile, name: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
@@ -143,7 +146,8 @@ export default function Settings() {
                         id="email"
                         type="email"
                         value={profile.email}
-                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        onChange={(e)
+        => setProfile({ ...profile, email: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
@@ -151,7 +155,8 @@ export default function Settings() {
                       <Input
                         id="phone"
                         value={profile.phone}
-                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                        onChange={(e)
+        => setProfile({ ...profile, phone: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
@@ -174,7 +179,8 @@ export default function Settings() {
                     <Textarea
                       id="bio"
                       value={profile.bio}
-                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                      onChange={(e)
+        => setProfile({ ...profile, bio: e.target.value })}
                       rows={3}
                     />
                   </div>
@@ -203,7 +209,8 @@ export default function Settings() {
                       id="current-password"
                       type="password"
                       value={passwords.current}
-                      onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                      onChange={(e)
+        => setPasswords({ ...passwords, current: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -212,7 +219,8 @@ export default function Settings() {
                       id="new-password"
                       type="password"
                       value={passwords.new}
-                      onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                      onChange={(e)
+        => setPasswords({ ...passwords, new: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -221,7 +229,8 @@ export default function Settings() {
                       id="confirm-password"
                       type="password"
                       value={passwords.confirm}
-                      onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                      onChange={(e)
+        => setPasswords({ ...passwords, confirm: e.target.value })}
                     />
                   </div>
 
@@ -252,7 +261,8 @@ export default function Settings() {
                     </div>
                     <Switch
                       checked={notifications.email}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked)
+        => 
                         setNotifications({ ...notifications, email: checked })
                       }
                     />
@@ -267,7 +277,8 @@ export default function Settings() {
                     </div>
                     <Switch
                       checked={notifications.push}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked)
+        => 
                         setNotifications({ ...notifications, push: checked })
                       }
                     />
@@ -282,7 +293,8 @@ export default function Settings() {
                     </div>
                     <Switch
                       checked={notifications.sms}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked)
+        => 
                         setNotifications({ ...notifications, sms: checked })
                       }
                     />
@@ -297,7 +309,8 @@ export default function Settings() {
                     </div>
                     <Switch
                       checked={notifications.marketing}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked)
+        => 
                         setNotifications({ ...notifications, marketing: checked })
                       }
                     />

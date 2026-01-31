@@ -16,7 +16,8 @@ interface PetTableProps {
 }
 
 export function PetTable({ pets }: PetTableProps) {
-  const getSpeciesIcon = (species: string) => {
+  const getSpeciesIcon = (species: string)
+        => {
     return species === 'Perro' ? Dog : Cat;
   };
 
@@ -30,7 +31,8 @@ export function PetTable({ pets }: PetTableProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {pets.map((pet) => {
+          {pets.map((pet)
+        => {
             const SpeciesIcon = getSpeciesIcon(pet.species);
             return (
               <div 

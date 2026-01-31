@@ -20,7 +20,8 @@ const iconMap: Record<string, LucideIcon> = {
 
 interface ModuleCardProps {
   config: ModuleConfig;
-  onClick: (module: ModuleType) => void;
+  onClick: (module: ModuleType)
+        => void;
   index: number;
 }
 
@@ -45,7 +46,8 @@ export function ModuleCard({ config, onClick, index }: ModuleCardProps) {
           "bg-card border-2 border-transparent hover:border-primary/30",
           "transition-all duration-300 shadow-card hover:shadow-card-hover"
         )}
-        onClick={() => onClick(config.id)}
+        onClick={()
+        => onClick(config.id)}
       >
         {/* Gradient background overlay */}
         <div 

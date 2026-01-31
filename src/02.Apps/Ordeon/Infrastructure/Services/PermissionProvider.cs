@@ -7,8 +7,7 @@ namespace Farutech.Apps.Ordeon.Infrastructure.Services;
 public sealed class PermissionProvider : IPermissionProvider
 {
     public IEnumerable<PermissionDefinition> GetAllPermissions()
-    {
-        return new List<PermissionDefinition>
+        => new List<PermissionDefinition>
         {
             // Inventory
             new(Permissions.Inventory.Read, "Ver Items", "Permite ver el catálogo de productos", "Inventario"),
@@ -27,6 +26,5 @@ public sealed class PermissionProvider : IPermissionProvider
             // Documents
             new(Permissions.Documents.ManageDefinitions, "Configurar Documentos", "Configurar prefijos y numeración", "Documentos")
         };
-    }
 }
 

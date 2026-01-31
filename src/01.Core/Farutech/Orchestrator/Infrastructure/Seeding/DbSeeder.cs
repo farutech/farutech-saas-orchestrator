@@ -62,18 +62,14 @@ public static class DbSeeder
         }
     }
 
-    private static async Task SeedProductsAsync(OrchestratorDbContext context)
-    {
+    private static async Task SeedProductsAsync(OrchestratorDbContext context) =>
         // Product/module/feature/subscription seeding logic removed for cleanup.
         await Task.CompletedTask;
-    }
 
     private static async Task CreateSubscriptionPlansAsync(
-        OrchestratorDbContext context, 
-        Guid productId, 
-        object features)
-    {
+        OrchestratorDbContext context,
+        Guid productId,
+        object features) =>
         // Subscription plan creation logic removed for cleanup.
         await Task.CompletedTask;
-    }
 }

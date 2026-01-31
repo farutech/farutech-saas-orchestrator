@@ -220,7 +220,5 @@ public class IntegrationTestBase : IAsyncLifetime
     /// Set authorization header with access token
     /// </summary>
     protected void SetAuthorizationHeader(string token)
-    {
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-    }
+        => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 }

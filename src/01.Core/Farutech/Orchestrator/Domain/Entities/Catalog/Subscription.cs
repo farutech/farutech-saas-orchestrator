@@ -58,7 +58,7 @@ public class Subscription : BaseEntity
     /// Features incluidas en esta suscripción
     /// Si IsFullAccess=true, se incluyen todas las features del producto
     /// </summary>
-    public ICollection<SubscriptionFeature> SubscriptionFeatures { get; set; } = [];
+    public ICollection<SubscriptionFeature> SubscriptionFeatures { get; set; } = new List<SubscriptionFeature>();
 }
 
 /// <summary>

@@ -87,9 +87,7 @@ public class DatabaseConnectionFactory : IDatabaseConnectionFactory
     /// Obtiene el nombre del esquema para una instancia tenant.
     /// </summary>
     public string GetSchemaName(Guid tenantId)
-    {
-        return $"tenant_{tenantId:N}";
-    }
+        => $"tenant_{tenantId:N}";
 
     /// <summary>
     /// Valida si un nombre de esquema cumple con el patrón estándar.

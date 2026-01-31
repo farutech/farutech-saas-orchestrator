@@ -18,7 +18,8 @@ import type { ProvisionTenantRequest, Customer, SubscriptionPlanDto } from '@/ty
 
 interface CreateInstanceModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: ()
+        => void;
   organization: Customer;
 }
 
@@ -43,11 +44,14 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
   // Load product manifest when a product is selected
   const { data: productManifest, isLoading: manifestLoading } = useProductManifest(formData.productId);
 
-  const selectedProduct = products?.find((p) => p.id === formData.productId);
-  const selectedPlan = productManifest?.subscriptionPlans?.find((p) => p.id === formData.subscriptionPlanId);
+  const selectedProduct = products?.find((p)
+        => p.id === formData.productId);
+  const selectedPlan = productManifest?.subscriptionPlans?.find((p)
+        => p.id === formData.subscriptionPlanId);
   
   // Sync customerId when organization or isOpen changes
-  useEffect(() => {
+  useEffect(()
+        => {
     if (isOpen && organization?.id) {
       setFormData(prev => ({ ...prev, customerId: organization.id }));
     }
@@ -58,7 +62,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
     ? products?.filter(p => p.name?.toLowerCase().includes(productFilter.toLowerCase()))
     : products?.slice(0, 10);
 
-  const handleProvision = async () => {
+  const handleProvision = async ()
+        => {
     try {
       console.log('[CreateInstanceModal] Provisioning with data:', formData);
       await provisionMutation.mutateAsync(formData);
@@ -89,7 +94,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
     }
   };
 
-  const handleClose = () => {
+  const handleClose = ()
+        => {
     onClose();
     setStep(1);
     setProductFilter('');
@@ -102,7 +108,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
     });
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number)
+        => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD'
@@ -124,7 +131,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
 
         {/* Steps Indicator */}
         <div className="flex items-center justify-between mb-6">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4].map((s)
+        => (
             <div key={s} className="flex items-center">
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
@@ -149,18 +157,24 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                 <Input
                   placeholder="Buscar aplicación..."
                   value={productFilter}
-                  onChange={(e) => setProductFilter(e.target.value)}
-                  onFocus={() => setShowProductDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowProductDropdown(false), 200)}
+                  onChange={(e)
+        => setProductFilter(e.target.value)}
+                  onFocus={()
+        => setShowProductDropdown(true)}
+                  onBlur={()
+        => setTimeout(()
+        => setShowProductDropdown(false), 200)}
                   disabled={productsLoading}
                   className="mb-2"
                 />
                 {showProductDropdown && filteredProducts && filteredProducts.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {filteredProducts.map((product) => (
+                    {filteredProducts.map((product)
+        => (
                       <button
                         key={product.id}
-                        onClick={() => {
+                        onClick={()
+        => {
                           setFormData({ ...formData, productId: product.id, subscriptionPlanId: '' });
                           setProductFilter(product.name || '');
                           setShowProductDropdown(false);
@@ -203,7 +217,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
               </p>
               <Select
                 value={formData.deploymentType}
-                onValueChange={(v) => setFormData({ ...formData, deploymentType: v })}
+                onValueChange={(v)
+        => setFormData({ ...formData, deploymentType: v })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -246,7 +261,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
               ) : (
                 <div className="space-y-2">
                   {productManifest?.modules && productManifest.modules.length > 0 ? (
-                    productManifest.modules.map((module) => (
+                    productManifest.modules.map((module)
+        => (
                       <div key={module.id} className="p-3 bg-slate-50 border border-slate-200 rounded-md">
                         <div className="flex items-start">
                           <Package className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
@@ -289,10 +305,12 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                 </div>
               ) : productManifest?.subscriptionPlans && productManifest.subscriptionPlans.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {productManifest.subscriptionPlans.map((plan) => (
+                  {productManifest.subscriptionPlans.map((plan)
+        => (
                     <button
                       key={plan.id}
-                      onClick={() => setFormData({ ...formData, subscriptionPlanId: plan.id })}
+                      onClick={()
+        => setFormData({ ...formData, subscriptionPlanId: plan.id })}
                       className={`p-4 border-2 rounded-lg text-left transition-all hover:border-primary hover:shadow-md ${
                         formData.subscriptionPlanId === plan.id
                           ? 'border-primary bg-primary/5'
@@ -360,7 +378,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                 <Input
                   id="instanceCode"
                   value={formData.code || ''}
-                  onChange={(e) => {
+                  onChange={(e)
+        => {
                     // Permitir solo letras, números y guiones (sin espacios)
                     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, '');
                     setFormData({ ...formData, code: value });
@@ -381,7 +400,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                 <Input
                   id="instanceName"
                   value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, name: e.target.value })}
                   placeholder="ej: Sede Norte, Farmacia Central"
                   maxLength={100}
                   className="mt-1"
@@ -427,7 +447,8 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
               <div className="bg-green-50 border border-green-200 p-3 rounded-md">
                 <h4 className="font-medium text-sm text-green-900 mb-2">✓ Funcionalidades incluidas:</h4>
                 <div className="text-xs text-green-800 space-y-1">
-                  {selectedPlan.features.slice(0, 5).map((feature) => (
+                  {selectedPlan.features.slice(0, 5).map((feature)
+        => (
                     <div key={feature.id} className="flex items-center">
                       <Check className="h-3 w-3 mr-1" />
                       {feature.name}
@@ -450,14 +471,16 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
           </Button>
 
           {step > 1 && (
-            <Button variant="outline" onClick={() => setStep(step - 1)}>
+            <Button variant="outline" onClick={()
+        => setStep(step - 1)}>
               Anterior
             </Button>
           )}
 
           {step < 4 ? (
             <Button
-              onClick={() => setStep(step + 1)}
+              onClick={()
+        => setStep(step + 1)}
               disabled={
                 (step === 1 && !formData.productId) ||
                 (step === 3 && !formData.subscriptionPlanId)

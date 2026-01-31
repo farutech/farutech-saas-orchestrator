@@ -26,7 +26,8 @@ export function AppHeader({ title = "Universal Home", showBackToHome = false }: 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogoClick = () => {
+  const handleLogoClick = ()
+        => {
     if (user) {
       navigate('/home');
     } else {
@@ -73,7 +74,8 @@ export function AppHeader({ title = "Universal Home", showBackToHome = false }: 
               
               {showBackToHome && (
                 <>
-                  <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={()
+        => navigate('/home')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4 text-slate-500" />
                     <span>Volver al home</span>
                   </DropdownMenuItem>
@@ -81,7 +83,8 @@ export function AppHeader({ title = "Universal Home", showBackToHome = false }: 
                 </>
               )}
               
-              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+              <DropdownMenuItem onClick={()
+        => navigate('/profile')} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4 text-slate-500" />
                 <span>Mi Perfil</span>
               </DropdownMenuItem>

@@ -14,13 +14,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export interface DataOrchestratorProps<T> {
   /** Función para obtener los datos (debe manejar paginación y filtrado) */
-  fetchData: (params: FetchParams) => Promise<PagedResponse<T>>;
+  fetchData: (params: FetchParams)
+        => Promise<PagedResponse<T>>;
   
   /** Render prop: cómo renderizar cada item */
-  renderItem: (item: T, index: number) => React.ReactNode;
+  renderItem: (item: T, index: number)
+        => React.ReactNode;
   
   /** Render prop opcional: skeleton loader personalizado */
-  renderSkeleton?: () => React.ReactNode;
+  renderSkeleton?: ()
+        => React.ReactNode;
   
   /** Número de skeletons a mostrar durante la carga */
   skeletonCount?: number;
@@ -84,17 +87,21 @@ export function DataOrchestrator<T>({
   const [error, setError] = useState<string | null>(null);
 
   // Debounce del search
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  useEffect(()
+        => {
+    const timer = setTimeout(()
+        => {
       setDebouncedSearch(searchTerm.trim());
       setPageNumber(1); // Reset a página 1 cuando cambia el filtro
     }, searchDebounce);
 
-    return () => clearTimeout(timer);
+    return ()
+        => clearTimeout(timer);
   }, [searchTerm, searchDebounce]);
 
   // Fetch de datos
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async ()
+        => {
     setLoading(true);
     setError(null);
     
@@ -118,25 +125,29 @@ export function DataOrchestrator<T>({
   }, [fetchData, pageNumber, defaultPageSize, debouncedSearch]);
 
   // Effect para cargar datos cuando cambian los parámetros
-  useEffect(() => {
+  useEffect(()
+        => {
     loadData();
   }, [loadData, refreshTrigger]);
 
   // Handlers de paginación
-  const handlePrevPage = () => {
+  const handlePrevPage = ()
+        => {
     if (pageNumber > 1) {
       setPageNumber(pageNumber - 1);
     }
   };
 
-  const handleNextPage = () => {
+  const handleNextPage = ()
+        => {
     if (pageNumber < totalPages) {
       setPageNumber(pageNumber + 1);
     }
   };
 
   // Default skeleton
-  const defaultSkeleton = () => (
+  const defaultSkeleton = ()
+        => (
     <div className="space-y-3 p-6 bg-white rounded-xl border border-slate-200">
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-1/2" />
@@ -153,7 +164,8 @@ export function DataOrchestrator<T>({
           <Input
             placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e)
+        => setSearchTerm(e.target.value)}
             className="pl-10 bg-white border-slate-200 focus-visible:ring-[#8B5CF6]"
           />
         </div>
@@ -162,7 +174,8 @@ export function DataOrchestrator<T>({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSearchTerm('')}
+            onClick={()
+        => setSearchTerm('')}
             className="text-slate-500"
           >
             Limpiar
@@ -188,7 +201,8 @@ export function DataOrchestrator<T>({
       {loading ? (
         // Loading State
         <div className={containerClassName}>
-          {Array.from({ length: skeletonCount }).map((_, i) => (
+          {Array.from({ length: skeletonCount }).map((_, i)
+        => (
             <div key={i}>
               {renderSkeleton ? renderSkeleton() : defaultSkeleton()}
             </div>
@@ -214,7 +228,8 @@ export function DataOrchestrator<T>({
           </div>
           <h3 className="text-lg font-medium text-slate-900">{emptyMessage}</h3>
           {debouncedSearch && (
-            <Button variant="link" onClick={() => setSearchTerm('')} className="text-[#8B5CF6] mt-2">
+            <Button variant="link" onClick={()
+        => setSearchTerm('')} className="text-[#8B5CF6] mt-2">
               Limpiar filtros
             </Button>
           )}
@@ -222,7 +237,8 @@ export function DataOrchestrator<T>({
       ) : (
         // Data Grid
         <div className={containerClassName}>
-          {data.map((item, index) => (
+          {data.map((item, index)
+        => (
             <div key={index}>{renderItem(item, index)}</div>
           ))}
         </div>

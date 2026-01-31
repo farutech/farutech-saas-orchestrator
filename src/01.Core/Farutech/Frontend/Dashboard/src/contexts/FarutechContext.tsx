@@ -4,27 +4,33 @@ import { ModuleType, moduleConfigs, User, Notification } from '@/types/farutech'
 interface FarutechContextType {
   // Module state
   currentModule: ModuleType | null;
-  setCurrentModule: (module: ModuleType | null) => void;
+  setCurrentModule: (module: ModuleType | null)
+        => void;
   isTransitioning: boolean;
   
   // Auth state (simulated)
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  login: (email: string, password: string)
+        => Promise<boolean>;
+  logout: ()
+        => void;
   
   // Theme
   isDark: boolean;
-  toggleTheme: () => void;
+  toggleTheme: ()
+        => void;
   
   // Notifications
   notifications: Notification[];
   unreadCount: number;
-  markAsRead: (id: string) => void;
+  markAsRead: (id: string)
+        => void;
   
   // Loading
   isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
+  setIsLoading: (loading: boolean)
+        => void;
 }
 
 const FarutechContext = createContext<FarutechContextType | undefined>(undefined);
@@ -75,7 +81,8 @@ export function FarutechProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [isLoading, setIsLoading] = useState(false);
 
-  const setCurrentModule = (module: ModuleType | null) => {
+  const setCurrentModule = (module: ModuleType | null)
+        => {
     if (module !== currentModule) {
       setIsTransitioning(true);
       setIsLoading(true);
@@ -87,7 +94,8 @@ export function FarutechProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('farutech_current_module');
       }
       
-      setTimeout(() => {
+      setTimeout(()
+        => {
         setCurrentModuleState(module);
         
         // Update document attribute for CSS theming
@@ -97,7 +105,8 @@ export function FarutechProvider({ children }: { children: ReactNode }) {
           document.documentElement.removeAttribute('data-module');
         }
         
-        setTimeout(() => {
+        setTimeout(()
+        => {
           setIsTransitioning(false);
           setIsLoading(false);
         }, 300);
@@ -119,17 +128,20 @@ export function FarutechProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const logout = () => {
+  const logout = ()
+        => {
     setUser(null);
     setCurrentModule(null);
     document.documentElement.removeAttribute('data-module');
   };
 
-  const toggleTheme = () => {
+  const toggleTheme = ()
+        => {
     setIsDark(!isDark);
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = (id: string)
+        => {
     setNotifications(prev =>
       prev.map(n => (n.id === id ? { ...n, read: true } : n))
     );
@@ -137,7 +149,8 @@ export function FarutechProvider({ children }: { children: ReactNode }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  useEffect(() => {
+  useEffect(()
+        => {
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {

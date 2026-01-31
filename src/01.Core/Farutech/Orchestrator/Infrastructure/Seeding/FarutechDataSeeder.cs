@@ -11,12 +11,16 @@ namespace Farutech.Orchestrator.Infrastructure.Seeding;
 /// <summary>
 /// Data seeder for Farutech Orchestrator - Seeds catalog data, permissions, roles, and initial SuperAdmin user
 /// </summary>
-public class FarutechDataSeeder
+public class FarutechDataSeeder(
+    OrchestratorDbContext context,
+    UserManager<ApplicationUser> userManager,
+    RoleManager<ApplicationRole> roleManager,
+    ILogger<FarutechDataSeeder> logger)
 {
-    private readonly OrchestratorDbContext _context;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly ILogger<FarutechDataSeeder> _logger;
+    private readonly OrchestratorDbContext _context = context;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
+    private readonly ILogger<FarutechDataSeeder> _logger = logger;
 
     // Predefined GUIDs for deterministic seeding
     private static readonly Guid SuperAdminRoleId = new("00000000-0000-0000-0001-000000000001");
@@ -36,18 +40,6 @@ public class FarutechDataSeeder
     private static readonly Guid StandardPlanId = new("20000000-0000-0000-0001-000000000002");
     private static readonly Guid ProfessionalPlanId = new("20000000-0000-0000-0001-000000000003");
     private static readonly Guid EnterprisePlanId = new("20000000-0000-0000-0001-000000000004");
-
-    public FarutechDataSeeder(
-        OrchestratorDbContext context,
-        UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager,
-        ILogger<FarutechDataSeeder> logger)
-    {
-        _context = context;
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _logger = logger;
-    }
 
     public async Task SeedAsync()
     {

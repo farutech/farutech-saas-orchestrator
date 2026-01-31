@@ -39,7 +39,8 @@ export const TokenManager = {
   },
 
   // Tenant Context
-  getTenantContext: () => {
+  getTenantContext: ()
+        => {
     const context = localStorage.getItem(AUTH_CONFIG.TENANT_CONTEXT_KEY);
     return context ? JSON.parse(context) : null;
   },
@@ -48,11 +49,13 @@ export const TokenManager = {
     tenantId: string;
     companyName?: string;
     role?: string;
-  }) => {
+  })
+        => {
     localStorage.setItem(AUTH_CONFIG.TENANT_CONTEXT_KEY, JSON.stringify(context));
   },
 
-  clearTenantContext: () => {
+  clearTenantContext: ()
+        => {
     localStorage.removeItem(AUTH_CONFIG.TENANT_CONTEXT_KEY);
   },
 };
@@ -74,7 +77,8 @@ const createApiClient = (): AxiosInstance => {
   // Request Interceptor - Attach JWT Token
   // ============================================================================
   client.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
+    (config: InternalAxiosRequestConfig)
+        => {
       // Try access token first, fallback to intermediate token for management endpoints
       let token = TokenManager.getAccessToken();
       
@@ -119,7 +123,8 @@ const createApiClient = (): AxiosInstance => {
 
       return config;
     },
-    (error) => {
+    (error)
+        => {
       return Promise.reject(error);
     }
   );
@@ -128,11 +133,13 @@ const createApiClient = (): AxiosInstance => {
   // Response Interceptor - Handle Errors Globally
   // ============================================================================
   client.interceptors.response.use(
-    (response) => {
+    (response)
+        => {
       console.log('[API-Client] Response received:', response.config.url, response.status);
       return response;
     },
-    (error: AxiosError<ProblemDetails>) => {
+    (error: AxiosError<ProblemDetails>)
+        => {
       console.error('[API-Client] === ERROR IN RESPONSE ===');
       console.error('[API-Client] URL:', error.config?.url);
       console.error('[API-Client] Status:', error.response?.status);
@@ -240,7 +247,8 @@ export const ApiClientUtils = {
   /**
    * Update base URL dynamically (useful for tenant-specific endpoints)
    */
-  setBaseURL: (url: string) => {
+  setBaseURL: (url: string)
+        => {
     apiClient.defaults.baseURL = url;
   },
 
@@ -254,14 +262,16 @@ export const ApiClientUtils = {
   /**
    * Set custom header
    */
-  setHeader: (key: string, value: string) => {
+  setHeader: (key: string, value: string)
+        => {
     apiClient.defaults.headers.common[key] = value;
   },
 
   /**
    * Remove custom header
    */
-  removeHeader: (key: string) => {
+  removeHeader: (key: string)
+        => {
     delete apiClient.defaults.headers.common[key];
   },
 };

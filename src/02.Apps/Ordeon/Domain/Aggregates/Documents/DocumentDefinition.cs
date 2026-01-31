@@ -42,9 +42,7 @@ public sealed class DocumentDefinition : Entity, IAggregateRoot
     }
 
     public static DocumentDefinition Create(string name, string code, string prefix, DocumentModule module)
-    {
-        return new DocumentDefinition(name, code, prefix, module);
-    }
+        => new(name, code, prefix, module);
 
     public string GenerateNextNumber()
     {

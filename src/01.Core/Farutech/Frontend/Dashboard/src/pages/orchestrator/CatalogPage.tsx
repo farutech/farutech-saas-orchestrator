@@ -24,24 +24,28 @@ export default function CatalogPage() {
 
   const { isLoading } = useProducts();
 
-  const handleProductSelect = (product: ProductDto) => {
+  const handleProductSelect = (product: ProductDto)
+        => {
     setSelectedProduct(product);
     setSelectedModule(null);
     setCurrentView('modules');
   };
 
-  const handleModuleSelect = (module: ModuleDto) => {
+  const handleModuleSelect = (module: ModuleDto)
+        => {
     setSelectedModule(module);
     setCurrentView('features');
   };
 
-  const handleBackToProducts = () => {
+  const handleBackToProducts = ()
+        => {
     setSelectedProduct(null);
     setSelectedModule(null);
     setCurrentView('products');
   };
 
-  const handleBackToModules = () => {
+  const handleBackToModules = ()
+        => {
     setSelectedModule(null);
     setCurrentView('modules');
   };

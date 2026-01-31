@@ -19,8 +19,7 @@ public class CatalogService(OrchestratorDbContext context,
     #region Products
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
-    {
-        return await _context.Products
+        => await _context.Products
             .Include(p => p.Modules)
                 .ThenInclude(m => m.Features)
             .Where(p => !p.IsDeleted)
@@ -60,11 +59,9 @@ public class CatalogService(OrchestratorDbContext context,
                     }).ToList()
             })
             .ToListAsync();
-    }
 
     public async Task<ProductDto?> GetProductByIdAsync(Guid id)
-    {
-        return await _context.Products
+        => await _context.Products
             .Include(p => p.Modules)
                 .ThenInclude(m => m.Features)
             .Where(p => p.Id == id && !p.IsDeleted)
@@ -104,7 +101,6 @@ public class CatalogService(OrchestratorDbContext context,
                     }).ToList()
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<ProductDto> CreateProductAsync(CreateProductDto request)
     {
@@ -248,6 +244,44 @@ public class CatalogService(OrchestratorDbContext context,
                 }).ToList()
         };
 
+        // Load subscription plans for this product (include features)
+        var subscriptionPlans = await _context.SubscriptionPlans
+            .Where(sp => sp.ProductId == productId && sp.IsActive)
+            .Include(sp => sp.SubscriptionFeatures)
+                .ThenInclude(sf => sf.Feature)
+            .OrderBy(sp => sp.DisplayOrder)
+            .ToListAsync();
+
+        // Map to DTOs
+        manifest.SubscriptionPlans = subscriptionPlans.Select(sp => new SubscriptionPlanDto
+        {
+            Id = sp.Id,
+            ProductId = sp.ProductId,
+            Code = sp.Code,
+            Name = sp.Name,
+            Description = sp.Description,
+            IsFullAccess = sp.IsFullAccess,
+            MonthlyPrice = sp.MonthlyPrice,
+            AnnualPrice = sp.AnnualPrice,
+            IsActive = sp.IsActive,
+            IsRecommended = sp.IsRecommended,
+            DisplayOrder = sp.DisplayOrder,
+            Limits = string.IsNullOrEmpty(sp.LimitsConfig) ? null : System.Text.Json.JsonSerializer.Deserialize<SubscriptionLimitsDto>(sp.LimitsConfig),
+            Features = sp.SubscriptionFeatures?.Where(sf => sf.IsEnabled).Select(sf => new FeatureDto
+            {
+                Id = sf.Feature.Id,
+                ModuleId = sf.Feature.ModuleId,
+                Code = sf.Feature.Code,
+                Name = sf.Feature.Name,
+                Description = sf.Feature.Description,
+                RequiresLicense = sf.Feature.RequiresLicense,
+                AdditionalCost = sf.Feature.AdditionalCost ?? 0,
+                IsActive = sf.Feature.IsActive,
+                CreatedAt = sf.Feature.CreatedAt,
+                UpdatedAt = sf.Feature.UpdatedAt
+            }).ToList() ?? new List<FeatureDto>()
+        }).ToList();
+
         return manifest;
     }
 
@@ -256,8 +290,7 @@ public class CatalogService(OrchestratorDbContext context,
     #region Modules
 
     public async Task<IEnumerable<ModuleDto>> GetModulesByProductIdAsync(Guid productId)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Include(m => m.Product)
             .Include(m => m.Features)
             .Where(m => m.ProductId == productId && !m.IsDeleted)
@@ -286,11 +319,9 @@ public class CatalogService(OrchestratorDbContext context,
                     }).ToList()
             })
             .ToListAsync();
-    }
 
     public async Task<ModuleDto?> GetModuleByIdAsync(Guid id)
-    {
-        return await _context.Modules
+        => await _context.Modules
             .Include(m => m.Product)
             .Include(m => m.Features)
             .Where(m => m.Id == id && !m.IsDeleted)
@@ -319,7 +350,6 @@ public class CatalogService(OrchestratorDbContext context,
                     }).ToList()
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto request)
     {
@@ -440,8 +470,7 @@ public class CatalogService(OrchestratorDbContext context,
     #region Features
 
     public async Task<IEnumerable<FeatureDto>> GetFeaturesByModuleIdAsync(Guid moduleId)
-    {
-        return await _context.Features
+        => await _context.Features
             .Include(f => f.Module)
             .Where(f => f.ModuleId == moduleId && !f.IsDeleted)
             .Select(f => new FeatureDto
@@ -456,11 +485,9 @@ public class CatalogService(OrchestratorDbContext context,
                 UpdatedAt = f.UpdatedAt
             })
             .ToListAsync();
-    }
 
     public async Task<FeatureDto?> GetFeatureByIdAsync(Guid id)
-    {
-        return await _context.Features
+        => await _context.Features
             .Include(f => f.Module)
             .Where(f => f.Id == id && !f.IsDeleted)
             .Select(f => new FeatureDto
@@ -475,7 +502,6 @@ public class CatalogService(OrchestratorDbContext context,
                 UpdatedAt = f.UpdatedAt
             })
             .FirstOrDefaultAsync();
-    }
 
     public async Task<FeatureDto> CreateFeatureAsync(CreateFeatureDto request)
     {

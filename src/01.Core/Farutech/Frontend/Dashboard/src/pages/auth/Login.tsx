@@ -21,7 +21,8 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showCorsError, setShowCorsError] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     setShowCorsError(false);
     try {
@@ -82,7 +83,8 @@ export default function Login() {
                     type="email"
                     placeholder="tu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e)
+        => setEmail(e.target.value)}
                     className="pl-10"
                     autoComplete="email"
                   />
@@ -98,7 +100,8 @@ export default function Login() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e)
+        => setPassword(e.target.value)}
                     className="pl-10 pr-10"
                     autoComplete="current-password"
                   />
@@ -107,7 +110,8 @@ export default function Login() {
                     variant="ghost"
                     size="icon"
                     className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={()
+        => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -123,7 +127,8 @@ export default function Login() {
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    onCheckedChange={(checked)
+        => setRememberMe(checked as boolean)}
                   />
                   <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
                     Recordarme

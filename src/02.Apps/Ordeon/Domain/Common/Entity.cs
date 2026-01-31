@@ -18,19 +18,13 @@ public abstract class Entity
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected void AddDomainEvent(IDomainEvent domainEvent)
-    {
-        _domainEvents.Add(domainEvent);
-    }
+        => _domainEvents.Add(domainEvent);
 
     public void ClearDomainEvents()
-    {
-        _domainEvents.Clear();
-    }
+        => _domainEvents.Clear();
 
     public void MarkAsUpdated()
-    {
-        UpdatedAtUtc = DateTime.UtcNow;
-    }
+        => UpdatedAtUtc = DateTime.UtcNow;
 
     public override bool Equals(object? obj)
     {
@@ -46,7 +40,8 @@ public abstract class Entity
         return Id == other.Id;
     }
 
-    public override int GetHashCode() => Id.GetHashCode();
+    public override int GetHashCode()
+        => Id.GetHashCode();
 
     public static bool operator ==(Entity? a, Entity? b)
     {
@@ -59,6 +54,7 @@ public abstract class Entity
         return a.Equals(b);
     }
 
-    public static bool operator !=(Entity? a, Entity? b) => !(a == b);
+    public static bool operator !=(Entity? a, Entity? b)
+        => !(a == b);
 }
 

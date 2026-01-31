@@ -51,7 +51,8 @@ export default function PermissionsDemo() {
           <div>
             <h3 className="font-medium mb-2">Your Permissions ({permissions.length})</h3>
             <div className="flex flex-wrap gap-2">
-              {permissions.map((permission) => (
+              {permissions.map((permission)
+        => (
                 <Badge key={permission.id} variant="outline">
                   {permission.code}
                 </Badge>

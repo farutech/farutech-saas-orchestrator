@@ -168,6 +168,7 @@ public class CatalogController(ICatalogService catalogService,
     /// Obtiene el manifiesto completo de un producto incluyendo módulos, features y permisos.
     /// </summary>
     [HttpGet("products/{productId:guid}/manifest")]
+    [AllowAnonymous] // Permitimos acceso anónimo en desarrollo para obtener el manifiesto público
     [ProducesResponseType(typeof(ProductManifestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductManifestDto>> GetProductManifest(Guid productId)

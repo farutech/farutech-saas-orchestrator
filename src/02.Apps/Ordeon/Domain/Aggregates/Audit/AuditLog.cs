@@ -23,8 +23,6 @@ public sealed class AuditLog : Entity
     }
 
     public static AuditLog Create(string entityName, string entityId, string action, string changes, Guid userId)
-    {
-        return new AuditLog(entityName, entityId, action, changes, userId);
-    }
+        => new(entityName, entityId, action, changes, userId);
 }
 

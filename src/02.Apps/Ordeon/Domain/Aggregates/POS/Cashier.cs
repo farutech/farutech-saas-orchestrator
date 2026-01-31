@@ -22,9 +22,7 @@ public sealed class Cashier : Entity, IAggregateRoot
     }
 
     public static Cashier Create(Guid userId, string name)
-    {
-        return new Cashier(userId, name);
-    }
+        => new(userId, name);
 
     public void AssignDefaultRegister(Guid registerId)
     {

@@ -17,15 +17,23 @@ export interface AuthContextType {
   availableInstances: InstanceDto[];
   selectedTenant: TenantOptionDto | null;
 
-  login: (credentials: LoginRequest) => Promise<void>;
-  selectContext: (tenantId: string, redirectPath?: string) => Promise<void>;
-  selectInstance: (instanceId: string) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
-  refreshAvailableTenants: () => Promise<void>;
+  login: (credentials: LoginRequest)
+        => Promise<void>;
+  selectContext: (tenantId: string, redirectPath?: string)
+        => Promise<void>;
+  selectInstance: (instanceId: string)
+        => Promise<void>;
+  register: (data: RegisterRequest)
+        => Promise<void>;
+  logout: ()
+        => void;
+  refreshAvailableTenants: ()
+        => Promise<void>;
 
-  hasRole: (role: string) => boolean;
-  isOrchestrator: () => boolean;
+  hasRole: (role: string)
+        => boolean;
+  isOrchestrator: ()
+        => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,7 +42,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * @deprecated AuthProvider is deprecated. Please use SessionProvider and AppProvider in App.tsx.
  * This component now acts as a bridge for backwards compatibility.
  */
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children })
+        => {
   const session = useSession();
   const app = useAppContext();
 
@@ -60,7 +69,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     refreshAvailableTenants: app.refreshAvailableTenants,
     
     // Utilities
-    hasRole: (role: string) => session.user?.role?.toLowerCase() === role.toLowerCase(),
+    hasRole: (role: string)
+        => session.user?.role?.toLowerCase() === role.toLowerCase(),
     isOrchestrator: app.isOrchestrator
   };
 

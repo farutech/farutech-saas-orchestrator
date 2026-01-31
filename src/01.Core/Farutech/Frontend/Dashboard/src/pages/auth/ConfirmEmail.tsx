@@ -12,8 +12,10 @@ export default function ConfirmEmail() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    const confirmEmail = async () => {
+  useEffect(()
+        => {
+    const confirmEmail = async ()
+        => {
       const userId = searchParams.get('userId');
       const code = searchParams.get('code');
 
@@ -114,7 +116,8 @@ export default function ConfirmEmail() {
 
               <div className="space-y-3">
                 <Button
-                  onClick={() => navigate('/login')}
+                  onClick={()
+        => navigate('/login')}
                   className="w-full gradient-farutech text-white"
                 >
                   Ir al Login
@@ -151,14 +154,16 @@ export default function ConfirmEmail() {
                 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    onClick={() => navigate('/login')}
+                    onClick={()
+        => navigate('/login')}
                     variant="outline"
                     className="flex-1"
                   >
                     Ir al Login
                   </Button>
                   <Button
-                    onClick={() => navigate('/register')}
+                    onClick={()
+        => navigate('/register')}
                     className="flex-1 gradient-farutech text-white"
                   >
                     Registrarse de Nuevo

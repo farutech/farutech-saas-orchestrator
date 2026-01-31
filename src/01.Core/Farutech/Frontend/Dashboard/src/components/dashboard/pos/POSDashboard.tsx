@@ -114,7 +114,8 @@ export function POSDashboard() {
                 />
                 <YAxis 
                   className="text-xs fill-muted-foreground"
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value)
+        => `$${value}`}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -122,7 +123,8 @@ export function POSDashboard() {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => [`$${value}`, 'Ventas']}
+                  formatter={(value: number)
+        => [`$${value}`, 'Ventas']}
                 />
                 <Line 
                   type="monotone" 
@@ -145,7 +147,8 @@ export function POSDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentSales.map((sale) => (
+            {recentSales.map((sale)
+        => (
               <div 
                 key={sale.id} 
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50"

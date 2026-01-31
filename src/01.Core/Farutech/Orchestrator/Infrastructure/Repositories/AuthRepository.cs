@@ -13,18 +13,22 @@ public class AuthRepository(OrchestratorDbContext context) : IAuthRepository
 {
     private readonly OrchestratorDbContext _context = context;
 
-    public async Task<IEnumerable<UserCompanyMembership>> GetUserMembershipsAsync(Guid userId) => await _context.UserCompanyMemberships
+    public async Task<IEnumerable<UserCompanyMembership>> GetUserMembershipsAsync(Guid userId)
+        => await _context.UserCompanyMemberships
             .Where(m => m.UserId == userId && !m.IsDeleted)
             .Include(m => m.Customer)
             .ToListAsync();
 
-    public async Task<UserCompanyMembership?> GetUserMembershipAsync(Guid userId, Guid customerId) => await _context.UserCompanyMemberships
+    public async Task<UserCompanyMembership?> GetUserMembershipAsync(Guid userId, Guid customerId)
+        => await _context.UserCompanyMemberships
             .FirstOrDefaultAsync(m => m.UserId == userId && m.CustomerId == customerId && !m.IsDeleted);
 
-    public async Task<Customer?> GetCustomerByIdAsync(Guid customerId) => await _context.Customers
+    public async Task<Customer?> GetCustomerByIdAsync(Guid customerId)
+        => await _context.Customers
             .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
 
-    public async Task<IEnumerable<TenantInstance>> GetTenantInstancesAsync(Guid customerId) => await _context.TenantInstances
+    public async Task<IEnumerable<TenantInstance>> GetTenantInstancesAsync(Guid customerId)
+        => await _context.TenantInstances
             .Where(i => i.CustomerId == customerId && i.Status != "deprovisioned") // Excluir eliminados
             .ToListAsync();
 
@@ -42,7 +46,8 @@ public class AuthRepository(OrchestratorDbContext context) : IAuthRepository
         return token;
     }
 
-    public async Task<PasswordResetToken?> GetPasswordResetTokenAsync(string token) => await _context.PasswordResetTokens
+    public async Task<PasswordResetToken?> GetPasswordResetTokenAsync(string token)
+        => await _context.PasswordResetTokens
             .FirstOrDefaultAsync(t => t.Token == token);
 
     public async Task<bool> UpdatePasswordResetTokenAsync(PasswordResetToken token)

@@ -22,7 +22,8 @@ import { Plus, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import type { ProductDto, CreateProductDto, UpdateProductDto } from '@/types/api';
 
 interface ProductsViewProps {
-  onSelectProduct: (product: ProductDto) => void;
+  onSelectProduct: (product: ProductDto)
+        => void;
 }
 
 export function ProductsView({ onSelectProduct }: ProductsViewProps) {
@@ -38,13 +39,15 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
     description: '',
   });
 
-  const handleCreate = () => {
+  const handleCreate = ()
+        => {
     setEditingProduct(null);
     setFormData({ name: '', description: '' });
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (product: ProductDto) => {
+  const handleEdit = (product: ProductDto)
+        => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
@@ -53,7 +56,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async ()
+        => {
     if (editingProduct) {
       await updateMutation.mutateAsync({
         id: editingProduct.id,
@@ -65,7 +69,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string)
+        => {
     if (confirm('¿Estás seguro de eliminar este producto?')) {
       await deleteMutation.mutateAsync(id);
     }
@@ -84,11 +89,13 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {products?.map((product) => (
+        {products?.map((product)
+        => (
           <Card
             key={product.id}
             className="bg-slate-900/50 border-white/10 hover:border-primary/50 transition-all cursor-pointer"
-            onClick={() => onSelectProduct(product)}
+            onClick={()
+        => onSelectProduct(product)}
           >
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -119,7 +126,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={(e) => {
+                    onClick={(e)
+        => {
                       e.stopPropagation();
                       handleEdit(product);
                     }}
@@ -129,7 +137,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={(e) => {
+                    onClick={(e)
+        => {
                       e.stopPropagation();
                       handleDelete(product.id);
                     }}
@@ -160,7 +169,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e)
+        => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ej: Farutech ERP"
                 className="bg-slate-800 border-white/10 text-white"
               />
@@ -170,7 +180,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e)
+        => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Descripción del producto..."
                 className="bg-slate-800 border-white/10 text-white"
                 rows={4}
@@ -178,7 +189,8 @@ export function ProductsView({ onSelectProduct }: ProductsViewProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={()
+        => setIsDialogOpen(false)}>
               Cancelar
             </Button>
             <Button onClick={handleSubmit} disabled={!formData.name || !formData.description}>

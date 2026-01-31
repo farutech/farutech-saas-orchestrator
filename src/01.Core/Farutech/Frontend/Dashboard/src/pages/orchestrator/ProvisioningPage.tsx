@@ -41,7 +41,8 @@ export default function ProvisioningPage() {
   });
 
   // Pre-select customer from URL parameter
-  useEffect(() => {
+  useEffect(()
+        => {
     const customerId = searchParams.get('customerId');
     if (customerId) {
       setFormData(prev => ({ ...prev, customerId }));
@@ -49,10 +50,13 @@ export default function ProvisioningPage() {
     }
   }, [searchParams]);
 
-  const selectedCustomer = customers?.find((c) => c.id === formData.customerId);
-  const selectedProduct = products?.find((p) => p.id === formData.productId);
+  const selectedCustomer = customers?.find((c)
+        => c.id === formData.customerId);
+  const selectedProduct = products?.find((p)
+        => p.id === formData.productId);
 
-  const handleProvision = async () => {
+  const handleProvision = async ()
+        => {
     setIsSubmitting(true);
     try {
       await provisionMutation.mutateAsync(formData);
@@ -67,7 +71,8 @@ export default function ProvisioningPage() {
     }
   };
 
-  const canProceedToNextStep = () => {
+  const canProceedToNextStep = ()
+        => {
     switch (step) {
       case 1: return !!formData.customerId;
       case 2: return !!formData.productId && !!formData.environment;
@@ -98,7 +103,8 @@ export default function ProvisioningPage() {
         {/* Stepper Vertical */}
         <div className="flex-1 p-8">
           <div className="space-y-2">
-            {STEPS.map((s, idx) => {
+            {STEPS.map((s, idx)
+        => {
               const isActive = step === s.id;
               const isCompleted = step > s.id;
               const isPending = step < s.id;
@@ -182,7 +188,8 @@ export default function ProvisioningPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/orchestrator/customers')}
+            onClick={()
+        => navigate('/orchestrator/customers')}
             className="text-gray-600 hover:text-gray-900"
           >
             <X className="h-4 w-4 mr-1" />
@@ -208,13 +215,15 @@ export default function ProvisioningPage() {
                     <Label className="text-xs font-medium text-gray-700 mb-2 block">Cliente</Label>
                     <Select
                       value={formData.customerId}
-                      onValueChange={(v) => setFormData({ ...formData, customerId: v })}
+                      onValueChange={(v)
+        => setFormData({ ...formData, customerId: v })}
                     >
                       <SelectTrigger className="h-11 bg-white border-gray-300 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
                         <SelectValue placeholder="Seleccionar cliente" />
                       </SelectTrigger>
                       <SelectContent>
-                        {customers?.map((c) => (
+                        {customers?.map((c)
+        => (
                           <SelectItem key={c.id} value={c.id}>
                             {c.companyName}
                           </SelectItem>
@@ -255,10 +264,12 @@ export default function ProvisioningPage() {
                       </div>
                     ) : (
                       <div className="grid gap-3">
-                        {products.map((p) => (
+                        {products.map((p)
+        => (
                           <div
                             key={p.id}
-                            onClick={() => setFormData({ ...formData, productId: p.id })}
+                            onClick={()
+        => setFormData({ ...formData, productId: p.id })}
                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                               formData.productId === p.id
                                 ? 'border-blue-500 bg-blue-50 shadow-sm'
@@ -284,7 +295,8 @@ export default function ProvisioningPage() {
                   <CardContent>
                     <Select
                       value={formData.environment}
-                      onValueChange={(v) => setFormData({ ...formData, environment: v })}
+                      onValueChange={(v)
+        => setFormData({ ...formData, environment: v })}
                     >
                       <SelectTrigger className="h-11 bg-white border-gray-300 text-gray-900 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
                         <SelectValue />
@@ -312,7 +324,8 @@ export default function ProvisioningPage() {
                 <CardContent>
                   {selectedProduct?.modules && selectedProduct.modules.length > 0 ? (
                     <div className="space-y-3">
-                      {selectedProduct.modules.map((m) => (
+                      {selectedProduct.modules.map((m)
+        => (
                         <div
                           key={m.id}
                           className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
@@ -320,10 +333,12 @@ export default function ProvisioningPage() {
                           <Checkbox
                             id={m.id}
                             checked={formData.moduleIds?.includes(m.id)}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={(checked)
+        => {
                               const newModules = checked
                                 ? [...(formData.moduleIds || []), m.id]
-                                : formData.moduleIds?.filter((id) => id !== m.id) || [];
+                                : formData.moduleIds?.filter((id)
+        => id !== m.id) || [];
                               setFormData({ ...formData, moduleIds: newModules });
                             }}
                             className="mt-0.5"
@@ -374,7 +389,8 @@ export default function ProvisioningPage() {
             {step > 1 && (
               <Button
                 variant="ghost"
-                onClick={() => setStep(step - 1)}
+                onClick={()
+        => setStep(step - 1)}
                 disabled={isSubmitting}
                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               >
@@ -385,7 +401,8 @@ export default function ProvisioningPage() {
           <div className="flex gap-3">
             {step < STEPS.length ? (
               <Button
-                onClick={() => setStep(step + 1)}
+                onClick={()
+        => setStep(step + 1)}
                 disabled={!canProceedToNextStep() || isSubmitting}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 transition-all duration-200"
               >

@@ -54,7 +54,8 @@ const industryConfig = {
   },
 };
 
-const getNavItems = (industry: IndustryMode) => {
+const getNavItems = (industry: IndustryMode)
+        => {
   const common = [
     { title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Reportes', icon: BarChart3, href: '/dashboard/reports' },
@@ -89,7 +90,8 @@ export function DashboardSidebar() {
   const navItems = getNavItems(industry);
   const IndustryIcon = industryConfig[industry].icon;
 
-  const handleBackToHome = () => {
+  const handleBackToHome = ()
+        => {
     // Navigate to home. 
     // Ideally we might want to clear the 'current context' in state if needed, 
     // but navigating to /home usually resets the view.
@@ -134,12 +136,14 @@ export function DashboardSidebar() {
         {!isCollapsed ? (
           <div className="space-y-1">
             <p className="px-2 text-xs font-medium text-sidebar-foreground/40 uppercase tracking-widest mb-2">Módulo</p>
-            <Select value={industry} onValueChange={(value: IndustryMode) => setIndustry(value)}>
+            <Select value={industry} onValueChange={(value: IndustryMode)
+        => setIndustry(value)}>
               <SelectTrigger className="w-full bg-sidebar-accent/50 border-sidebar-border/50 text-sidebar-foreground focus:ring-primary/50 h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-sidebar border-sidebar-border text-sidebar-foreground">
-                {(Object.keys(industryConfig) as IndustryMode[]).map((key) => {
+                {(Object.keys(industryConfig) as IndustryMode[]).map((key)
+        => {
                   const config = industryConfig[key];
                   const Icon = config.icon;
                   return (
@@ -157,7 +161,8 @@ export function DashboardSidebar() {
         ) : (
              // Collapsed Icon Mode
              <div className="flex flex-col gap-2 border-b border-sidebar-border/30 pb-4 mb-2">
-               {(Object.keys(industryConfig) as IndustryMode[]).map((key) => {
+               {(Object.keys(industryConfig) as IndustryMode[]).map((key)
+        => {
                  const config = industryConfig[key];
                  const Icon = config.icon;
                  return (
@@ -169,7 +174,8 @@ export function DashboardSidebar() {
                        "w-full h-10 transition-all", 
                        industry === key ? "bg-sidebar-primary text-white shadow-glow" : "text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-white"
                      )}
-                     onClick={() => setIndustry(key)}
+                     onClick={()
+        => setIndustry(key)}
                      title={config.label}
                    >
                      <Icon className="h-5 w-5" />
@@ -182,11 +188,13 @@ export function DashboardSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
+        {navItems.map((item)
+        => (
           <Button
             key={item.title}
             variant="ghost"
-            onClick={() => navigate(item.href)}
+            onClick={()
+        => navigate(item.href)}
             className={cn(
               "w-full justify-start gap-3 text-sidebar-foreground/70 hover:text-white hover:bg-white/10 transition-all duration-200",
               isCollapsed && "justify-center px-2"
@@ -239,7 +247,8 @@ export function DashboardSidebar() {
           variant="ghost"
           size="sm"
           className="w-full text-sidebar-foreground/40 hover:text-white h-6 mt-2"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={()
+        => setIsCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>

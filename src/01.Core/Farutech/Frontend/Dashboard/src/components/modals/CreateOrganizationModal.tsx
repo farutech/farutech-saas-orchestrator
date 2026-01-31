@@ -11,7 +11,8 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateOrganizationModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: ()
+        => void;
 }
 
 export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationModalProps) {
@@ -27,7 +28,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
   });
 
   const { mutate: createCustomer, isPending } = useCreateCustomer({
-    onSuccess: async () => {
+    onSuccess: async ()
+        => {
       toast.success('Organización creada exitosamente');
       
       // Refresh logic based on context
@@ -48,7 +50,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
         address: ''
       });
     },
-    onError: (error) => {
+    onError: (error)
+        => {
       toast.error(error.message || 'Error al crear la organización');
     }
   });
@@ -56,7 +59,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
   const isLoading = isPending;
   const isProfileLoading = !user?.id && !requiresContextSelection;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     
     if (isLoading) return;
@@ -113,7 +117,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ej. Mi Empresa S.A."
                   autoComplete="organization"
                   required
@@ -124,7 +129,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                  <Input
                   id="taxId"
                   value={formData.taxId}
-                  onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, taxId: e.target.value })}
                   placeholder="Ej. 12345678-9"
                   autoComplete="off"
                 />
@@ -138,7 +144,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e)
+        => setFormData({ ...formData, email: e.target.value })}
                 placeholder="contacto@empresa.com"
                 autoComplete="email"
                 required
@@ -151,7 +158,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                     <Input
                         id="phone"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e)
+        => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+57 300 123 4567"
                         autoComplete="tel"
                     />
@@ -161,7 +169,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                     <Input
                         id="address"
                         value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        onChange={(e)
+        => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Calle 123 # 45-67"
                         autoComplete="street-address"
                     />

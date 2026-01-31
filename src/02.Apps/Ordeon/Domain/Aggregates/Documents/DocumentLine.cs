@@ -32,8 +32,6 @@ public sealed class DocumentLine : Entity
     }
 
     public static DocumentLine Create(Guid headerId, Guid itemId, string itemName, decimal quantity, decimal unitPrice, decimal taxRate, decimal discountAmount)
-    {
-        return new DocumentLine(headerId, itemId, itemName, quantity, unitPrice, taxRate, discountAmount);
-    }
+        => new(headerId, itemId, itemName, quantity, unitPrice, taxRate, discountAmount);
 }
 

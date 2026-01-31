@@ -20,9 +20,7 @@ public class CategoriesController(OrdeonDbContext context) : ControllerBase
     [HttpGet]
     [RequirePermission(Permissions.Inventory.Read)]
     public async Task<IActionResult> GetAll()
-    {
-        return Ok(await _context.Categories.ToListAsync());
-    }
+        => Ok(await _context.Categories.ToListAsync());
 
     [HttpPost]
     [RequirePermission(Permissions.Inventory.Create)]

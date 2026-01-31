@@ -1,7 +1,9 @@
 using Farutech.Orchestrator.Application.DTOs.Catalog;
+using Microsoft.Extensions.Logging;
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Identity;
+using System.Text.Json;
 
 namespace Farutech.Orchestrator.Application.Services;
 
@@ -9,9 +11,11 @@ namespace Farutech.Orchestrator.Application.Services;
 /// Servicio para gestión de catálogos maestros (Products, Modules, Features).
 /// Estas entidades son globales y no están asociadas a tenants específicos.
 /// </summary>
-public class CatalogService(ICatalogRepository catalogRepository) : ICatalogService
+public class CatalogService(ICatalogRepository catalogRepository, ILogger<CatalogService> logger) 
+    : ICatalogService
 {
     private readonly ICatalogRepository _catalogRepository = catalogRepository;
+    private readonly ILogger<CatalogService> _logger = logger;
 
     #region Products
 
@@ -75,10 +79,8 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
     /// <summary>
     /// Elimina un producto (soft delete).
     /// </summary>
-    public async Task<bool> DeleteProductAsync(Guid id)
-    {
-        return await _catalogRepository.DeleteProductAsync(id);
-    }
+    public async Task<bool> DeleteProductAsync(Guid id) 
+        => await _catalogRepository.DeleteProductAsync(id);
 
     /// <summary>
     /// Obtiene el manifiesto completo de un producto incluyendo módulos, features y permisos.
@@ -91,6 +93,9 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
 
         // Get modules with features
         var modules = await _catalogRepository.GetModulesByProductIdAsync(productId);
+
+        // Get subscription plans with features
+        var subscriptionPlans = await _catalogRepository.GetSubscriptionPlansByProductIdAsync(productId);
 
         // Get all permissions (they're global)
         var permissions = await _catalogRepository.GetAllPermissionsAsync();
@@ -119,6 +124,72 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
             moduleManifests.Add(moduleManifest);
         }
 
+        // Map subscription plans to DTOs
+        var subscriptionPlanDtos = subscriptionPlans.Select(plan => MapToSubscriptionPlanDto(plan)).ToList();
+
+        // Debug logging
+        try
+        {
+            _logger.LogInformation("ProductManifest for {ProductId}: Found {DbCount} subscription plans in DB, mapped to {DtoCount} DTOs", productId, subscriptionPlans.Count(), subscriptionPlanDtos.Count);
+            foreach (var sp in subscriptionPlans)
+            {
+                _logger.LogDebug("SubscriptionPlan DB: Id={Id} Code={Code} IsActive={IsActive} LimitsConfig={Limits}", sp.Id, sp.Code, sp.IsActive, sp.LimitsConfig);
+                if (sp.SubscriptionFeatures != null)
+                {
+                    foreach (var sf in sp.SubscriptionFeatures)
+                    {
+                        _logger.LogDebug("  -> FeatureLink: FeatureId={FeatureId} IsEnabled={IsEnabled}", sf.FeatureId, sf.IsEnabled);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to log subscription plans details");
+        }
+
+        // Map permissions. If repository returns none (permissions table removed), synthesize them from modules/features
+        var permissionDtos = permissions.Select(p => new PermissionDto
+        {
+            Id = p.Id,
+            Code = p.Code,
+            Name = p.Name,
+            Description = p.Description,
+            Module = p.Module,
+            Category = p.Category,
+            IsCritical = p.IsCritical,
+            IsActive = p.IsActive,
+            CreatedAt = p.CreatedAt,
+            UpdatedAt = p.UpdatedAt
+        }).ToList();
+
+        if (permissionDtos.Count == 0)
+        {
+            // Build permissions from module manifests and their features
+            var synthesized = new List<PermissionDto>();
+            foreach (var mod in moduleManifests)
+            {
+                foreach (var feat in mod.Features)
+                {
+                    var code = $"{mod.Code}.{feat.Code}.use";
+                    synthesized.Add(new PermissionDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Code = code,
+                        Name = feat.Name,
+                        Description = feat.Description,
+                        Module = mod.Name,
+                        Category = "Feature",
+                        IsCritical = false,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            permissionDtos = synthesized;
+        }
+
         return new ProductManifestDto
         {
             Id = product.Id,
@@ -126,19 +197,8 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
             Name = product.Name,
             Description = product.Description,
             Modules = moduleManifests,
-            Permissions = permissions.Select(p => new PermissionDto
-            {
-                Id = p.Id,
-                Code = p.Code,
-                Name = p.Name,
-                Description = p.Description,
-                Module = p.Module,
-                Category = p.Category,
-                IsCritical = p.IsCritical,
-                IsActive = p.IsActive,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            }).ToList()
+            SubscriptionPlans = subscriptionPlanDtos,
+            Permissions = permissionDtos
         };
     }
 
@@ -207,10 +267,8 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
     /// <summary>
     /// Elimina un módulo (soft delete).
     /// </summary>
-    public async Task<bool> DeleteModuleAsync(Guid id)
-    {
-        return await _catalogRepository.DeleteModuleAsync(id);
-    }
+    public async Task<bool> DeleteModuleAsync(Guid id) 
+        => await _catalogRepository.DeleteModuleAsync(id);
 
     #endregion
 
@@ -281,58 +339,120 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
     /// <summary>
     /// Elimina una feature (soft delete).
     /// </summary>
-    public async Task<bool> DeleteFeatureAsync(Guid id)
-    {
-        return await _catalogRepository.DeleteFeatureAsync(id);
-    }
+    public async Task<bool> DeleteFeatureAsync(Guid id) 
+        => await _catalogRepository.DeleteFeatureAsync(id);
 
     #endregion
 
     #region Private Methods
 
-    private static ProductDto MapToProductDto(Product product)
-    {
-        return new ProductDto
-        {
-            Id = product.Id,
-            Code = product.Code,
-            Name = product.Name,
-            Description = product.Description,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
-        };
-    }
+    private static ProductDto MapToProductDto(Product product) 
+        => new() {
+        Id = product.Id,
+        Code = product.Code,
+        Name = product.Name,
+        Description = product.Description,
+        IsActive = product.IsActive,
+        CreatedAt = product.CreatedAt,
+        UpdatedAt = product.UpdatedAt
+    };
 
-    private static ModuleDto MapToModuleDto(Module module)
-    {
-        return new ModuleDto
-        {
-            Id = module.Id,
-            ProductId = module.ProductId,
-            Code = module.Code,
-            Name = module.Name,
-            Description = module.Description,
-            IsActive = module.IsActive,
-            CreatedAt = module.CreatedAt,
-            UpdatedAt = module.UpdatedAt
-        };
-    }
+    private static ModuleDto MapToModuleDto(Module module) 
+        => new() {
+        Id = module.Id,
+        ProductId = module.ProductId,
+        Code = module.Code,
+        Name = module.Name,
+        Description = module.Description,
+        IsActive = module.IsActive,
+        CreatedAt = module.CreatedAt,
+        UpdatedAt = module.UpdatedAt
+    };
 
-    private static FeatureDto MapToFeatureDto(Feature feature)
+    private static FeatureDto MapToFeatureDto(Feature feature) 
+        => new() {
+        Id = feature.Id,
+        ModuleId = feature.ModuleId,
+        Code = feature.Code,
+        Name = feature.Name,
+        Description = feature.Description,
+        RequiresLicense = feature.RequiresLicense,
+        AdditionalCost = feature.AdditionalCost ?? 0,
+        IsActive = feature.IsActive,
+        CreatedAt = feature.CreatedAt,
+        UpdatedAt = feature.UpdatedAt
+    };
+
+    private static SubscriptionPlanDto MapToSubscriptionPlanDto(Subscription plan)
     {
-        return new FeatureDto
+        // Parse limits config JSON
+        SubscriptionLimitsDto? limits = null;
+        if (!string.IsNullOrEmpty(plan.LimitsConfig))
         {
-            Id = feature.Id,
-            ModuleId = feature.ModuleId,
-            Code = feature.Code,
-            Name = feature.Name,
-            Description = feature.Description,
-            RequiresLicense = feature.RequiresLicense,
-            AdditionalCost = feature.AdditionalCost ?? 0,
-            IsActive = feature.IsActive,
-            CreatedAt = feature.CreatedAt,
-            UpdatedAt = feature.UpdatedAt
+            try
+            {
+                var limitsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(plan.LimitsConfig);
+                if (limitsDict != null)
+                {
+                    limits = new SubscriptionLimitsDto
+                    {
+                        MaxUsers = limitsDict.TryGetValue("maxUsers", out var maxUsers) ? Convert.ToInt32(maxUsers) : 1,
+                        MaxTransactionsPerMonth = limitsDict.TryGetValue("maxTransactions", out var maxTrans) ? Convert.ToInt32(maxTrans) : 100,
+                        StorageGB = limitsDict.TryGetValue("storageGB", out var storage) ? Convert.ToInt32(storage) : 1,
+                        MaxWarehouses = limitsDict.TryGetValue("warehouses", out var warehouses) ? Convert.ToInt32(warehouses) : 1,
+                        SupportLevel = limitsDict.TryGetValue("support", out var support) ? support?.ToString() ?? "email" : "email",
+                        HasAdvancedReports = limitsDict.TryGetValue("customizations", out var custom) ? Convert.ToBoolean(custom) : false
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                // If parsing fails, use default limits
+                limits = new SubscriptionLimitsDto
+                {
+                    MaxUsers = 1,
+                    MaxTransactionsPerMonth = 100,
+                    StorageGB = 1,
+                    MaxWarehouses = 1,
+                    SupportLevel = "email",
+                    HasAdvancedReports = false
+                };
+            }
+        }
+
+        // Map features
+        var features = plan.SubscriptionFeatures?
+            .Where(sf => sf.IsEnabled)
+            .Select(sf => new FeatureDto
+            {
+                Id = sf.Feature.Id,
+                ModuleId = sf.Feature.ModuleId,
+                Code = sf.Feature.Code,
+                Name = sf.Feature.Name,
+                Description = sf.Feature.Description,
+                RequiresLicense = sf.Feature.RequiresLicense,
+                AdditionalCost = sf.Feature.AdditionalCost ?? 0,
+                IsActive = sf.Feature.IsActive,
+                CreatedAt = sf.Feature.CreatedAt,
+                UpdatedAt = sf.Feature.UpdatedAt
+            })
+            .ToList() ?? new List<FeatureDto>();
+
+        return new SubscriptionPlanDto
+        {
+            Id = plan.Id,
+            ProductId = plan.ProductId,
+            Code = plan.Code,
+            Name = plan.Name,
+            Description = plan.Description,
+            IsFullAccess = plan.IsFullAccess,
+            MonthlyPrice = plan.MonthlyPrice,
+            AnnualPrice = plan.AnnualPrice,
+            IsActive = plan.IsActive,
+            IsRecommended = plan.IsRecommended,
+            DisplayOrder = plan.DisplayOrder,
+            Limits = limits,
+            Features = features
         };
     }
 

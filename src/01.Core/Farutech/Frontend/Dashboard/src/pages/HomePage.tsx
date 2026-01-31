@@ -37,7 +37,8 @@ const normalizeText = (text: string): string => {
     .replace(/\s+/g, ' ');
 };
 
-const getInstanceConfig = (type: string) => {
+const getInstanceConfig = (type: string)
+        => {
   const t = (type || '').toLowerCase();
   if (t.includes('vet')) return { color: 'bg-orange-100 text-orange-600 border-orange-200', label: 'Veterinaria' };
   if (t.includes('erp')) return { color: 'bg-blue-100 text-blue-600 border-blue-200', label: 'ERP' };
@@ -46,7 +47,8 @@ const getInstanceConfig = (type: string) => {
   return { color: 'bg-slate-100 text-slate-600 border-slate-200', label: t || 'App' };
 };
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string)
+        => {
     switch (status?.toLowerCase()) {
         case 'online':
         case 'active':
@@ -80,7 +82,8 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   // Transform data based on authentication state
-  const organizations = useMemo(() => {
+  const organizations = useMemo(()
+        => {
     // When user needs to select context, use availableTenants from login response
     if (requiresContextSelection) {
       const tenantOrgs = availableTenants || [];
@@ -142,7 +145,8 @@ export default function HomePage() {
   }, [customersData, availableTenants, requiresContextSelection, user]);
 
   // Handle Selection
-  const handleInstanceClick = async (tenantId: string, instanceId: string, isActive: boolean) => {
+  const handleInstanceClick = async (tenantId: string, instanceId: string, isActive: boolean)
+        => {
       // Prevenir selección de organizaciones inactivas
       if (!isActive) {
         return;
@@ -175,7 +179,8 @@ export default function HomePage() {
   };
 
   // Handle Create Instance - Open modal instead of navigating
-  const handleCreateInstance = (organizationId: string) => {
+  const handleCreateInstance = (organizationId: string)
+        => {
     // Find organization from correct data source
     let orgData;
     if (requiresContextSelection) {
@@ -212,7 +217,8 @@ export default function HomePage() {
   };
 
   // Handle Edit Organization
-  const handleEditOrganization = (organizationId: string) => {
+  const handleEditOrganization = (organizationId: string)
+        => {
     let orgData;
     if (requiresContextSelection) {
       const tenant = availableTenants?.find(t => t.tenantId === organizationId);
@@ -242,7 +248,8 @@ export default function HomePage() {
   // ============================================================================
   // Filtrado Simple y Eficiente
   // ============================================================================
-  const filteredOrgs = useMemo(() => {
+  const filteredOrgs = useMemo(()
+        => {
     if (!searchTerm.trim()) return organizations;
 
     const search = searchTerm.toLowerCase().trim();
@@ -270,14 +277,16 @@ export default function HomePage() {
   const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
 
   // Handle Accordion Toggle
-  const toggleOrg = (orgId: string) => {
+  const toggleOrg = (orgId: string)
+        => {
     setExpandedOrgId(prev => prev === orgId ? null : orgId);
   };
 
   // Handle Toggle Status (Activate/Deactivate)
   const { mutate: updateCustomerStatus } = useUpdateCustomer();
 
-  const handleToggleStatus = (organizationId: string, currentIsActive: boolean) => {
+  const handleToggleStatus = (organizationId: string, currentIsActive: boolean)
+        => {
     // If we are deactivating, collapse the card
     if (currentIsActive && expandedOrgId === organizationId) {
       setExpandedOrgId(null);
@@ -293,13 +302,15 @@ export default function HomePage() {
 
 
   // Handle View All Apps
-  const handleViewAll = (orgId: string) => {
+  const handleViewAll = (orgId: string)
+        => {
     navigate(`/organizations/${orgId}/apps`);
   };
 
 
   // Handle Create Organization
-  const handleCreateOrganization = () => {
+  const handleCreateOrganization = ()
+        => {
     modal.open('new-org');
   };
 
@@ -327,7 +338,8 @@ export default function HomePage() {
                 placeholder="Buscar organización..." 
                 className="pl-10 bg-white border-slate-200 focus-visible:ring-primary shadow-sm rounded-lg"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e)
+        => setSearchTerm(e.target.value)}
               />
             </div>
             <Button onClick={handleCreateOrganization} className="flex-shrink-0">
@@ -367,7 +379,8 @@ export default function HomePage() {
                     <div className="flex justify-center gap-4">
                         {requiresContextSelection ? (
                             <Button
-                                onClick={() => navigate('/login')}
+                                onClick={()
+        => navigate('/login')}
                                 variant="outline"
                             >
                                 Ir al Login
@@ -388,7 +401,8 @@ export default function HomePage() {
                       key={org.organizationId}
                       organization={org}
                       isExpanded={expandedOrgId === org.organizationId}
-                      onToggle={() => toggleOrg(org.organizationId)}
+                      onToggle={()
+        => toggleOrg(org.organizationId)}
                       onLaunchInstance={handleInstanceClick}
                       onCreateInstance={handleCreateInstance}
                       onEditOrganization={handleEditOrganization}
@@ -423,7 +437,8 @@ export default function HomePage() {
       {(selectedOrganization || modal.isOpen('new-instance')) && (
         <CreateInstanceModal
           isOpen={modal.isOpen('new-instance')}
-          onClose={() => {
+          onClose={()
+        => {
             modal.close();
             setSelectedOrganization(null);
           }}
@@ -435,7 +450,8 @@ export default function HomePage() {
       {selectedOrganization && (
         <EditOrganizationModal
           isOpen={modal.isOpen('edit-org')}
-          onClose={() => {
+          onClose={()
+        => {
             modal.close();
             setSelectedOrganization(null);
           }}

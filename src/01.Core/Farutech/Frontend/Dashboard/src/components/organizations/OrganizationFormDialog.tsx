@@ -25,7 +25,8 @@ interface OrganizationFormData {
 
 interface OrganizationFormDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean)
+        => void;
   isEditing: boolean;
   organization?: {
     id: string;
@@ -33,7 +34,8 @@ interface OrganizationFormDialogProps {
     taxId?: string;
     email: string;
   } | null;
-  onSuccess: () => void;
+  onSuccess: ()
+        => void;
 }
 
 export function OrganizationFormDialog({
@@ -52,7 +54,8 @@ export function OrganizationFormDialog({
   const { toast } = useToast();
 
   // Reset form when dialog opens/closes or organization changes
-  useEffect(() => {
+  useEffect(()
+        => {
     if (open) {
       if (isEditing && organization) {
         setFormData({
@@ -70,7 +73,8 @@ export function OrganizationFormDialog({
     }
   }, [open, isEditing, organization]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async ()
+        => {
     if (!formData.companyName.trim() || !formData.taxId.trim()) {
       toast({
         title: 'Error de validación',
@@ -148,7 +152,8 @@ export function OrganizationFormDialog({
             <Input
               id="companyName"
               value={formData.companyName}
-              onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+              onChange={(e)
+        => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
               placeholder="Ej: Mi Empresa S.A.S."
             />
           </div>
@@ -158,7 +163,8 @@ export function OrganizationFormDialog({
             <Input
               id="taxId"
               value={formData.taxId}
-              onChange={(e) => setFormData(prev => ({ ...prev, taxId: e.target.value }))}
+              onChange={(e)
+        => setFormData(prev => ({ ...prev, taxId: e.target.value }))}
               placeholder="Ej: 901234567-8"
             />
           </div>
@@ -169,7 +175,8 @@ export function OrganizationFormDialog({
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              onChange={(e)
+        => setFormData(prev => ({ ...prev, email: e.target.value }))}
               placeholder="contacto@empresa.com"
             />
           </div>
@@ -178,7 +185,8 @@ export function OrganizationFormDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={()
+        => onOpenChange(false)}
             disabled={isSubmitting}
           >
             Cancelar

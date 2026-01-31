@@ -80,10 +80,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddFarutechOrchestrator(
         this IServiceCollection services,
         string baseUrl)
-    {
-        return services.AddFarutechOrchestrator(options =>
-        {
-            options.BaseUrl = baseUrl;
-        });
-    }
+        => services.AddFarutechOrchestrator(options =>
+                                {
+                                    options.BaseUrl = baseUrl;
+                                });
 }

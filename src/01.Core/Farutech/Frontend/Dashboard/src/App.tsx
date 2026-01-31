@@ -48,7 +48,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+const App = ()
+        => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter
       future={{

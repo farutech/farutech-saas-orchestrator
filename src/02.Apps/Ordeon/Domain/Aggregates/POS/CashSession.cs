@@ -41,9 +41,7 @@ public sealed class CashSession : Entity, IAggregateRoot
     }
 
     public static CashSession Open(Guid registerId, Guid cashierId, decimal openingBalance)
-    {
-        return new CashSession(registerId, cashierId, openingBalance);
-    }
+        => new(registerId, cashierId, openingBalance);
 
     public void AddMovement(decimal amount, string concept, bool isIncome)
     {

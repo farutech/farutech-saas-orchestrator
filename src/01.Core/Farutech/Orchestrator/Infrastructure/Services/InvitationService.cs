@@ -191,15 +191,13 @@ public class InvitationService(OrchestratorDbContext context, UserManager<Applic
     }
 
     public async Task<List<UserInvitation>> GetPendingInvitationsAsync(string email)
-    {
-        return await _context.UserInvitations
-            .Where(i => 
-                i.Email == email && 
+        => await _context.UserInvitations
+            .Where(i =>
+                i.Email == email &&
                 i.Status == InvitationStatus.Pending &&
                 i.ExpirationDate > DateTime.UtcNow)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
-    }
 
     public async Task<bool> CancelInvitationAsync(Guid invitationId, Guid cancelledBy)
     {

@@ -32,7 +32,8 @@ export function BedOccupancyChart({ data }: BedOccupancyChartProps) {
               paddingAngle={4}
               dataKey="value"
             >
-              {data.map((_, index) => (
+              {data.map((_, index)
+        => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -42,12 +43,14 @@ export function BedOccupancyChart({ data }: BedOccupancyChartProps) {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: number) => [`${value}%`, 'Ocupación']}
+              formatter={(value: number)
+        => [`${value}%`, 'Ocupación']}
             />
             <Legend 
               verticalAlign="bottom" 
               height={36}
-              formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
+              formatter={(value)
+        => <span className="text-sm text-foreground">{value}</span>}
             />
           </PieChart>
         </ResponsiveContainer>

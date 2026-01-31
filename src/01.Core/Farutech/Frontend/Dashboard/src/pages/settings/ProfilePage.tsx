@@ -45,10 +45,12 @@ export default function ProfilePage() {
   });
 
   // Cargar perfil del usuario
-  useEffect(() => {
+  useEffect(()
+        => {
     let mounted = true;
     
-    const loadProfile = async () => {
+    const loadProfile = async ()
+        => {
       try {
         // Check token
         const token = localStorage.getItem('farutech_access_token');
@@ -92,18 +94,21 @@ export default function ProfilePage() {
 
     loadProfile();
     
-    return () => {
+    return ()
+        => {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Solo cargar una vez al montar
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = ()
+        => {
     setFormData(originalData);
     setEditMode(false);
   };
   
-  const handleCancelPassword = () => {
+  const handleCancelPassword = ()
+        => {
     setPasswordData({
       currentPassword: '',
       newPassword: '',
@@ -112,7 +117,8 @@ export default function ProfilePage() {
     setEditPasswordMode(false);
   };
 
-  const handleSubmitProfile = async (e: React.FormEvent) => {
+  const handleSubmitProfile = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     
     try {
@@ -157,7 +163,8 @@ export default function ProfilePage() {
     }
   };
   
-  const handleSubmitPassword = async (e: React.FormEvent) => {
+  const handleSubmitPassword = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     
     try {
@@ -248,7 +255,8 @@ export default function ProfilePage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/home')}
+            onClick={()
+        => navigate('/home')}
             className="gap-2 w-full md:w-auto"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -274,7 +282,8 @@ export default function ProfilePage() {
               {!editMode && (
                 <Button
                   variant="outline"
-                  onClick={() => setEditMode(true)}
+                  onClick={()
+        => setEditMode(true)}
                   className="gap-2"
                 >
                   <Edit className="h-4 w-4" />
@@ -291,7 +300,8 @@ export default function ProfilePage() {
                   <Input
                     id="firstName"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={(e)
+        => setFormData({ ...formData, firstName: e.target.value })}
                     placeholder="Juan"
                     disabled={!editMode}
                     className={!editMode ? 'bg-muted cursor-not-allowed' : ''}
@@ -303,7 +313,8 @@ export default function ProfilePage() {
                   <Input
                     id="lastName"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={(e)
+        => setFormData({ ...formData, lastName: e.target.value })}
                     placeholder="Pérez"
                     disabled={!editMode}
                     className={!editMode ? 'bg-muted cursor-not-allowed' : ''}
@@ -335,7 +346,8 @@ export default function ProfilePage() {
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+51 999 999 999"
                   disabled={!editMode}
                   className={!editMode ? 'bg-muted cursor-not-allowed' : ''}
@@ -390,7 +402,8 @@ export default function ProfilePage() {
               {!editPasswordMode && (
                 <Button
                   variant="outline"
-                  onClick={() => setEditPasswordMode(true)}
+                  onClick={()
+        => setEditPasswordMode(true)}
                   className="gap-2"
                 >
                   <Edit className="h-4 w-4" />
@@ -408,7 +421,8 @@ export default function ProfilePage() {
                     id="currentPassword"
                     type="password"
                     value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    onChange={(e)
+        => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                     placeholder="••••••••"
                   />
                 </div>
@@ -420,7 +434,8 @@ export default function ProfilePage() {
                       id="newPassword"
                       type="password"
                       value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      onChange={(e)
+        => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                       placeholder="••••••••"
                     />
                   </div>
@@ -431,7 +446,8 @@ export default function ProfilePage() {
                       id="confirmPassword"
                       type="password"
                       value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      onChange={(e)
+        => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                       placeholder="••••••••"
                     />
                   </div>

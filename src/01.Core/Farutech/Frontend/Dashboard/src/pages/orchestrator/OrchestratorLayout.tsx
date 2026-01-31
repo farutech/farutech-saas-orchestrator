@@ -60,7 +60,8 @@ export default function OrchestratorLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-4">
-            {navigation.map((item) => {
+            {navigation.map((item)
+        => {
               const isActive = location.pathname.startsWith(item.href);
               return (
                 <Link key={item.name} to={item.href}>

@@ -36,9 +36,7 @@ public sealed class ThirdParty : Entity, IAggregateRoot
     }
 
     public static ThirdParty Create(string identification, string name, string email, ThirdPartyType type)
-    {
-        return new ThirdParty(identification, name, email, type);
-    }
+        => new(identification, name, email, type);
 
     public void UpdateContactInfo(string email, string phone, string address)
     {

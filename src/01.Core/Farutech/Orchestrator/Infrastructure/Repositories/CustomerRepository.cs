@@ -14,23 +14,17 @@ public class CustomerRepository(OrchestratorDbContext dbContext) : ICustomerRepo
 
     /// <inheritdoc />
     public async Task AddAsync(Customer customer, CancellationToken cancellationToken = default)
-    {
-        await _dbContext.Customers.AddAsync(customer, cancellationToken);
-    }
+        => await _dbContext.Customers.AddAsync(customer, cancellationToken);
 
     /// <inheritdoc />
     public async Task<Customer?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Customers
+        => await _dbContext.Customers
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task<Customer?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Customers
+        => await _dbContext.Customers
             .FirstOrDefaultAsync(c => c.Code == code, cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task UpdateAsync(Customer customer, CancellationToken cancellationToken = default)
@@ -48,16 +42,12 @@ public class CustomerRepository(OrchestratorDbContext dbContext) : ICustomerRepo
 
     /// <inheritdoc />
     public async Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Customers
+        => await _dbContext.Customers
             .AnyAsync(c => c.Code == code, cancellationToken);
-    }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Customer>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
+    public async Task<IEnumerable<Customer>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) =>
         // For now, return all customers. This might need to be implemented based on user memberships
-        return await _dbContext.Customers
+        await _dbContext.Customers
             .ToListAsync(cancellationToken);
-    }
 }

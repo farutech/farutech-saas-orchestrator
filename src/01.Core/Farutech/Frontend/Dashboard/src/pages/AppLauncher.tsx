@@ -28,14 +28,17 @@ export default function AppHome() {
     isLoading 
   } = useFarutech();
 
-  const handleModuleSelect = (module: ModuleType) => {
+  const handleModuleSelect = (module: ModuleType)
+        => {
     setCurrentModule(module);
-    setTimeout(() => {
+    setTimeout(()
+        => {
       navigate('/dashboard');
     }, 500);
   };
 
-  const handleLogout = () => {
+  const handleLogout = ()
+        => {
     logout();
     navigate('/login');
   };
@@ -83,11 +86,13 @@ export default function AppHome() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <DropdownMenuItem onClick={()
+        => navigate('/settings')}>
                     <User className="mr-2 h-4 w-4" />
                     Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <DropdownMenuItem onClick={()
+        => navigate('/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
                   </DropdownMenuItem>
@@ -124,7 +129,8 @@ export default function AppHome() {
 
           {/* Module Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {Object.values(moduleConfigs).map((config, index) => (
+            {Object.values(moduleConfigs).map((config, index)
+        => (
               <ModuleCard
                 key={config.id}
                 config={config}

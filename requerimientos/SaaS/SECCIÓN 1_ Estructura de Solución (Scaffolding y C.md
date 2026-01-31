@@ -207,9 +207,11 @@ public abstract class AggregateRoot : Entity
 
     public IReadOnlyCollection<object> DomainEvents => _domainEvents.AsReadOnly();
 
-    protected void AddDomainEvent(object @event) => _domainEvents.Add(@event);
+    protected void AddDomainEvent(object @event)
+        => _domainEvents.Add(@event);
 
-    public void ClearDomainEvents() => _domainEvents.Clear();
+    public void ClearDomainEvents()
+        => _domainEvents.Clear();
 }
 ```
 
@@ -243,7 +245,8 @@ public sealed class Module(string name, string code, Guid productId) : Entity
     private readonly List<Feature> _features = new();
     public IReadOnlyCollection<Feature> Features => _features;
 
-    public void AddFeature(Feature feature) => _features.Add(feature);
+    public void AddFeature(Feature feature)
+        => _features.Add(feature);
 }
 
 public sealed class Feature(string name, string code, Guid moduleId) : Entity
@@ -278,8 +281,10 @@ public sealed class Plan(string name, string code, Guid productId, PlanType type
     private readonly HashSet<string> _includedFeatureCodes = new(StringComparer.OrdinalIgnoreCase);
     public IReadOnlyCollection<string> IncludedFeatureCodes => _includedFeatureCodes;
 
-    public void IncludeFeature(string featureCode) => _includedFeatureCodes.Add(featureCode);
-    public void ExcludeFeature(string featureCode) => _includedFeatureCodes.Remove(featureCode);
+    public void IncludeFeature(string featureCode)
+        => _includedFeatureCodes.Add(featureCode);
+    public void ExcludeFeature(string featureCode)
+        => _includedFeatureCodes.Remove(featureCode);
 }
 ```
 
@@ -296,8 +301,10 @@ public sealed class Customer(string legalName, string taxId) : AggregateRoot
     public string? BillingEmail { get; private set; }
     public bool IsActive { get; private set; } = true;
 
-    public void SetBillingEmail(string email) => BillingEmail = email;
-    public void Deactivate() => IsActive = false;
+    public void SetBillingEmail(string email)
+        => BillingEmail = email;
+    public void Deactivate()
+        => IsActive = false;
 }
 
 namespace Farutech.Orchestrator.Domain.Enums;
@@ -344,8 +351,10 @@ public sealed class TenantInstance(
     public TenantInstanceStatus Status { get; private set; } = TenantInstanceStatus.Provisioning;
     public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;
 
-    public void MarkActive() => Status = TenantInstanceStatus.Active;
-    public void MarkFailed() => Status = TenantInstanceStatus.Failed;
+    public void MarkActive()
+        => Status = TenantInstanceStatus.Active;
+    public void MarkFailed()
+        => Status = TenantInstanceStatus.Failed;
 
     public void SetConnectionString(string connectionString)
         => ConnectionString = connectionString;
@@ -414,7 +423,8 @@ public sealed class Subscription(
         Status = SubscriptionStatus.Active;
     }
 
-    public void Suspend() => Status = SubscriptionStatus.Suspended;
+    public void Suspend()
+        => Status = SubscriptionStatus.Suspended;
 
     public void Cancel()
     {
@@ -456,7 +466,8 @@ public sealed class SubscriptionFeatureOverride(string featureCode, FeatureOverr
     public required string FeatureCode { get; init; } = featureCode;
     public FeatureOverrideType OverrideType { get; private set; } = overrideType;
 
-    public void SetOverrideType(FeatureOverrideType type) => OverrideType = type;
+    public void SetOverrideType(FeatureOverrideType type)
+        => OverrideType = type;
 }
 ```
 

@@ -11,7 +11,8 @@ import type { ModuleDto } from '@/types/api';
 
 interface FeaturesViewProps {
   module: ModuleDto;
-  onBack: () => void;
+  onBack: ()
+        => void;
 }
 
 export function FeaturesView({ module, onBack }: FeaturesViewProps) {
@@ -37,7 +38,8 @@ export function FeaturesView({ module, onBack }: FeaturesViewProps) {
       </div>
 
       <div className="grid gap-4">
-        {features?.map((feature) => (
+        {features?.map((feature)
+        => (
           <Card key={feature.id} className="bg-slate-900/50 border-white/10">
             <CardHeader>
               <div className="flex items-start justify-between">

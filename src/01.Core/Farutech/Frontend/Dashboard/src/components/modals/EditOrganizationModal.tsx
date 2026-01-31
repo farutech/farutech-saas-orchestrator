@@ -10,7 +10,8 @@ import type { Customer } from '@/types/api';
 
 interface EditOrganizationModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: ()
+        => void;
   organization: Customer | null | any; // Accept initial data
 }
 
@@ -31,7 +32,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
 
 
   // Load organization data when it changes
-  useEffect(() => {
+  useEffect(()
+        => {
     const data = fullOrg || organization;
     if (data) {
       setFormData({
@@ -45,16 +47,19 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
   }, [fullOrg, organization, isOpen]);
 
   const { mutate: updateCustomer, isPending } = useUpdateCustomer({
-    onSuccess: () => {
+    onSuccess: ()
+        => {
       onClose();
     },
-    onError: (error) => {
+    onError: (error)
+        => {
       // toast is already handled in useUpdateCustomer but we can add more if needed
       console.error('[EditOrganizationModal] Update error:', error);
     }
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     
     if (!organization?.id || isPending) return;
@@ -99,7 +104,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
                 <Input
                   id="edit-name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ej. Mi Empresa S.A."
                   required
                 />
@@ -109,7 +115,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
                  <Input
                   id="edit-taxId"
                   value={formData.taxId}
-                  onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                  onChange={(e)
+        => setFormData({ ...formData, taxId: e.target.value })}
                   placeholder="Ej. 12345678-9"
                 />
               </div>
@@ -122,7 +129,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
                 id="edit-email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e)
+        => setFormData({ ...formData, email: e.target.value })}
                 placeholder="contacto@empresa.com"
                 required
               />
@@ -134,7 +142,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
                     <Input
                         id="edit-phone"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e)
+        => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+57 300 123 4567"
                     />
                 </div>
@@ -143,7 +152,8 @@ export function EditOrganizationModal({ isOpen, onClose, organization }: EditOrg
                     <Input
                         id="edit-address"
                         value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        onChange={(e)
+        => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Calle 123 # 45-67"
                     />
                 </div>

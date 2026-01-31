@@ -16,19 +16,23 @@ public class EfRepository(OrchestratorDbContext context) : IRepository
 {
     private readonly OrchestratorDbContext _context = context;
 
-    public async Task<Customer?> GetCustomerByIdAsync(Guid customerId) => await _context.Customers
+    public async Task<Customer?> GetCustomerByIdAsync(Guid customerId)
+        => await _context.Customers
             .FirstOrDefaultAsync(c => c.Id == customerId);
 
-    public async Task<Product?> GetProductByIdAsync(Guid productId) => await _context.Products
+    public async Task<Product?> GetProductByIdAsync(Guid productId)
+        => await _context.Products
             .Include(p => p.Modules)
             .FirstOrDefaultAsync(p => p.Id == productId);
 
-    public async Task<Catalog.Subscription?> GetSubscriptionPlanByIdAsync(Guid subscriptionPlanId) => await _context.SubscriptionPlans
+    public async Task<Catalog.Subscription?> GetSubscriptionPlanByIdAsync(Guid subscriptionPlanId)
+        => await _context.SubscriptionPlans
             .Include(s => s.SubscriptionFeatures)
                 .ThenInclude(sf => sf.Feature)
             .FirstOrDefaultAsync(s => s.Id == subscriptionPlanId);
 
-    public async Task<TenantInstance?> GetTenantInstanceByIdAsync(Guid tenantInstanceId) => await _context.TenantInstances
+    public async Task<TenantInstance?> GetTenantInstanceByIdAsync(Guid tenantInstanceId)
+        => await _context.TenantInstances
             .FirstOrDefaultAsync(t => t.Id == tenantInstanceId);
 
     public async Task<TenantInstance?> GetTenantInstanceByCustomerAndCodeAsync(Guid customerId, string code)
@@ -41,7 +45,8 @@ public class EfRepository(OrchestratorDbContext context) : IRepository
             .FirstOrDefaultAsync(t => t.CustomerId == customerId && t.Code != null && t.Code.ToUpper() == normalizedCode);
     }
 
-    public async Task AddTenantInstanceAsync(TenantInstance tenantInstance) => await _context.TenantInstances.AddAsync(tenantInstance);
+    public async Task AddTenantInstanceAsync(TenantInstance tenantInstance)
+        => await _context.TenantInstances.AddAsync(tenantInstance);
 
     public Task UpdateTenantInstanceAsync(TenantInstance tenantInstance)
     {
@@ -49,5 +54,6 @@ public class EfRepository(OrchestratorDbContext context) : IRepository
         return Task.CompletedTask;
     }
 
-    public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
+    public async Task<int> SaveChangesAsync()
+        => await _context.SaveChangesAsync();
 }

@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Store, ShoppingBag, Warehouse, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-const getInstanceIcon = (type: string) => {
+const getInstanceIcon = (type: string)
+        => {
   switch (type.toLowerCase()) {
     case 'pos':
       return <Store className="h-12 w-12" />;
@@ -19,7 +20,8 @@ const getInstanceIcon = (type: string) => {
   }
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: string)
+        => {
   const statusLower = status.toLowerCase();
   
   if (statusLower === 'active' || statusLower === 'running') {
@@ -55,14 +57,16 @@ export default function SelectInstance() {
     requiresInstanceSelection,
   } = useAuth();
 
-  useEffect(() => {
+  useEffect(()
+        => {
     // Si no hay instancias disponibles o no hay tenant seleccionado, redirigir
     if (!requiresInstanceSelection || availableInstances.length === 0) {
       navigate('/home');
     }
   }, [requiresInstanceSelection, availableInstances, navigate]);
 
-  const handleSelectInstance = async (instanceId: string) => {
+  const handleSelectInstance = async (instanceId: string)
+        => {
     try {
       await selectInstance(instanceId);
     } catch (error) {
@@ -70,7 +74,8 @@ export default function SelectInstance() {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = ()
+        => {
     // Volver a la selección de organización
     navigate('/home');
   };
@@ -112,7 +117,8 @@ export default function SelectInstance() {
 
         {/* Instances Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableInstances.map((instance) => {
+          {availableInstances.map((instance)
+        => {
             const isActive = instance.status.toLowerCase() === 'active' || instance.status.toLowerCase() === 'running';
             
             return (
@@ -122,7 +128,8 @@ export default function SelectInstance() {
                   relative overflow-hidden transition-all duration-300 hover:shadow-xl
                   ${!isActive ? 'opacity-75' : 'hover:scale-105 cursor-pointer'}
                 `}
-                onClick={() => isActive && handleSelectInstance(instance.instanceId)}
+                onClick={()
+        => isActive && handleSelectInstance(instance.instanceId)}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-blue-100 rounded-bl-full opacity-50" />
                 
@@ -150,7 +157,8 @@ export default function SelectInstance() {
                   {isActive ? (
                     <Button 
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                      onClick={(e) => {
+                      onClick={(e)
+        => {
                         e.stopPropagation();
                         handleSelectInstance(instance.instanceId);
                       }}

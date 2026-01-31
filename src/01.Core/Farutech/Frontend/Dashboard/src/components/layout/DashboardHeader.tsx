@@ -18,7 +18,8 @@ export function DashboardHeader() {
   const { user, logout } = useAuth();
   const [isDark, setIsDark] = useState(false);
 
-  useEffect(() => {
+  useEffect(()
+        => {
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -27,7 +28,8 @@ export function DashboardHeader() {
   }, [isDark]);
 
   const userInitials = user?.fullName 
-    ? user.fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    ? user.fullName.split(' ').map((n: string)
+        => n[0]).join('').substring(0, 2).toUpperCase()
     : 'U';
 
   return (
@@ -49,7 +51,8 @@ export function DashboardHeader() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsDark(!isDark)}
+          onClick={()
+        => setIsDark(!isDark)}
           className="text-slate-500 hover:text-slate-900"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

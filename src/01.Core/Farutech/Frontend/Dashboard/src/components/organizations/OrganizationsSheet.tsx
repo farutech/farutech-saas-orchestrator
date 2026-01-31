@@ -22,9 +22,11 @@ import { OrganizationContextDto } from '@/types/api';
 
 interface OrganizationsSheetProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean)
+        => void;
   organizations: OrganizationContextDto[];
-  onOrganizationsChange: () => void;
+  onOrganizationsChange: ()
+        => void;
 }
 
 export function OrganizationsSheet({ 
@@ -44,7 +46,8 @@ export function OrganizationsSheet({
 
 
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent)
+        => {
     e.preventDefault();
     
     if (!formData.companyName.trim()) {
@@ -97,7 +100,8 @@ export function OrganizationsSheet({
     }
   };
 
-  const handleToggleActive = async (orgId: string, currentStatus: boolean) => {
+  const handleToggleActive = async (orgId: string, currentStatus: boolean)
+        => {
     try {
       // TODO: Implementar endpoint de toggle
       await apiClient.patch(`/api/Customers/${orgId}/toggle-active`);
@@ -133,7 +137,8 @@ export function OrganizationsSheet({
           {/* Botón Crear Nueva Organización */}
           {!showCreateForm && (
             <Button
-              onClick={() => setShowCreateForm(true)}
+              onClick={()
+        => setShowCreateForm(true)}
               className="w-full bg-[#8B5CF6] hover:bg-[#7C3AED] text-white"
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -149,7 +154,8 @@ export function OrganizationsSheet({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
+                  onClick={()
+        => {
                     setShowCreateForm(false);
                     setFormData({ companyName: '', email: '', taxId: '' });
                   }}
@@ -167,7 +173,8 @@ export function OrganizationsSheet({
                     id="companyName"
                     placeholder="Ej: Mi Empresa S.A."
                     value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    onChange={(e)
+        => setFormData({ ...formData, companyName: e.target.value })}
                     required
                   />
                 </div>
@@ -181,7 +188,8 @@ export function OrganizationsSheet({
                     type="email"
                     placeholder="contacto@miempresa.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e)
+        => setFormData({ ...formData, email: e.target.value })}
                     required
                   />
                 </div>
@@ -194,7 +202,8 @@ export function OrganizationsSheet({
                     id="taxId"
                     placeholder="Ej: 20123456789"
                     value={formData.taxId}
-                    onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                    onChange={(e)
+        => setFormData({ ...formData, taxId: e.target.value })}
                   />
                   <p className="text-xs text-slate-500">
                     Identificación tributaria de la empresa (opcional)
@@ -222,7 +231,8 @@ export function OrganizationsSheet({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => {
+                    onClick={()
+        => {
                       setShowCreateForm(false);
                       setFormData({ companyName: '', email: '', taxId: '' });
                     }}
@@ -303,7 +313,8 @@ export function OrganizationsSheet({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleToggleActive(org.organizationId, org.isActive)}
+                          onClick={()
+        => handleToggleActive(org.organizationId, org.isActive)}
                           className="h-8"
                         >
                           {org.isActive ? (

@@ -47,21 +47,15 @@ public class TenantService(ITenantRepository tenantRepository, ICustomerReposito
 
     /// <inheritdoc />
     public async Task<TenantInstance?> GetTenantByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByIdAsync(id, cancellationToken);
-    }
+        => await _tenantRepository.GetByIdAsync(id, cancellationToken);
 
     /// <inheritdoc />
     public async Task<TenantInstance?> GetTenantByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByCodeAsync(code, cancellationToken);
-    }
+        => await _tenantRepository.GetByCodeAsync(code, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<TenantInstance>> GetTenantsByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
-    {
-        return await _tenantRepository.GetByCustomerIdAsync(customerId, cancellationToken);
-    }
+        => await _tenantRepository.GetByCustomerIdAsync(customerId, cancellationToken);
 
     /// <inheritdoc />
     public async Task<TenantInstance> UpdateTenantAsync(Guid id, UpdateTenantRequest request, CancellationToken cancellationToken = default)

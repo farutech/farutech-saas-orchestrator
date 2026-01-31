@@ -49,12 +49,10 @@ public sealed class User : Entity, IAggregateRoot
     }
 
     public IEnumerable<string> GetEffectivePermissions()
-    {
-        return _roles
+        => _roles
             .SelectMany(r => r.Permissions)
             .Select(p => p.Code)
             .Distinct();
-    }
 
     public void Deactivate()
     {

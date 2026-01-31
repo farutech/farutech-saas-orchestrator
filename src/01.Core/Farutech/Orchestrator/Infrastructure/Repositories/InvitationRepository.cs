@@ -15,23 +15,17 @@ public class InvitationRepository(OrchestratorDbContext dbContext) : IInvitation
 
     /// <inheritdoc />
     public async Task AddAsync(UserInvitation invitation, CancellationToken cancellationToken = default)
-    {
-        await _dbContext.UserInvitations.AddAsync(invitation, cancellationToken);
-    }
+        => await _dbContext.UserInvitations.AddAsync(invitation, cancellationToken);
 
     /// <inheritdoc />
     public async Task<UserInvitation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.UserInvitations
+        => await _dbContext.UserInvitations
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task<UserInvitation?> GetByTokenAsync(Guid token, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.UserInvitations
+        => await _dbContext.UserInvitations
             .FirstOrDefaultAsync(i => i.Token == token, cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task UpdateAsync(UserInvitation invitation, CancellationToken cancellationToken = default)
@@ -49,26 +43,20 @@ public class InvitationRepository(OrchestratorDbContext dbContext) : IInvitation
 
     /// <inheritdoc />
     public async Task<IEnumerable<UserInvitation>> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.UserInvitations
+        => await _dbContext.UserInvitations
             .Where(i => i.Email == email)
             .ToListAsync(cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task<IEnumerable<UserInvitation>> GetPendingByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.UserInvitations
+        => await _dbContext.UserInvitations
             .Where(i => i.TargetTenantId == tenantId && i.Status == InvitationStatus.Pending)
             .ToListAsync(cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task<bool> HasPendingInvitationAsync(string email, Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.UserInvitations
+        => await _dbContext.UserInvitations
             .AnyAsync(i => i.Email == email && i.TargetTenantId == tenantId && i.Status == InvitationStatus.Pending, cancellationToken);
-    }
 
     /// <inheritdoc />
     public async Task<int> ExpireOldInvitationsAsync(DateTime expirationDate, CancellationToken cancellationToken = default)

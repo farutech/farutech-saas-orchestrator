@@ -44,21 +44,15 @@ public class CustomerService(ICustomerRepository customerRepository) : ICustomer
 
     /// <inheritdoc />
     public async Task<Customer?> GetCustomerByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByIdAsync(id, cancellationToken);
-    }
+        => await _customerRepository.GetByIdAsync(id, cancellationToken);
 
     /// <inheritdoc />
     public async Task<Customer?> GetCustomerByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByCodeAsync(code, cancellationToken);
-    }
+        => await _customerRepository.GetByCodeAsync(code, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<Customer>> GetCustomersByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
-    }
+        => await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
 
     /// <inheritdoc />
     public async Task<Customer> UpdateCustomerAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)

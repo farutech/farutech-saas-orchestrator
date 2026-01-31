@@ -25,7 +25,8 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {transactions.map((transaction) => (
+          {transactions.map((transaction)
+        => (
             <div 
               key={transaction.id} 
               className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"

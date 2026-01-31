@@ -224,6 +224,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Use fully-qualified type names for schema IDs to avoid collisions
+    options.CustomSchemaIds(type =>
+    {
+        // Use FullName when available, fallback to Name. Replace '+' for nested types.
+        var id = type.FullName ?? type.Name;
+        return id.Replace('+', '.');
+    });
+
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Farutech SaaS Orchestrator API",
@@ -287,9 +295,9 @@ if (app.Environment.IsDevelopment())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ ERROR CRÍTICO: Fallaron las migraciones EF Core: {ex.Message}");
-        Console.WriteLine("La aplicación no puede iniciar sin migraciones aplicadas.");
-        throw; // FAIL-FAST: Detener aplicación si migraciones fallan
+        Console.WriteLine($"⚠️ Advertencia: Fallaron las migraciones EF Core en Development: {ex.Message}");
+        Console.WriteLine("Continuando sin aplicar migraciones (parche temporal de desarrollo).");
+        // En Development no hacemos FAIL-FAST para facilitar depuración local (temporal)
     }
 }
 else
@@ -313,8 +321,16 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"❌ Error crítico durante el bootstrap post-migración: {ex.Message}");
-    Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
-    throw; // FAIL-FAST: Detener aplicación si bootstrap falla
+    if (app.Environment.IsDevelopment())
+    {
+        Console.WriteLine("Continuando sin bootstrap post-migración en Development (parche temporal).");
+        // No re-lanzamos la excepción en Development para permitir arranque y diagnóstico
+    }
+    else
+    {
+        Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
+        throw; // FAIL-FAST en entornos no-development
+    }
 }
 
 // ========== IDEMPOTENT DATA SEEDING ==========

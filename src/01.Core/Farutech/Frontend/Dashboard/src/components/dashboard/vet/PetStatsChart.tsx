@@ -31,7 +31,8 @@ export function PetStatsChart({ data }: PetStatsChartProps) {
               paddingAngle={4}
               dataKey="value"
             >
-              {data.map((_, index) => (
+              {data.map((_, index)
+        => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -41,12 +42,14 @@ export function PetStatsChart({ data }: PetStatsChartProps) {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: number) => [value, 'Pacientes']}
+              formatter={(value: number)
+        => [value, 'Pacientes']}
             />
             <Legend 
               verticalAlign="bottom" 
               height={36}
-              formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
+              formatter={(value)
+        => <span className="text-sm text-foreground">{value}</span>}
             />
           </PieChart>
         </ResponsiveContainer>

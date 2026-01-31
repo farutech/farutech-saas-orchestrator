@@ -23,8 +23,10 @@ export default function OrganizationsPage() {
   const { toast } = useToast();
 
   // Load organizations
-  useEffect(() => {
-    const loadOrganizations = async () => {
+  useEffect(()
+        => {
+    const loadOrganizations = async ()
+        => {
       try {
         const response = await apiClient.get<UserContextResponse>('/api/Auth/context');
         setOrganizations(response.data.organizations);
@@ -50,7 +52,8 @@ export default function OrganizationsPage() {
   );
 
   // Toggle organization active status
-  const handleToggleActive = async (orgId: string, currentStatus: boolean) => {
+  const handleToggleActive = async (orgId: string, currentStatus: boolean)
+        => {
     try {
       // TODO: Implementar endpoint en el backend
       // await apiClient.patch(`/api/Customers/${orgId}/toggle-active`, { isActive: !currentStatus });
@@ -95,7 +98,8 @@ export default function OrganizationsPage() {
                 placeholder="Buscar por nombre, código o RUC..."
                 className="pl-10 bg-white border-slate-200 focus-visible:ring-[#8B5CF6] shadow-sm rounded-lg"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e)
+        => setSearchTerm(e.target.value)}
               />
             </div>
             <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-md shadow-violet-200 whitespace-nowrap">
@@ -180,7 +184,8 @@ export default function OrganizationsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleToggleActive(org.organizationId, org.isActive)}
+                            onClick={()
+        => handleToggleActive(org.organizationId, org.isActive)}
                             className={org.isActive ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}
                           >
                             {org.isActive ? (
