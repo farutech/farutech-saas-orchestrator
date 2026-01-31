@@ -154,11 +154,8 @@ public class CatalogRepository(OrchestratorDbContext context) : ICatalogReposito
 
     public async Task<IEnumerable<Permission>> GetAllPermissionsAsync()
     {
-        return await _context.Permissions
-            .Where(p => p.IsActive)
-            .OrderBy(p => p.Module)
-            .ThenBy(p => p.Name)
-            .ToListAsync();
+        // Custom permissions removed, return empty
+        return await Task.FromResult(new List<Permission>());
     }
 
     #endregion

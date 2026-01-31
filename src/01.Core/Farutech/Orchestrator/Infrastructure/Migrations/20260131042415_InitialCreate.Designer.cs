@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     [DbContext(typeof(OrchestratorDbContext))]
-    [Migration("20260131013822_UpdateIdentityTableNames")]
-    partial class UpdateIdentityTableNames
+    [Migration("20260131042415_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -324,6 +324,33 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.ToTable("SubscriptionPlanFeatures", "catalog");
                 });
 
+            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("Roles", "identity");
+                });
+
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -404,10 +431,10 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("IX_AspNetUsers_Email");
+                        .HasDatabaseName("IX_Users_Email");
 
                     b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_AspNetUsers_IsActive");
+                        .HasDatabaseName("IX_Users_IsActive");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -416,7 +443,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", "identity");
+                    b.ToTable("Users", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.PasswordResetToken", b =>
@@ -480,169 +507,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasDatabaseName("IX_PasswordResetTokens_Token");
 
                     b.ToTable("PasswordResetTokens", "identity");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.Permission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsCritical")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Module")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Permissions_Code");
-
-                    b.HasIndex("Module")
-                        .HasDatabaseName("IX_Permissions_Module");
-
-                    b.ToTable("permissions", "identity");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSystemRole")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Scope")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Tenant");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Roles_Code");
-
-                    b.HasIndex("Level")
-                        .HasDatabaseName("IX_Roles_Level");
-
-                    b.ToTable("roles", "identity");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.RolePermission", b =>
-                {
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("GrantedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("GrantedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("RoleId1")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId")
-                        .HasDatabaseName("IX_RolePermissions_PermissionId");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_RolePermissions_RoleId");
-
-                    b.HasIndex("RoleId1");
-
-                    b.ToTable("role_permissions", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserCompanyMembership", b =>
@@ -771,62 +635,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("Email", "Status");
 
                     b.ToTable("UserInvitations", "identity");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserRole", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ScopeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("AssignedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ScopeType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("UserId", "RoleId", "TenantId", "ScopeId");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_UserRoles_IsActive");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_UserRoles_RoleId");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_UserRoles_TenantId");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_UserRoles_UserId");
-
-                    b.HasIndex("UserId", "TenantId")
-                        .HasDatabaseName("IX_UserRoles_UserId_TenantId");
-
-                    b.ToTable("user_roles", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", b =>
@@ -1069,33 +877,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.ToTable("TenantInstances", "tenants");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("Roles", "identity");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -1175,8 +956,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_UserRoles_RoleId1");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles", "identity");
                 });
@@ -1252,27 +1032,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Navigation("Subscription");
                 });
 
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.RolePermission", b =>
-                {
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.Permission", "Permission")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.Role", null)
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("RoleId1");
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserCompanyMembership", b =>
                 {
                     b.HasOne("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", "Customer")
@@ -1288,23 +1047,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserRole", b =>
-                {
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -1333,7 +1075,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1360,7 +1102,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1400,18 +1142,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Navigation("CompanyMemberships");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.Permission", b =>
-                {
-                    b.Navigation("RolePermissions");
-                });
-
-            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.Role", b =>
-                {
-                    b.Navigation("RolePermissions");
-
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", b =>

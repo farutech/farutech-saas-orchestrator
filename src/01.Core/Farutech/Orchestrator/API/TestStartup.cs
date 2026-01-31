@@ -28,7 +28,7 @@ public class TestStartup(IConfiguration configuration)
             options.UseNpgsql("Host=localhost;Port=5432;Database=test_db;Username=test;Password=test"));
 
         // Identity
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
         {
             options.Password.RequireDigit = true;
             options.Password.RequiredLength = 8;

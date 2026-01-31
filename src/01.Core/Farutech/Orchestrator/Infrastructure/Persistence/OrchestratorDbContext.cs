@@ -13,7 +13,7 @@ namespace Farutech.Orchestrator.Infrastructure.Persistence;
 /// Main application DbContext with multi-tenancy support and Identity integration
 /// </summary>
 public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> options) 
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
 {
     // Catalog Schema (Global)
     public DbSet<Product> Products => Set<Product>();
@@ -32,22 +32,21 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     public DbSet<UserInvitation> UserInvitations => Set<UserInvitation>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
-    // RBAC Schema (Security) - Permissions extend Identity without duplicating roles
-    public DbSet<Permission> Permissions => Set<Permission>();
-    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+     // Eliminado: tablas custom Permissions y RolePermissions
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure Identity schema
+        // Renombrar tablas Identity sin prefijo AspNet
         modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
-        modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles", "identity");
+        modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
+        modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens", "identity");
 
         // Apply all configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);

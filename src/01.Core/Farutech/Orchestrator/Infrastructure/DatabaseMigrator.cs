@@ -7,126 +7,166 @@ using Farutech.Orchestrator.Infrastructure.Persistence;
 namespace Farutech.Orchestrator.Infrastructure;
 
 /// <summary>
-/// Handles database migrations with retry logic for resilient startup
+/// Handles resilient database initialization and migrations during application startup.
+/// Designed for containerized and orchestrated environments.
 /// </summary>
 public static class DatabaseMigrator
 {
-    /// <summary>
-    /// Applies database migrations with retry logic
-    /// </summary>
-    /// <param name="services">Service provider to resolve dependencies</param>
-    /// <param name="logger">Logger for migration progress and errors</param>
-    /// <param name="maxRetries">Maximum number of retry attempts</param>
-    /// <returns>Task that completes when migrations are applied</returns>
-    /// <exception cref="Exception">Thrown when migrations fail after all retries</exception>
-    public static async Task MigrateAsync(IServiceProvider services,
-                                          ILogger logger,
-                                          int maxRetries = 10)
+    private const string EfProductVersion = "9.0.1";
+    private const int RetryDelaySeconds = 5;
+
+    public static async Task MigrateAsync(
+        IServiceProvider services,
+        ILogger logger,
+        int maxRetries = 10)
     {
-        bool dbReady = false;
         Exception? lastException = null;
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
+
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
             try
             {
+                logger.LogInformation(
+                    "🔄 Database initialization attempt {Attempt}/{MaxRetries}",
+                    attempt,
+                    maxRetries);
+
                 using var scope = services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
 
-                // Ensure database exists
-                await db.Database.EnsureCreatedAsync();
+                await EnsureDatabaseReadyAsync(db, logger);
 
-                // Check migration status
-                var appliedMigrations = await db.Database.GetAppliedMigrationsAsync();
-                var pendingMigrations = await db.Database.GetPendingMigrationsAsync();
-
-                // Check if tables already exist (indicating database is initialized)
-                var tableExists = await db.Database.ExecuteSqlRawAsync(
-                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'identity' AND table_name = 'AspNetRoles' LIMIT 1") > 0;
-
-                if (tableExists)
-                {
-                    logger.LogInformation("Detected existing database tables, marking all migrations as applied");
-
-                    // Mark all pending migrations as applied
-                    foreach (var migrationId in pendingMigrations)
-                    {
-                        await db.Database.ExecuteSqlRawAsync(
-                            "INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                            migrationId, "9.0.1");
-                    }
-
-                    logger.LogInformation("✅ All migrations marked as applied");
-                }
-                else if (pendingMigrations.Any())
-                {
-                    logger.LogInformation("Applying {Count} pending migrations", pendingMigrations.Count());
-
-                    await db.Database.MigrateAsync();
-                    logger.LogInformation("✅ Database migrations applied successfully");
-                }
-                else
-                {
-                    logger.LogInformation("All migrations already applied");
-                }
-
-                logger.LogInformation("✅ Database ready");
-                dbReady = true;
+                logger.LogInformation("✅ Database is ready");
                 return;
             }
             catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
             {
-                // Table already exists conflict (e.g., migration partially applied or manual schema present)
-                logger.LogWarning(pgEx, "Detected existing relation conflict (42P07): {Message}", pgEx.MessageText);
+                // Relation already exists (schema partially created or manually provisioned)
+                logger.LogWarning(
+                    pgEx,
+                    "⚠️ Detected existing database objects (Postgres 42P07). Attempting to reconcile migrations.");
 
-                // As fallback, mark pending migrations as applied to allow startup to continue
-                try
+                if (await TryMarkPendingMigrationsAsAppliedAsync(services, logger))
                 {
-                    using var markScope = services.CreateScope();
-                    var db2 = markScope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
-                    var pending = await db2.Database.GetPendingMigrationsAsync();
-                    foreach (var migrationId in pending)
-                    {
-                        await db2.Database.ExecuteSqlRawAsync(
-                            "INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                            migrationId, "9.0.1");
-                    }
-
-                    logger.LogInformation("Marked {Count} pending migrations as applied due to existing relations.", pending.Count());
-                    logger.LogInformation("✅ Database ready (continued after handling 42P07)");
-                    dbReady = true;
+                    logger.LogInformation("✅ Database ready after resolving existing schema");
                     return;
                 }
-                catch (Exception inner)
-                {
-                    logger.LogError(inner, "Failed to mark migrations as applied after 42P07 handling");
-                    lastException = inner;
-                }
+
+                lastException = pgEx;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                logger.LogWarning(
-                    ex,
-                    "⏳ Database not ready (attempt {Attempt}/{MaxRetries}). Retrying in 5 seconds...",
-                    attempt,
-                    maxRetries
-                );
 
                 if (attempt < maxRetries)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    logger.LogInformation(
+                        "⏳ Database not available yet. Retrying in {Delay}s... ({Attempt}/{MaxRetries})",
+                        RetryDelaySeconds,
+                        attempt,
+                        maxRetries);
+
+                    await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                 }
             }
         }
 
-        if (!dbReady)
+        logger.LogCritical(
+            lastException,
+            "❌ Database did not become available after {MaxRetries} attempts",
+            maxRetries);
+
+        throw new InvalidOperationException(
+            $"Database initialization failed after {maxRetries} attempts.",
+            lastException);
+    }
+
+    private static async Task EnsureDatabaseReadyAsync(
+        OrchestratorDbContext db,
+        ILogger logger)
+    {
+        await db.Database.EnsureCreatedAsync();
+
+        var pendingMigrations = (await db.Database.GetPendingMigrationsAsync()).ToList();
+
+        if (!pendingMigrations.Any())
         {
-            var errorMessage = $"❌ Database never became available after {maxRetries} attempts";
-            logger.LogError(errorMessage);
-            if (lastException != null)
-                throw new Exception(errorMessage, lastException);
-            else
-                throw new Exception(errorMessage);
+            logger.LogInformation("📦 No pending migrations detected");
+            return;
+        }
+
+        if (await IdentityTablesExistAsync(db))
+        {
+            logger.LogWarning(
+                "⚠️ Existing identity tables detected. Marking migrations as applied.");
+
+            await MarkMigrationsAsAppliedAsync(db, pendingMigrations, logger);
+            return;
+        }
+
+        logger.LogInformation(
+            "📦 Applying {Count} pending migrations",
+            pendingMigrations.Count);
+
+        await db.Database.MigrateAsync();
+
+        logger.LogInformation("✅ Migrations applied successfully");
+    }
+
+    private static async Task<bool> IdentityTablesExistAsync(OrchestratorDbContext db)
+    {
+        var result = await db.Database.ExecuteSqlRawAsync("""
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'identity'
+              AND table_name = 'AspNetRoles'
+            LIMIT 1
+        """);
+
+        return result > 0;
+    }
+
+    private static async Task MarkMigrationsAsAppliedAsync(
+        OrchestratorDbContext db,
+        IEnumerable<string> migrations,
+        ILogger logger)
+    {
+        foreach (var migrationId in migrations)
+        {
+            await db.Database.ExecuteSqlRawAsync("""
+                INSERT INTO "__EFMigrationsHistory"
+                    ("MigrationId", "ProductVersion")
+                VALUES ({0}, {1})
+                ON CONFLICT DO NOTHING
+            """, migrationId, EfProductVersion);
+        }
+
+        logger.LogInformation(
+            "📘 {Count} migrations marked as applied",
+            migrations.Count());
+    }
+
+    private static async Task<bool> TryMarkPendingMigrationsAsAppliedAsync(
+        IServiceProvider services,
+        ILogger logger)
+    {
+        try
+        {
+            using var scope = services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
+
+            var pending = await db.Database.GetPendingMigrationsAsync();
+            await MarkMigrationsAsAppliedAsync(db, pending, logger);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "❌ Failed to mark migrations as applied after schema conflict");
+
+            return false;
         }
     }
 }

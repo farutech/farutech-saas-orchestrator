@@ -69,7 +69,7 @@ builder.Services.AddDbContext<OrchestratorDbContext>(options =>
 // }
 
 // ========== IDENTITY ==========
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
@@ -324,7 +324,7 @@ using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
         var seeder = new FarutechDataSeeder(context, userManager, roleManager, seederLogger);

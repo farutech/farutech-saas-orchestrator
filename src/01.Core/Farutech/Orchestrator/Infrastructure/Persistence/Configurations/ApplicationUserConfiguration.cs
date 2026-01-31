@@ -8,7 +8,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 {
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
-        builder.ToTable("AspNetUsers", "identity");
+        builder.ToTable("Users", "identity");
 
         builder.Property(u => u.FirstName)
             .IsRequired()
@@ -28,10 +28,10 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 
         builder.HasIndex(u => u.Email)
             .IsUnique()
-            .HasDatabaseName("IX_AspNetUsers_Email");
+            .HasDatabaseName("IX_Users_Email");
 
         builder.HasIndex(u => u.IsActive)
-            .HasDatabaseName("IX_AspNetUsers_IsActive");
+            .HasDatabaseName("IX_Users_IsActive");
 
         // Navigation
         builder.HasMany(u => u.CompanyMemberships)

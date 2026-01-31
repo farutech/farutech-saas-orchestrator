@@ -188,7 +188,7 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
         // Crear scope para obtener servicios necesarios
         using var scope = _serviceProvider.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<FarutechDataSeeder>>();
 
         var seeder = new FarutechDataSeeder(_context, userManager, roleManager, seederLogger);

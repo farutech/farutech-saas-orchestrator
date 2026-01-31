@@ -7,67 +7,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialArchitecture : Migration
+    public partial class InitialCreate : Migration
     {
-        private static readonly string[] columns = ["ModuleId", "Code"];
-
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "identity");
-
             migrationBuilder.EnsureSchema(
                 name: "tenants");
 
             migrationBuilder.EnsureSchema(
                 name: "catalog");
 
-            migrationBuilder.CreateTable(
-                name: "AspNetRoles",
-                schema: "identity",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUsers",
-                schema: "identity",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
+            migrationBuilder.EnsureSchema(
+                name: "identity");
 
             migrationBuilder.CreateTable(
                 name: "Customers",
@@ -116,30 +68,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "permissions",
-                schema: "identity",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Module = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    IsCritical = table.Column<bool>(type: "boolean", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedBy = table.Column<string>(type: "text", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_permissions", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Products",
                 schema: "catalog",
                 columns: table => new
@@ -161,27 +89,18 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "roles",
+                name: "Roles",
                 schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Level = table.Column<int>(type: "integer", nullable: false),
-                    IsSystemRole = table.Column<bool>(type: "boolean", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    Scope = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Tenant"),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedBy = table.Column<string>(type: "text", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_roles", x => x.Id);
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -211,120 +130,34 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
+                name: "Users",
                 schema: "identity",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUserClaims",
-                schema: "identity",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUserLogins",
-                schema: "identity",
-                columns: table => new
-                {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUserRoles",
-                schema: "identity",
-                columns: table => new
-                {
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUserTokens",
-                schema: "identity",
-                columns: table => new
-                {
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -392,43 +225,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.PrimaryKey("PK_TenantInstances", x => x.Id);
                     table.ForeignKey(
                         name: "FK_TenantInstances_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalSchema: "tenants",
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserCompanyMemberships",
-                schema: "identity",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    GrantedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    GrantedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedBy = table.Column<string>(type: "text", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserCompanyMemberships", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserCompanyMemberships_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "identity",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserCompanyMemberships_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalSchema: "tenants",
                         principalTable: "Customers",
@@ -505,65 +301,155 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "role_permissions",
+                name: "RoleClaims",
                 schema: "identity",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PermissionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    GrantedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    GrantedBy = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_role_permissions", x => new { x.RoleId, x.PermissionId });
+                    table.PrimaryKey("PK_RoleClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_role_permissions_permissions_PermissionId",
-                        column: x => x.PermissionId,
-                        principalSchema: "identity",
-                        principalTable: "permissions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_role_permissions_roles_RoleId",
+                        name: "FK_RoleClaims_Roles_RoleId",
                         column: x => x.RoleId,
                         principalSchema: "identity",
-                        principalTable: "roles",
+                        principalTable: "Roles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "user_roles",
+                name: "UserClaims",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserClaims_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserCompanyMemberships",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    GrantedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    GrantedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserCompanyMemberships", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserCompanyMemberships_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalSchema: "tenants",
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserCompanyMemberships_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserLogins",
+                schema: "identity",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_UserLogins_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRoles",
                 schema: "identity",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ScopeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ScopeType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    AssignedBy = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_roles", x => new { x.UserId, x.RoleId, x.TenantId, x.ScopeId });
+                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_user_roles_AspNetUsers_UserId",
-                        column: x => x.UserId,
+                        name: "FK_UserRoles_Roles_RoleId",
+                        column: x => x.RoleId,
                         principalSchema: "identity",
-                        principalTable: "AspNetUsers",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_user_roles_roles_RoleId",
-                        column: x => x.RoleId,
+                        name: "FK_UserRoles_Users_UserId",
+                        column: x => x.UserId,
                         principalSchema: "identity",
-                        principalTable: "roles",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTokens",
+                schema: "identity",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_UserTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -634,63 +520,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetRoleClaims_RoleId",
-                schema: "identity",
-                table: "AspNetRoleClaims",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                schema: "identity",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserClaims_UserId",
-                schema: "identity",
-                table: "AspNetUserClaims",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserLogins_UserId",
-                schema: "identity",
-                table: "AspNetUserLogins",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserRoles_RoleId",
-                schema: "identity",
-                table: "AspNetUserRoles",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                schema: "identity",
-                table: "AspNetUsers",
-                column: "NormalizedEmail");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_Email",
-                schema: "identity",
-                table: "AspNetUsers",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_IsActive",
-                schema: "identity",
-                table: "AspNetUsers",
-                column: "IsActive");
-
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                schema: "identity",
-                table: "AspNetUsers",
-                column: "NormalizedUserName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Customers_Code",
                 schema: "tenants",
                 table: "Customers",
@@ -720,7 +549,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_Features_ModuleId_Code",
                 schema: "catalog",
                 table: "Features",
-                columns: columns,
+                columns: new[] { "ModuleId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -733,7 +562,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_Modules_ProductId_Code",
                 schema: "catalog",
                 table: "Modules",
-                columns: ["ProductId", "Code"],
+                columns: new[] { "ProductId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -762,19 +591,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Permissions_Code",
-                schema: "identity",
-                table: "permissions",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Permissions_Module",
-                schema: "identity",
-                table: "permissions",
-                column: "Module");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_Code",
                 schema: "catalog",
                 table: "Products",
@@ -788,29 +604,17 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RolePermissions_PermissionId",
+                name: "IX_RoleClaims_RoleId",
                 schema: "identity",
-                table: "role_permissions",
-                column: "PermissionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RolePermissions_RoleId",
-                schema: "identity",
-                table: "role_permissions",
+                table: "RoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Roles_Code",
+                name: "RoleNameIndex",
                 schema: "identity",
-                table: "roles",
-                column: "Code",
+                table: "Roles",
+                column: "NormalizedName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Roles_Level",
-                schema: "identity",
-                table: "roles",
-                column: "Level");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlanFeatures_FeatureId",
@@ -822,7 +626,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_SubscriptionPlanFeatures_SubscriptionId_FeatureId",
                 schema: "catalog",
                 table: "SubscriptionPlanFeatures",
-                columns: ["SubscriptionId", "FeatureId"],
+                columns: new[] { "SubscriptionId", "FeatureId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -841,14 +645,14 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_SubscriptionPlans_ProductId_Code",
                 schema: "catalog",
                 table: "SubscriptionPlans",
-                columns: ["ProductId", "Code"],
+                columns: new[] { "ProductId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_CustomerId_ProductId",
                 schema: "tenants",
                 table: "Subscriptions",
-                columns: ["CustomerId", "ProductId"]);
+                columns: new[] { "CustomerId", "ProductId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_NextBillingDate",
@@ -872,7 +676,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_TenantInstances_CustomerId_Code",
                 schema: "tenants",
                 table: "TenantInstances",
-                columns: ["CustomerId", "Code"],
+                columns: new[] { "CustomerId", "Code" },
                 unique: true,
                 filter: "\"Code\" IS NOT NULL");
 
@@ -880,7 +684,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_TenantInstances_CustomerId_DeploymentType",
                 schema: "tenants",
                 table: "TenantInstances",
-                columns: ["CustomerId", "DeploymentType"]);
+                columns: new[] { "CustomerId", "DeploymentType" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_Status",
@@ -896,34 +700,10 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_IsActive",
+                name: "IX_UserClaims_UserId",
                 schema: "identity",
-                table: "user_roles",
-                column: "IsActive");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_RoleId",
-                schema: "identity",
-                table: "user_roles",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_TenantId",
-                schema: "identity",
-                table: "user_roles",
-                column: "TenantId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_UserId",
-                schema: "identity",
-                table: "user_roles",
+                table: "UserClaims",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_UserId_TenantId",
-                schema: "identity",
-                table: "user_roles",
-                columns: ["UserId", "TenantId"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCompanyMemberships_CustomerId",
@@ -941,7 +721,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_UserCompanyMemberships_User_Customer",
                 schema: "identity",
                 table: "UserCompanyMemberships",
-                columns: ["UserId", "CustomerId"],
+                columns: new[] { "UserId", "CustomerId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -954,7 +734,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 name: "IX_UserInvitations_Email_Status",
                 schema: "identity",
                 table: "UserInvitations",
-                columns: ["Email", "Status"]);
+                columns: new[] { "Email", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInvitations_Token",
@@ -962,37 +742,55 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 table: "UserInvitations",
                 column: "Token",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserLogins_UserId",
+                schema: "identity",
+                table: "UserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRoles_RoleId",
+                schema: "identity",
+                table: "UserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                schema: "identity",
+                table: "Users",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                schema: "identity",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_IsActive",
+                schema: "identity",
+                table: "Users",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                schema: "identity",
+                table: "Users",
+                column: "NormalizedUserName",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
                 name: "PasswordResetTokens",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "role_permissions",
+                name: "RoleClaims",
                 schema: "identity");
 
             migrationBuilder.DropTable(
@@ -1008,7 +806,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "tenants");
 
             migrationBuilder.DropTable(
-                name: "user_roles",
+                name: "UserClaims",
                 schema: "identity");
 
             migrationBuilder.DropTable(
@@ -1020,11 +818,15 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles",
+                name: "UserLogins",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "permissions",
+                name: "UserRoles",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "UserTokens",
                 schema: "identity");
 
             migrationBuilder.DropTable(
@@ -1036,16 +838,16 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "roles",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers",
-                schema: "identity");
-
-            migrationBuilder.DropTable(
                 name: "Customers",
                 schema: "tenants");
+
+            migrationBuilder.DropTable(
+                name: "Roles",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "Users",
+                schema: "identity");
 
             migrationBuilder.DropTable(
                 name: "Modules",

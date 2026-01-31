@@ -32,7 +32,7 @@ public interface IPermissionService
     /// <summary>
     /// Obtiene todos los roles de un usuario en un tenant
     /// </summary>
-    Task<IEnumerable<IdentityRole<Guid>>> GetUserRolesAsync(
+    Task<IEnumerable<ApplicationRole>> GetUserRolesAsync(
         Guid userId, 
         Guid? tenantId = null);
 
@@ -89,5 +89,5 @@ public interface IPermissionService
     /// <summary>
     /// Obtiene todos los roles disponibles en el sistema
     /// </summary>
-    Task<IEnumerable<IdentityRole<Guid>>> GetAllRolesAsync();
+    Task<IEnumerable<ApplicationRole>> GetAllRolesAsync();
 }

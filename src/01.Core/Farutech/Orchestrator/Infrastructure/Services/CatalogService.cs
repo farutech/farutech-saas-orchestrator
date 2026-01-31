@@ -210,11 +210,7 @@ public class CatalogService(OrchestratorDbContext context,
         if (product == null)
             return null;
 
-        // Get all permissions (since permissions are global)
-        var allPermissions = await _context.Permissions
-            .Where(p => p.IsActive)
-            .ToListAsync();
-
+        // Permisos eliminados, solo devolver manifest sin permisos
         var manifest = new ProductManifestDto
         {
             Id = product.Id,
@@ -247,121 +243,10 @@ public class CatalogService(OrchestratorDbContext context,
                             AdditionalCost = f.AdditionalCost,
                             CreatedAt = f.CreatedAt,
                             UpdatedAt = f.UpdatedAt,
-                            Permissions = f.Code switch
-                            {
-                                "customers_management" => allPermissions
-                                    .Where(p => p.Code.StartsWith("customers:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "pos_inventory" => allPermissions
-                                    .Where(p => p.Code.StartsWith("products:") || p.Code.StartsWith("stock:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "pos_sales" => allPermissions
-                                    .Where(p => p.Code.StartsWith("pos:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                "dashboard" => allPermissions
-                                    .Where(p => p.Code.StartsWith("dashboard:"))
-                                    .Select(p => new PermissionDto
-                                    {
-                                        Id = p.Id,
-                                        Code = p.Code,
-                                        Name = p.Name,
-                                        Description = p.Description,
-                                        Module = p.Module,
-                                        Category = p.Category,
-                                        IsCritical = p.IsCritical,
-                                        IsActive = p.IsActive,
-                                        CreatedAt = p.CreatedAt,
-                                        UpdatedAt = p.UpdatedAt
-                                    })
-                                    .ToList(),
-                                _ => new List<PermissionDto>()
-                            }
-                        })
-                        .ToList()
-                })
-                .ToList()
+                            Permissions = new List<PermissionDto>()
+                        }).ToList()
+                }).ToList()
         };
-
-        // Get subscription plans for this product
-        var subscriptionPlans = await _context.SubscriptionPlans
-            .Include(s => s.SubscriptionFeatures)
-                .ThenInclude(sf => sf.Feature)
-            .Where(s => s.ProductId == productId && !s.IsDeleted && s.IsActive)
-            .OrderBy(s => s.DisplayOrder)
-            .ToListAsync();
-
-        manifest.SubscriptionPlans = subscriptionPlans.Select(s => new SubscriptionPlanDto
-        {
-            Id = s.Id,
-            ProductId = s.ProductId,
-            Code = s.Code,
-            Name = s.Name,
-            Description = s.Description,
-            IsFullAccess = s.IsFullAccess,
-            MonthlyPrice = s.MonthlyPrice,
-            AnnualPrice = s.AnnualPrice,
-            IsActive = s.IsActive,
-            IsRecommended = s.IsRecommended,
-            DisplayOrder = s.DisplayOrder,
-            Limits = string.IsNullOrEmpty(s.LimitsConfig)
-                ? null
-                : System.Text.Json.JsonSerializer.Deserialize<SubscriptionLimitsDto>(s.LimitsConfig),
-            Features = s.SubscriptionFeatures
-                .Where(sf => sf.IsEnabled && !sf.Feature.IsDeleted)
-                .Select(sf => new FeatureDto
-                {
-                    Id = sf.Feature.Id,
-                    ModuleId = sf.Feature.ModuleId,
-                    Code = sf.Feature.Code,
-                    Name = sf.Feature.Name,
-                    Description = sf.Feature.Description,
-                    IsActive = sf.Feature.IsActive,
-                    RequiresLicense = sf.Feature.RequiresLicense,
-                    AdditionalCost = sf.Feature.AdditionalCost ?? 0,
-                    CreatedAt = sf.Feature.CreatedAt,
-                    UpdatedAt = sf.Feature.UpdatedAt
-                })
-                .ToList()
-        }).ToList();
 
         return manifest;
     }
