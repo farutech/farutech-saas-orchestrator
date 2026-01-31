@@ -1,0 +1,61 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Styles" />
+
+# Styles
+
+Documentation for the styling system, including CSS files, design tokens, and utilities.
+
+## CSS Files
+
+### globals.css
+Main stylesheet with Tailwind imports and global styles.
+
+**Location**: `src/styles/globals.css`
+
+Contains:
+- Tailwind CSS directives (`@tailwind base`, `@tailwind components`, `@tailwind utilities`)
+- CSS custom properties for design tokens
+- Global styles
+
+### components.css
+Component-specific styles with Tailwind utilities.
+
+**Location**: `src/styles/components.css`
+
+Contains:
+- Styles for complex components like data tables, pagination, etc.
+- Uses `@apply` directives for Tailwind classes
+
+## Design Tokens
+
+Located in `src/styles/tokens/`
+
+### Color Tokens
+```css
+--background: 0 0% 100%;
+--foreground: 222.2 84% 4.9%;
+--primary: 199 89% 48%;
+--secondary: 210 40% 96%;
+/* ... more colors */
+```
+
+### Typography
+Nunito Sans font family is used throughout the system.
+
+### Spacing and Layout
+Standard spacing scale based on Tailwind's spacing system.
+
+## Usage
+
+Import styles in your application:
+
+```tsx
+import '@farutech/sdk-designsystem/styles';
+```
+
+Or import specific files:
+
+```css
+@import '@farutech/sdk-designsystem/globals.css';
+```

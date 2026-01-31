@@ -1,0 +1,44 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Scripts" />
+
+# Scripts
+
+Build and utility scripts for the design system.
+
+## Version Scripts
+
+Located in `src/scripts/`
+
+### version-alpha.js
+Creates an alpha version release.
+
+### version-beta.js
+Creates a beta version release.
+
+### version-rc.js
+Creates a release candidate version.
+
+### version-release.js
+Creates a final release version.
+
+### version-utils.js
+Shared utilities for versioning.
+
+### usage-tracker.js
+Tracks usage statistics.
+
+## Usage
+
+These scripts are typically run via npm scripts defined in `package.json`:
+
+```json
+{
+  "scripts": {
+    "version:alpha": "node src/scripts/version-alpha.js",
+    "version:beta": "node src/scripts/version-beta.js",
+    "version:rc": "node src/scripts/version-rc.js",
+    "version:release": "node src/scripts/version-release.js"
+  }
+}
+```

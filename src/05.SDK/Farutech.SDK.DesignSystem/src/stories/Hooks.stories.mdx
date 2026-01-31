@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks" />
+
+# Hooks
+
+This section documents the custom React hooks available in the Farutech Design System.
+
+## Available Hooks
+
+### useAuth
+Manages authentication state.
+
+**Location**: `src/hooks/useAuth.ts`
+
+**Usage**:
+```tsx
+import { useAuth } from '@farutech/sdk-designsystem';
+
+function MyComponent() {
+  const { user, login, logout } = useAuth();
+  // ...
+}
+```
+
+### useDataTable
+Provides data table functionality with sorting, filtering, and pagination.
+
+**Location**: `src/hooks/use-data-table.ts`
+
+**Usage**:
+```tsx
+import { useDataTable } from '@farutech/sdk-designsystem';
+
+function DataTableComponent() {
+  const table = useDataTable({
+    data: myData,
+    columns: myColumns,
+  });
+  // ...
+}
+```
+
+### useDebounce
+Debounces a value or function call.
+
+**Location**: `src/hooks/use-debounce.ts`
+
+### useLocalStorage
+Manages localStorage with React state.
+
+**Location**: `src/hooks/use-local-storage.ts`
+
+### useMobile
+Detects if the current viewport is mobile.
+
+**Location**: `src/hooks/use-mobile.ts`
+
+### useResponsive
+Provides responsive breakpoint information.
+
+**Location**: `src/hooks/use-responsive.ts`
+
+### useToast
+Manages toast notifications.
+
+**Location**: `src/hooks/use-toast.ts`

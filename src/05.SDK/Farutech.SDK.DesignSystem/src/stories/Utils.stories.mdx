@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Utils" />
+
+# Utilities
+
+Utility functions and helpers used throughout the design system.
+
+## cn (Class Name Utility)
+
+Combines and merges CSS classes with Tailwind's `twMerge`.
+
+**Location**: `src/utils/cn.ts`
+
+**Usage**:
+```tsx
+import { cn } from '@farutech/sdk-designsystem';
+
+const className = cn('base-class', condition && 'conditional-class', 'override-class');
+```
+
+## urlBuilder
+
+Utility for building URLs.
+
+**Location**: `src/utils/urlBuilder.ts`
+
+**Usage**:
+```tsx
+import { urlBuilder } from '@farutech/sdk-designsystem';
+
+const url = urlBuilder.build('/api/users', { page: 1, limit: 10 });
+```

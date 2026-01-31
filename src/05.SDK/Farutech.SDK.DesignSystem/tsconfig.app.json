@@ -28,6 +28,8 @@
   "exclude": [
     "src/**/*.stories.tsx",
     "src/**/*.stories.ts",
+    "src/**/*.test.*",
+    "src/**/*.spec.*",
     "storybook-static",
     "dist",
     "node_modules"
