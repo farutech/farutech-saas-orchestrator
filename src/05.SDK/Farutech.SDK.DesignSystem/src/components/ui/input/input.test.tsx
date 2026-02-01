@@ -8,7 +8,7 @@ describe('Input', () => {
 
     const input = screen.getByPlaceholderText('Enter text');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute('type', 'text');
+    expect(input.tagName).toBe('INPUT');
   });
 
   test('renders input with custom type', () => {

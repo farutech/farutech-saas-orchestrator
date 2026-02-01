@@ -44,7 +44,7 @@ const meta: Meta<typeof Badge> = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['default', 'secondary', 'destructive', 'outline'],
+      options: ['default', 'secondary', 'destructive', 'outline', 'highlight'],
       description: 'The visual style variant of the badge.',
     },
     children: {
@@ -77,6 +77,7 @@ export const Variants: Story = {
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="destructive">Destructive</Badge>
       <Badge variant="outline">Outline</Badge>
+      <Badge variant="highlight">Highlight</Badge>
     </div>
   ),
   parameters: {

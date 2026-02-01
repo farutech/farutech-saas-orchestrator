@@ -1,37 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-
-const VIEWPORTS = {
-  mobile: {
-    name: 'Mobile',
-    styles: {
-      width: '375px',
-      height: '667px',
-    },
-  },
-  tablet: {
-    name: 'Tablet',
-    styles: {
-      width: '768px',
-      height: '1024px',
-    },
-  },
-  desktop: {
-    name: 'Desktop',
-    styles: {
-      width: '1440px',
-      height: '900px',
-    },
-  },
-};
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from './dialog';
-import { Button } from '../button/Button';
-import { Input } from '../input/Input';
-import { Label } from '../label/Label';
-import { Textarea } from '../textarea/Textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select/Select';
-import { Checkbox } from '../checkbox/Checkbox';
-
+import { Button } from '../button/button';
 
 const meta: Meta<typeof Dialog> = {
   title: 'UI/Dialog',
@@ -40,18 +10,15 @@ const meta: Meta<typeof Dialog> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A modal dialog component for displaying content in an overlay. Perfect for forms, confirmations, and detailed information displays.',
+        component: 'A modal dialog component built on top of Radix UI Dialog primitives. Supports multiple sizes, custom content, and proper accessibility.',
       },
     },
-    viewport: {
-      viewports: VIEWPORTS,
-    },
   },
-  tags: ['autodocs', 'ui', 'dialog', 'modal', 'overlay'],
+  tags: ['autodocs'],
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Dialog>;
 
 export const Default: Story = {
   render: () => (
@@ -60,82 +27,163 @@ export const Default: Story = {
         <Button>Open Dialog</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Dialog Title</DialogTitle>
-          <DialogDescription>
-            This is a description of the dialog content.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <p>Dialog content goes here.</p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button>Save</Button>
-        </DialogFooter>
+        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogDescription>
+          This is a description of the dialog content.
+        </DialogDescription>
+        <p>This is the main content of the dialog.</p>
       </DialogContent>
     </Dialog>
   ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Basic dialog with header, content, and footer.',
-      },
-    },
-  },
 };
 
-export const FormDialog: Story = {
+export const WithHeaderAndFooter: Story = {
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Edit Profile</Button>
+        <Button>Open Complete Dialog</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
+          <DialogTitle>Complete Dialog</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            This dialog demonstrates all available slots and components.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" defaultValue="John Doe" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input id="email" type="email" defaultValue="john@example.com" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="bio" className="text-right">
-              Bio
-            </Label>
-            <Textarea id="bio" placeholder="Tell us about yourself..." className="col-span-3" />
-          </div>
+        <div className="py-4">
+          <p>This is the main content area of the dialog.</p>
+          <p>You can add any content here, including forms, images, or other components.</p>
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button type="submit">Save changes</Button>
+          <Button>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Dialog containing a form with various input types.',
-      },
-    },
-  },
+};
+
+export const Small: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Small Dialog</Button>
+      </DialogTrigger>
+      <DialogContent size="sm">
+        <DialogTitle>Small Dialog</DialogTitle>
+        <DialogDescription>A compact dialog for simple confirmations.</DialogDescription>
+        <p>This dialog uses the small size variant.</p>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const Large: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Large Dialog</Button>
+      </DialogTrigger>
+      <DialogContent size="lg">
+        <DialogTitle>Large Dialog</DialogTitle>
+        <DialogDescription>A spacious dialog for complex content.</DialogDescription>
+        <div className="space-y-4">
+          <p>This dialog uses the large size variant, providing more space for content.</p>
+          <p>You can include forms, tables, or any complex UI components here.</p>
+          <div className="bg-muted p-4 rounded">
+            <p>Example content block</p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const ExtraLarge: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Extra Large Dialog</Button>
+      </DialogTrigger>
+      <DialogContent size="xl">
+        <DialogTitle>Extra Large Dialog</DialogTitle>
+        <DialogDescription>Maximum width dialog for extensive content.</DialogDescription>
+        <div className="space-y-4">
+          <p>This dialog uses the extra large size variant.</p>
+          <p>Perfect for displaying wide tables, charts, or multi-column layouts.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-muted p-4 rounded">
+              <h4 className="font-medium">Column 1</h4>
+              <p>Content for the first column.</p>
+            </div>
+            <div className="bg-muted p-4 rounded">
+              <h4 className="font-medium">Column 2</h4>
+              <p>Content for the second column.</p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const FullWidth: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Full Width Dialog</Button>
+      </DialogTrigger>
+      <DialogContent size="full">
+        <DialogTitle>Full Width Dialog</DialogTitle>
+        <DialogDescription>A dialog that spans almost the full viewport.</DialogDescription>
+        <div className="space-y-4">
+          <p>This dialog uses the full size variant, utilizing most of the screen space.</p>
+          <p>Ideal for immersive experiences or when you need maximum space for content.</p>
+          <div className="bg-muted p-8 rounded text-center">
+            <p className="text-lg font-medium">Centered Content</p>
+            <p>This content is centered in the full-width dialog.</p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const WithoutCloseButton: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Dialog (No Close Button)</Button>
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <DialogTitle>No Close Button</DialogTitle>
+        <DialogDescription>This dialog doesn't have a close button in the corner.</DialogDescription>
+        <p>The dialog can still be closed by clicking the overlay or using the footer buttons.</p>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+export const CustomStyling: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Custom Dialog</Button>
+      </DialogTrigger>
+      <DialogContent className="border-2 border-primary bg-primary/5">
+        <DialogTitle className="text-primary">Custom Styled Dialog</DialogTitle>
+        <DialogDescription>This dialog has custom styling applied.</DialogDescription>
+        <p>The dialog content has a custom background and border color.</p>
+      </DialogContent>
+    </Dialog>
+  ),
 };
 
 export const ConfirmationDialog: Story = {
@@ -146,9 +194,9 @@ export const ConfirmationDialog: Story = {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Are you sure?</DialogTitle>
+          <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the item and remove it from our servers.
+            Are you sure you want to delete this item? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -160,337 +208,55 @@ export const ConfirmationDialog: Story = {
       </DialogContent>
     </Dialog>
   ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Confirmation dialog for destructive actions.',
-      },
-    },
-  },
 };
 
-export const LargeContentDialog: Story = {
-  render: () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Open Large Dialog</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Product Details</DialogTitle>
-          <DialogDescription>
-            Complete information about this product including specifications and features.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg">Wireless Headphones</h3>
-                <p className="text-sm text-muted-foreground">Premium audio experience</p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Key Features</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Active noise cancellation</li>
-                  <li>• 30-hour battery life</li>
-                  <li>• Premium sound quality</li>
-                  <li>• Comfortable fit</li>
-                  <li>• Touch controls</li>
-                </ul>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-medium">Specifications</h4>
-                <div className="text-sm space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Driver Size:</span>
-                    <span>40mm</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Frequency Response:</span>
-                    <span>20Hz - 20kHz</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Impedance:</span>
-                    <span>32Ω</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Weight:</span>
-                    <span>250g</span>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">What's in the box</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Wireless Headphones</li>
-                  <li>• USB-C Charging Cable</li>
-                  <li>• Carrying Case</li>
-                  <li>• User Manual</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Close</Button>
-          </DialogClose>
-          <Button>Add to Cart</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Large dialog with scrollable content and detailed information.',
-      },
-    },
-  },
-};
-
-export const SettingsDialog: Story = {
-  render: () => {
-    const [notifications, setNotifications] = useState(true);
-    const [theme, setTheme] = useState('system');
-
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">Settings</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
-            <DialogDescription>
-              Manage your account settings and preferences.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-6">
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Notifications</h4>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="notifications"
-                  checked={notifications}
-                  onCheckedChange={setNotifications}
-                />
-                <Label htmlFor="notifications" className="text-sm">
-                  Enable email notifications
-                </Label>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="theme" className="text-sm font-medium">Theme</Label>
-              <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language" className="text-sm font-medium">Language</Label>
-              <Select defaultValue="en">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="de">German</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button>Save Settings</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: 'Settings dialog with form controls and state management.',
-      },
-    },
-  },
-};
-
-export const NewsletterDialog: Story = {
-  render: () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Subscribe to Newsletter</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
-          <DialogTitle>Stay Updated</DialogTitle>
-          <DialogDescription>
-            Subscribe to our newsletter to receive the latest updates and news.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-            <Input id="email" type="email" placeholder="Enter your email" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="terms" />
-            <Label htmlFor="terms" className="text-sm">
-              I agree to receive marketing communications
-            </Label>
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button>Subscribe</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Newsletter subscription dialog with form validation.',
-      },
-    },
-  },
-};
-
-export const ResponsiveDialog: Story = {
-  render: () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Open Dialog</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] w-full mx-4">
-        <DialogHeader>
-          <DialogTitle>Responsive Dialog</DialogTitle>
-          <DialogDescription>
-            This dialog adapts to different screen sizes automatically.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <p className="text-sm">
-            The dialog content adjusts based on the viewport size. On mobile devices,
-            it takes up more screen space, while on desktop it maintains a comfortable reading width.
-          </p>
-        </div>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <DialogClose asChild>
-            <Button variant="outline" className="w-full sm:w-auto">Cancel</Button>
-          </DialogClose>
-          <Button className="w-full sm:w-auto">Confirm</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
-  parameters: {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
-    docs: {
-      description: {
-        story: 'Responsive dialog that adapts to mobile and desktop viewports.',
-      },
-    },
-  },
-};
-
-export const NestedDialog: Story = {
+export const FormDialog: Story = {
   render: () => {
     const [step, setStep] = useState(1);
 
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <Button>Start Process</Button>
+          <Button>Edit Profile</Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Multi-Step Process</DialogTitle>
+            <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
-              Complete this process in multiple steps.
+              Make changes to your profile here. Click save when you're done.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            {step === 1 && (
-              <div className="space-y-4">
-                <h3 className="font-medium">Step 1: Basic Information</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" placeholder="Enter your name" />
-                </div>
-              </div>
-            )}
-            {step === 2 && (
-              <div className="space-y-4">
-                <h3 className="font-medium">Step 2: Preferences</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="preference">Preference</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select preference" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="option1">Option 1</SelectItem>
-                      <SelectItem value="option2">Option 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-            {step === 3 && (
-              <div className="space-y-4">
-                <h3 className="font-medium">Step 3: Confirmation</h3>
-                <p className="text-sm text-muted-foreground">
-                  Please review your information before submitting.
-                </p>
-              </div>
-            )}
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium">
+                Name
+              </label>
+              <input
+                id="name"
+                defaultValue="John Doe"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="email" className="text-right text-sm font-medium">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                defaultValue="john@example.com"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
           </div>
           <DialogFooter>
-            {step > 1 && (
-              <Button variant="outline" onClick={() => setStep(step - 1)}>
-                Previous
-              </Button>
-            )}
-            {step < 3 ? (
-              <Button onClick={() => setStep(step + 1)}>Next</Button>
-            ) : (
-              <DialogClose asChild>
-                <Button>Complete</Button>
-              </DialogClose>
-            )}
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     );
   },
-  parameters: {
-    docs: {
-      description: {
-        story: 'Multi-step dialog with navigation between different content sections.',
-      },
-    },
-  },
 };
-
-
-
