@@ -1,4 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react';
+
+const VIEWPORTS = {
+  mobile: {
+    name: 'Mobile',
+    styles: {
+      width: '375px',
+      height: '667px',
+    },
+  },
+  tablet: {
+    name: 'Tablet',
+    styles: {
+      width: '768px',
+      height: '1024px',
+    },
+  },
+  desktop: {
+    name: 'Desktop',
+    styles: {
+      width: '1440px',
+      height: '900px',
+    },
+  },
+};
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -13,15 +37,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../dropdown-menu';
+} from '../dropdown-menu/dropdown-menu';
+
 
 const meta: Meta<typeof Breadcrumb> = {
   title: 'UI/Breadcrumb',
   component: Breadcrumb,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component: 'A navigation component that shows the user\'s current location in a hierarchical structure. Helps users understand their position and navigate back through the application.',
+      },
+    },
+    viewport: {
+      viewports: VIEWPORTS,
+    },
   },
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ui', 'breadcrumb', 'navigation'],
 };
 
 export default meta;
@@ -45,6 +78,13 @@ export const Default: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Basic breadcrumb navigation with three levels.',
+      },
+    },
+  },
 };
 
 export const WithDropdown: Story = {
@@ -79,6 +119,13 @@ export const WithDropdown: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb with dropdown menu for collapsed navigation items.',
+      },
+    },
+  },
 };
 
 export const LongBreadcrumb: Story = {
@@ -111,6 +158,13 @@ export const LongBreadcrumb: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Long breadcrumb showing deep navigation hierarchy.',
+      },
+    },
+  },
 };
 
 export const WithEllipsis: Story = {
@@ -151,6 +205,13 @@ export const WithEllipsis: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb with ellipsis and dropdown for managing long navigation paths.',
+      },
+    },
+  },
 };
 
 export const CustomSeparator: Story = {
@@ -191,6 +252,13 @@ export const CustomSeparator: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb with custom separator icons instead of default slashes.',
+      },
+    },
+  },
 };
 
 export const InCard: Story = {
@@ -219,6 +287,13 @@ export const InCard: Story = {
       </div>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb integrated within a card component for page headers.',
+      },
+    },
+  },
 };
 
 export const Responsive: Story = {
@@ -257,6 +332,116 @@ export const Responsive: Story = {
       </Breadcrumb>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Responsive breadcrumb that adapts to different screen sizes.',
+      },
+    },
+  },
 };
 
+export const FileSystem: Story = {
+  render: () => (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">C:</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/users">Users</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/users/username">username</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/users/username/documents">Documents</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>project.txt</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb styled for file system navigation.',
+      },
+    },
+  },
+};
+
+export const Ecommerce: Story = {
+  render: () => (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Store</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/categories">Categories</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/categories/electronics">Electronics</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/categories/electronics/laptops">Laptops</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>MacBook Pro 16"</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Breadcrumb for e-commerce product navigation.',
+      },
+    },
+  },
+};
+
+export const ResponsiveExample: Story = {
+  render: () => (
+    <div className="w-full max-w-sm">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem className="hidden sm:block">
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem className="hidden sm:block">
+            <BreadcrumbSeparator />
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Current Page</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+    docs: {
+      description: {
+        story: 'Breadcrumb demonstrating responsive behavior on mobile devices.',
+      },
+    },
+  },
+};
 

@@ -5,19 +5,62 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './accordion';
-import { Badge } from '../badge';
+import { Badge } from '../badge/badge';
+
+const VIEWPORTS = {
+  mobile: {
+    name: 'Mobile',
+    styles: {
+      width: '375px',
+      height: '667px',
+    },
+  },
+  tablet: {
+    name: 'Tablet',
+    styles: {
+      width: '768px',
+      height: '1024px',
+    },
+  },
+  desktop: {
+    name: 'Desktop',
+    styles: {
+      width: '1440px',
+      height: '900px',
+    },
+  },
+};
 
 const meta: Meta<typeof Accordion> = {
   title: 'UI/Accordion',
   component: Accordion,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component: 'A collapsible accordion component that allows users to toggle the visibility of content sections. Supports single and multiple selection modes with smooth animations.',
+      },
+    },
+    viewport: {
+      viewports: VIEWPORTS,
+    },
   },
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ui', 'accordion'],
+  argTypes: {
+    type: {
+      control: { type: 'select' },
+      options: ['single', 'multiple'],
+      description: 'Whether multiple items can be open at once.',
+    },
+    collapsible: {
+      control: 'boolean',
+      description: 'Whether all items can be collapsed.',
+    },
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof Accordion>;
+type Story = StoryObj<typeof meta>;
 
 export const Single: Story = {
   args: {
@@ -46,6 +89,13 @@ export const Single: Story = {
       </AccordionItem>
     </Accordion>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Single selection accordion where only one item can be open at a time.',
+      },
+    },
+  },
 };
 
 export const Multiple: Story = {
@@ -74,6 +124,13 @@ export const Multiple: Story = {
       </AccordionItem>
     </Accordion>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Multiple selection accordion where multiple items can be open simultaneously.',
+      },
+    },
+  },
 };
 
 export const WithBadges: Story = {
@@ -115,6 +172,13 @@ export const WithBadges: Story = {
       </AccordionItem>
     </Accordion>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Accordion with badges showing counts or status indicators.',
+      },
+    },
+  },
 };
 
 export const FAQ: Story = {
@@ -147,6 +211,13 @@ export const FAQ: Story = {
       </AccordionItem>
     </Accordion>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Common FAQ pattern using accordion for organized content.',
+      },
+    },
+  },
 };
 
 export const Nested: Story = {
@@ -193,6 +264,45 @@ export const Nested: Story = {
       </AccordionItem>
     </Accordion>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Nested accordions for hierarchical content organization.',
+      },
+    },
+  },
+};
+
+export const ResponsiveExample: Story = {
+  args: {},
+  render: () => (
+    <div className="w-full max-w-md">
+      <Accordion type="single" collapsible>
+        <AccordionItem value="item-1">
+          <AccordionTrigger>Mobile-First Design</AccordionTrigger>
+          <AccordionContent>
+            Our components are designed mobile-first, ensuring great experiences on all devices.
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-2">
+          <AccordionTrigger>Responsive Layouts</AccordionTrigger>
+          <AccordionContent>
+            Components automatically adapt to different screen sizes using responsive design principles.
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  ),
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+    docs: {
+      description: {
+        story: 'Accordion demonstrating responsive behavior across different screen sizes.',
+      },
+    },
+  },
 };
 
 

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Separator } from './separator';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card/Card';
+import { Badge } from '../badge/Badge';
 
 const meta: Meta<typeof Separator> = {
   title: 'UI/Separator',

@@ -198,7 +198,7 @@
 
 /* Checkbox Styles */
 .checkbox-root {
-  @apply peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background;
+  @apply h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background;
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   @apply disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground;
 }
@@ -224,7 +224,7 @@
 
 /* Switch Styles */
 .switch-root {
-  @apply peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent;
+  @apply inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent;
   @apply transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
   @apply focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50;
   @apply data-[state=checked]:bg-primary data-[state=unchecked]:bg-input;
@@ -256,7 +256,7 @@
 
 /* Toast Styles */
 .toast-root {
-  @apply group pointer-events-auto relative flex w-full items-center justify-between space-x-4;
+  @apply pointer-events-auto relative flex w-full items-center justify-between space-x-4;
   @apply overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all;
   @apply data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)];
   @apply data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none;
@@ -664,7 +664,7 @@
 }
 
 .navigation-menu-list {
-  @apply group flex flex-1 list-none items-center justify-center space-x-1;
+  @apply flex flex-1 list-none items-center justify-center space-x-1;
 }
 
 .navigation-menu-item {
@@ -672,7 +672,7 @@
 }
 
 .navigation-menu-trigger {
-  @apply group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium;
+  @apply inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium;
   @apply transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground;
   @apply focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50;
 }

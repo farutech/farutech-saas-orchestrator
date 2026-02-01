@@ -1,15 +1,72 @@
 import type { Meta, StoryObj } from '@storybook/react';
+
+const VIEWPORTS = {
+  mobile: {
+    name: 'Mobile',
+    styles: {
+      width: '375px',
+      height: '667px',
+    },
+  },
+  tablet: {
+    name: 'Tablet',
+    styles: {
+      width: '768px',
+      height: '1024px',
+    },
+  },
+  desktop: {
+    name: 'Desktop',
+    styles: {
+      width: '1440px',
+      height: '900px',
+    },
+  },
+};
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card/Card';
+import { Label } from '../label/Label';
+import { Button } from '../button/Button';
+
 
 const meta: Meta<typeof Select> = {
   title: 'UI/Select',
   component: Select,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'A customizable select component with trigger, content, and item subcomponents for dropdown selection. Provides accessible dropdown menus with keyboard navigation and screen reader support.',
+      },
+    },
+    viewport: {
+      viewports: VIEWPORTS,
+    },
   },
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ui', 'select', 'dropdown', 'form', 'accessibility'],
+  argTypes: {
+    disabled: {
+      control: 'boolean',
+      description: 'Whether the select is disabled.',
+    },
+    required: {
+      control: 'boolean',
+      description: 'Whether the select is required.',
+    },
+    value: {
+      control: 'text',
+      description: 'The controlled value of the select.',
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'The default value of the select.',
+    },
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text when no value is selected.',
+    },
+  },
 };
 
 export default meta;
@@ -30,6 +87,13 @@ export const Default: Story = {
       </SelectContent>
     </Select>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Basic select with placeholder and multiple options.',
+      },
+    },
+  },
 };
 
 export const Controlled: Story = {
@@ -54,27 +118,44 @@ export const Controlled: Story = {
       </div>
     );
   },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Controlled select with state management showing selected value.',
+      },
+    },
+  },
 };
 
 export const WithLabels: Story = {
   render: () => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Choose a country</label>
+    <div className="space-y-2 w-80">
+      <Label htmlFor="country-select">Choose a country</Label>
       <Select>
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger id="country-select" className="w-full">
           <SelectValue placeholder="Select country" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="us">United States</SelectItem>
-          <SelectItem value="ca">Canada</SelectItem>
-          <SelectItem value="mx">Mexico</SelectItem>
-          <SelectItem value="uk">United Kingdom</SelectItem>
-          <SelectItem value="de">Germany</SelectItem>
-          <SelectItem value="fr">France</SelectItem>
+          <SelectItem value="us">🇺🇸 United States</SelectItem>
+          <SelectItem value="ca">🇨🇦 Canada</SelectItem>
+          <SelectItem value="mx">🇲🇽 Mexico</SelectItem>
+          <SelectItem value="uk">🇬🇧 United Kingdom</SelectItem>
+          <SelectItem value="de">🇩🇪 Germany</SelectItem>
+          <SelectItem value="fr">🇫🇷 France</SelectItem>
         </SelectContent>
       </Select>
+      <p className="text-sm text-muted-foreground">
+        Select your country of residence
+      </p>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Select with associated label for better accessibility.',
+      },
+    },
+  },
 };
 
 export const Disabled: Story = {
@@ -89,6 +170,13 @@ export const Disabled: Story = {
       </SelectContent>
     </Select>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Disabled select preventing user interaction.',
+      },
+    },
+  },
 };
 
 export const WithIcons: Story = {
@@ -116,6 +204,13 @@ export const WithIcons: Story = {
       </SelectContent>
     </Select>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Select with flag icons for visual language selection.',
+      },
+    },
+  },
 };
 
 export const InCard: Story = {
@@ -155,6 +250,13 @@ export const InCard: Story = {
       </CardContent>
     </Card>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Select components integrated within a card layout for settings.',
+      },
+    },
+  },
 };
 
 export const Scrollable: Story = {
@@ -344,6 +446,176 @@ export const Scrollable: Story = {
       </SelectContent>
     </Select>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Scrollable select with many options demonstrating height limitation.',
+      },
+    },
+  },
 };
+
+export const FormExample: Story = {
+  render: () => {
+    const [formData, setFormData] = useState({
+      category: '',
+      priority: '',
+      assignee: '',
+    });
+
+    const handleChange = (field: string) => (value: string) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Create Task</CardTitle>
+          <CardDescription>
+            Fill out the form to create a new task.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select value={formData.category} onValueChange={handleChange('category')}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bug">🐛 Bug</SelectItem>
+                <SelectItem value="feature">✨ Feature</SelectItem>
+                <SelectItem value="improvement">📈 Improvement</SelectItem>
+                <SelectItem value="documentation">📚 Documentation</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={formData.priority} onValueChange={handleChange('priority')}>
+              <SelectTrigger id="priority">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">🟢 Low</SelectItem>
+                <SelectItem value="medium">🟡 Medium</SelectItem>
+                <SelectItem value="high">🔴 High</SelectItem>
+                <SelectItem value="urgent">🚨 Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="assignee">Assignee</Label>
+            <Select value={formData.assignee} onValueChange={handleChange('assignee')}>
+              <SelectTrigger id="assignee">
+                <SelectValue placeholder="Select assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="john">John Doe</SelectItem>
+                <SelectItem value="jane">Jane Smith</SelectItem>
+                <SelectItem value="bob">Bob Johnson</SelectItem>
+                <SelectItem value="alice">Alice Brown</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button className="w-full" disabled={!formData.category || !formData.priority}>
+            Create Task
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Complete form example showing select components in a task creation form.',
+      },
+    },
+  },
+};
+
+export const DisabledSelect: Story = {
+  render: () => (
+    <div className="space-y-4 w-80">
+      <div className="space-y-2">
+        <Label htmlFor="disabled-select">Disabled Select</Label>
+        <Select disabled>
+          <SelectTrigger id="disabled-select">
+            <SelectValue placeholder="This select is disabled" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="option1">Option 1</SelectItem>
+            <SelectItem value="option2">Option 2</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="loading-select">Loading State</Label>
+        <Select>
+          <SelectTrigger id="loading-select" disabled>
+            <SelectValue placeholder="Loading options..." />
+          </SelectTrigger>
+        </Select>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Disabled and loading states for select components.',
+      },
+    },
+  },
+};
+
+export const SelectWithIcons: Story = {
+  render: () => (
+    <div className="space-y-4 w-80">
+      <div className="space-y-2">
+        <Label htmlFor="payment-method">Payment Method</Label>
+        <Select>
+          <SelectTrigger id="payment-method">
+            <SelectValue placeholder="Select payment method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="card">💳 Credit Card</SelectItem>
+            <SelectItem value="paypal">🅿️ PayPal</SelectItem>
+            <SelectItem value="apple">📱 Apple Pay</SelectItem>
+            <SelectItem value="google">🎯 Google Pay</SelectItem>
+            <SelectItem value="bank">🏦 Bank Transfer</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="file-type">File Type</Label>
+        <Select>
+          <SelectTrigger id="file-type">
+            <SelectValue placeholder="Select file type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pdf">📄 PDF Document</SelectItem>
+            <SelectItem value="doc">📝 Word Document</SelectItem>
+            <SelectItem value="xls">📊 Excel Spreadsheet</SelectItem>
+            <SelectItem value="ppt">📽️ PowerPoint Presentation</SelectItem>
+            <SelectItem value="img">🖼️ Image File</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Select components with icons for better visual context.',
+      },
+    },
+  },
+};
+
 
 

@@ -1,14 +1,47 @@
 import type { Meta, StoryObj } from '@storybook/react';
+
+const VIEWPORTS = {
+  mobile: {
+    name: 'Mobile',
+    styles: {
+      width: '375px',
+      height: '667px',
+    },
+  },
+  tablet: {
+    name: 'Tablet',
+    styles: {
+      width: '768px',
+      height: '1024px',
+    },
+  },
+  desktop: {
+    name: 'Desktop',
+    styles: {
+      width: '1440px',
+      height: '900px',
+    },
+  },
+};
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Badge } from './badge';
+import { Badge } from '../badge/badge';
+
 
 const meta: Meta<typeof Avatar> = {
   title: 'UI/Avatar',
   component: Avatar,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component: 'A circular avatar component that displays user images with fallback support for initials or icons.',
+      },
+    },
+    viewport: {
+      viewports: VIEWPORTS,
+    },
   },
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ui', 'avatar'],
 };
 
 export default meta;
@@ -21,6 +54,13 @@ export const Default: Story = {
       <AvatarFallback>CN</AvatarFallback>
     </Avatar>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Basic avatar with image and fallback initials.',
+      },
+    },
+  },
 };
 
 export const Fallback: Story = {
@@ -30,6 +70,13 @@ export const Fallback: Story = {
       <AvatarFallback>JD</AvatarFallback>
     </Avatar>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Avatar showing fallback when image fails to load.',
+      },
+    },
+  },
 };
 
 export const Sizes: Story = {
@@ -57,6 +104,13 @@ export const Sizes: Story = {
       </Avatar>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Avatar in different sizes for various UI contexts.',
+      },
+    },
+  },
 };
 
 export const WithBadge: Story = {
@@ -90,6 +144,13 @@ export const WithBadge: Story = {
       </div>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Avatar with status indicators using badges.',
+      },
+    },
+  },
 };
 
 export const Group: Story = {
@@ -112,6 +173,13 @@ export const Group: Story = {
       </Avatar>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Grouped avatars with overlapping for team displays.',
+      },
+    },
+  },
 };
 
 export const Initials: Story = {
@@ -131,6 +199,13 @@ export const Initials: Story = {
       </Avatar>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Avatar fallbacks with different initial combinations.',
+      },
+    },
+  },
 };
 
 export const Placeholder: Story = {
@@ -172,6 +247,38 @@ export const Placeholder: Story = {
       </Avatar>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Avatar fallbacks with icon placeholders.',
+      },
+    },
+  },
 };
+
+export const ResponsiveExample: Story = {
+  render: () => (
+    <div className="flex items-center space-x-2">
+      <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+        <AvatarFallback>CN</AvatarFallback>
+      </Avatar>
+      <div className="hidden sm:block">
+        <span className="text-sm font-medium">shadcn</span>
+      </div>
+    </div>
+  ),
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+    docs: {
+      description: {
+        story: 'Responsive avatar that adapts size and shows/hides text on different screens.',
+      },
+    },
+  },
+};
+
 
 

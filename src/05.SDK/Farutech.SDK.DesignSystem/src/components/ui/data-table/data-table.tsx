@@ -35,8 +35,8 @@ import {
   SelectValue,
 } from '../select';
 import { Skeleton } from '../skeleton';
-import { cn } from '../../utils/cn';
-import { useDataTable } from '../../hooks/use-data-table';
+import { cn } from '../../../utils/cn';
+import { useDataTable } from '../../../hooks/use-data-table';
 import {
   ChevronLeft,
   ChevronRight,
@@ -137,14 +137,14 @@ export function DataTable<TData, TValue>({
         header: ({ table }) => (
           <Checkbox
             checked={table.getIsAllPageRowsSelected()}
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
             aria-label="Select all"
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onChange={(e) => row.toggleSelected(e.target.checked)}
             aria-label="Select row"
           />
         ),

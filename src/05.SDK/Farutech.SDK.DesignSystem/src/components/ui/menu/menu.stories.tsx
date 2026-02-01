@@ -1,4 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react';
+
+const VIEWPORTS = {
+  mobile: {
+    name: 'Mobile',
+    styles: {
+      width: '375px',
+      height: '667px',
+    },
+  },
+  tablet: {
+    name: 'Tablet',
+    styles: {
+      width: '768px',
+      height: '1024px',
+    },
+  },
+  desktop: {
+    name: 'Desktop',
+    styles: {
+      width: '1440px',
+      height: '900px',
+    },
+  },
+};
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -14,17 +38,44 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from './dropdown-menu';
-import { Button } from './button';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+} from '../dropdown-menu/dropdown-menu';
+import { Button } from '../button/Button';
+
 
 const meta: Meta<typeof DropdownMenu> = {
   title: 'UI/Menu',
   component: DropdownMenu,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'A dropdown menu component that provides contextual actions and options. Supports nested submenus, checkboxes, radio groups, and keyboard navigation for accessibility.',
+      },
+    },
+    viewport: {
+      viewports: VIEWPORTS,
+    },
   },
-  tags: ['autodocs'],
+  tags: ['autodocs', 'ui', 'menu', 'dropdown', 'contextual', 'navigation'],
+  argTypes: {
+    open: {
+      control: 'boolean',
+      description: 'Whether the dropdown menu is open.',
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the dropdown menu is open by default.',
+    },
+    modal: {
+      control: 'boolean',
+      description: 'Whether the dropdown menu should be modal.',
+    },
+    dir: {
+      control: { type: 'select' },
+      options: ['ltr', 'rtl'],
+      description: 'The reading direction of the dropdown menu.',
+    },
+  },
 };
 
 export default meta;
@@ -247,50 +298,125 @@ export const Submenu: Story = {
   ),
 };
 
-export const UserMenu: Story = {
+export const TableActions: Story = {
   render: () => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>SC</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">shadcn</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              m@example.com
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Profile
-          <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          Billing
-          <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          Settings
-          <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          New Team
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex justify-center p-8">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm">
+            ⋮
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem>View details</DropdownMenuItem>
+          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-red-600">
+            Delete
+            <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Table row actions menu with destructive action styling.',
+      },
+    },
+  },
 };
+
+export const FileMenu: Story = {
+  render: () => (
+    <div className="flex justify-center p-8">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline">File</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-48">
+          <DropdownMenuItem>
+            New File
+            <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            Open...
+            <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            Save
+            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            Save As...
+            <DropdownMenuShortcut>⇧⌘S</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Export</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>PDF</DropdownMenuItem>
+              <DropdownMenuItem>PNG</DropdownMenuItem>
+              <DropdownMenuItem>JPG</DropdownMenuItem>
+              <DropdownMenuItem>SVG</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            Print
+            <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'File menu with nested export submenu.',
+      },
+    },
+  },
+};
+
+export const ResponsiveMenu: Story = {
+  render: () => (
+    <div className="flex justify-center p-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm">
+            Menu
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Home</DropdownMenuItem>
+          <DropdownMenuItem>Products</DropdownMenuItem>
+          <DropdownMenuItem>Services</DropdownMenuItem>
+          <DropdownMenuItem>About</DropdownMenuItem>
+          <DropdownMenuItem>Contact</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Sign In</DropdownMenuItem>
+          <DropdownMenuItem>Sign Up</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  ),
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+    docs: {
+      description: {
+        story: 'Responsive menu that works well on mobile devices.',
+      },
+    },
+  },
+};
+
 
 
