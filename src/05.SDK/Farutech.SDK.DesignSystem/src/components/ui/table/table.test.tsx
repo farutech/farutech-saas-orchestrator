@@ -89,7 +89,8 @@ describe('Table', () => {
     expect(screen.getByText('Item')).toBeInTheDocument();
     expect(screen.getByText('Price')).toBeInTheDocument();
     expect(screen.getByText('Apple')).toBeInTheDocument();
-    expect(screen.getByText('$1.00')).toBeInTheDocument();
+    const prices = screen.getAllByText('$1.00');
+    expect(prices.length).toBeGreaterThan(0);
     expect(screen.getByText('Total')).toBeInTheDocument();
   });
 

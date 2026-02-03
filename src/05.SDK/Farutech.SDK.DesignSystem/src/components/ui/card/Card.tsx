@@ -26,6 +26,7 @@ const Card = React.forwardRef<
   return (
     <div
       ref={ref}
+      style={{ fontFamily: 'var(--ft-font-family, Inter, system-ui, sans-serif)', color: 'var(--ft-color-text, #0F1724)' }}
       className={cn(
         "rounded-lg border",
         variantClasses[variant],

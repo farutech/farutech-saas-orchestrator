@@ -109,9 +109,9 @@ describe('Toast', () => {
       </ToastProvider>
     );
 
-    const toast = container.querySelector('.custom-toast');
+    const toast = document.querySelector('.custom-toast');
     expect(toast).toBeInTheDocument();
-    expect(screen.getByText('Custom Toast')).toBeInTheDocument();
+    expect(screen.getAllByText('Custom Toast')[0]).toBeInTheDocument();
   });
 
   test('renders toast with swipe direction', () => {

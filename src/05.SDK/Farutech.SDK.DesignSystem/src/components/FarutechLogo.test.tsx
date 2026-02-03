@@ -76,7 +76,9 @@ describe('FarutechLogo', () => {
     render(<FarutechLogo size="md" />);
     const img = screen.getByAltText('Farutech Logo');
     expect(img).toHaveClass('object-contain');
-    expect(img).toHaveStyle({ height: '40px', width: 'auto' });
+    // Inline style height should be set to 40px and width auto
+    expect(img.style.height).toBe('40px');
+    expect(img.style.width).toBe('auto');
   });
 
   test('text has correct styling', () => {

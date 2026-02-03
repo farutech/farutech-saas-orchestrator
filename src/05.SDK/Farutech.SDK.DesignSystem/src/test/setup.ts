@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+globalThis.ResizeObserver = class ResizeObserver {
   constructor(cb: ResizeObserverCallback) {
     this.cb = cb;
   }
@@ -11,32 +11,106 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
+// Cached, instrumented matchMedia helper so tests can spy and dispatch events reliably
+declare global {
+  interface Window {
+    __setMatchMediaMatches?: (query: string, matches: boolean) => void;
+    __clearMatchMediaCache?: () => void;
+  }
+}
+
+const mediaQueryCache = new Map<string, any>();
+
+function createMQL(query: string) {
+  let matches = false;
+  const listeners = new Set<(e: { matches: boolean }) => void>();
+
+  const mql: any = {
+    matches,
     media: query,
     onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
+    addListener(fn: (e: { matches: boolean }) => void) {
+      listeners.add(fn);
+    },
+    removeListener(fn: (e: { matches: boolean }) => void) {
+      listeners.delete(fn);
+    },
+    addEventListener(_type: string, fn: (e: { matches: boolean }) => void) {
+      listeners.add(fn);
+    },
+    removeEventListener(_type: string, fn: (e: { matches: boolean }) => void) {
+      listeners.delete(fn);
+    },
+    dispatchEvent(e: { matches: boolean }) {
+      listeners.forEach((l) => l(e));
+      if (typeof mql.onchange === 'function') {
+        try {
+          mql.onchange(e as any);
+        } catch (err) {
+          // ignore
+        }
+      }
+      return true;
+    },
+    // Test helper to set matches and notify listeners
+    setMatches(value: boolean) {
+      mql.matches = value;
+      mql.dispatchEvent({ matches: value });
+    },
+  };
+
+  return mql;
+}
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  value: (query: string) => {
+    if (!mediaQueryCache.has(query)) {
+      mediaQueryCache.set(query, createMQL(query));
+    }
+    return mediaQueryCache.get(query);
+  },
 });
 
+// Expose a test helper to set matches for a query from tests
+window.__setMatchMediaMatches = (query: string, matches: boolean) => {
+  if (!mediaQueryCache.has(query)) mediaQueryCache.set(query, createMQL(query));
+  const m = mediaQueryCache.get(query);
+  m.setMatches(matches);
+};
+
+window.__clearMatchMediaCache = () => mediaQueryCache.clear();
+
+// Expose factory for tests to create an instrumented MediaQueryList
+// Tests can call `window.__createMatchMedia(query)` to get an object
+// whose add/remove listeners are spied and which can dispatch events.
+window.__createMatchMedia = (query: string) => {
+  if (!mediaQueryCache.has(query)) mediaQueryCache.set(query, createMQL(query));
+  return mediaQueryCache.get(query);
+};
+
+// Expose internal cache for debugging and advanced test control
+window.__matchMediaCache = mediaQueryCache;
+
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+globalThis.IntersectionObserver = class IntersectionObserver {
+  root: Element | null = null;
+  rootMargin: string = '';
+  thresholds: ReadonlyArray<number> = [];
+  
   constructor() {}
   observe() {}
   unobserve() {}
   disconnect() {}
-};
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+} as any;
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(cb, 16);
-global.cancelAnimationFrame = (id: number) => clearTimeout(id);
+globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(cb, 16);
+globalThis.cancelAnimationFrame = (id: number) => clearTimeout(id);
 
 // Mock getComputedStyle
 Object.defineProperty(window, 'getComputedStyle', {

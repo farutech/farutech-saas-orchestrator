@@ -62,10 +62,10 @@ describe('Sheet', () => {
       </Sheet>
     );
 
-    expect(screen.getByText('Title')).toBeInTheDocument();
-    expect(screen.getByText('Description')).toBeInTheDocument();
-    expect(screen.getByText('Main content')).toBeInTheDocument();
-    expect(screen.getByText('Close')).toBeInTheDocument();
+    expect(screen.getAllByText('Title')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Description')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Main content')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Close')[0]).toBeInTheDocument();
   });
 
   test('renders sheet with different sides', () => {
@@ -118,7 +118,7 @@ describe('Sheet', () => {
       </Sheet>
     );
 
-    expect(screen.getByText('Close Button')).toBeInTheDocument();
+    expect(screen.getAllByText('Close Button')[0]).toBeInTheDocument();
   });
 
   test('renders sheet with custom className', () => {
@@ -133,7 +133,7 @@ describe('Sheet', () => {
 
     const content = container.querySelector('.custom-sheet');
     expect(content).toBeInTheDocument();
-    expect(screen.getByText('Custom styled content')).toBeInTheDocument();
+    expect(screen.getAllByText('Custom styled content')[0]).toBeInTheDocument();
   });
 
   test('handles sheet with complex content', () => {
@@ -164,6 +164,6 @@ describe('Sheet', () => {
     expect(screen.getByText('Section 1')).toBeInTheDocument();
     expect(screen.getByText('Section 2')).toBeInTheDocument();
     expect(screen.getByText('Action 1')).toBeInTheDocument();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(screen.getAllByText('Cancel')[0]).toBeInTheDocument();
   });
 });

@@ -1,50 +1,59 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface User {
+export type User = {
   id: string;
   name: string;
   email: string;
-}
+  roles: string[];
+};
 
-export const useAuth = () => {
+type AuthContextValue = {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => void;
+};
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Simular carga de usuario
-    const loadUser = async () => {
-      try {
-        // Aquí iría la lógica real para obtener el usuario
-        const mockUser: User = {
-          id: '1',
-          name: 'John Doe',
-          email: 'john@example.com'
-        };
-        setUser(mockUser);
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
+    const s = sessionStorage.getItem('farutech:user');
+    if (s) setUser(JSON.parse(s));
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Lógica de login
-    console.log('Logging in:', email, password);
-  };
+  async function login(email: string, _password: string) {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 400));
+    const mock: User = {
+      id: 'u_1',
+      name: 'Demo User',
+      email,
+      roles: email === 'admin@farutech.com' ? ['admin', 'editor'] : ['editor']
+    };
+    setUser(mock);
+    try { sessionStorage.setItem('farutech:user', JSON.stringify(mock)); } catch {}
+    setLoading(false);
+    return mock;
+  }
 
-  const logout = async () => {
+  function logout() {
     setUser(null);
-  };
+    try { sessionStorage.removeItem('farutech:user'); } catch {}
+  }
 
-  return {
-    user,
-    loading,
-    login,
-    logout,
-    isAuthenticated: !!user
-  };
-};
+  return React.createElement(
+    AuthContext.Provider,
+    { value: { user, loading, login, logout } },
+    children
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}

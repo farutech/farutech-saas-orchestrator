@@ -36,8 +36,8 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Title')).toBeInTheDocument();
-    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getAllByText('Title')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Description')[0]).toBeInTheDocument();
   });
 
   test('renders tooltip with custom alignment', () => {
@@ -52,7 +52,7 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Aligned content')).toBeInTheDocument();
+    expect(screen.getAllByText('Aligned content')[0]).toBeInTheDocument();
   });
 
   test('renders tooltip with custom side', () => {
@@ -67,7 +67,7 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Top positioned content')).toBeInTheDocument();
+    expect(screen.getAllByText('Top positioned content')[0]).toBeInTheDocument();
   });
 
   test('tooltip has proper accessibility', () => {
@@ -100,7 +100,7 @@ describe('Tooltip', () => {
 
     const content = container.querySelector('.custom-tooltip');
     expect(content).toBeInTheDocument();
-    expect(screen.getByText('Custom styled content')).toBeInTheDocument();
+    expect(screen.getAllByText('Custom styled content')[0]).toBeInTheDocument();
   });
 
   test('renders tooltip with different sides', () => {
@@ -115,7 +115,7 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Right side content')).toBeInTheDocument();
+    expect(screen.getAllByText('Right side content')[0]).toBeInTheDocument();
 
     rerender(
       <TooltipProvider>
@@ -128,7 +128,7 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Bottom side content')).toBeInTheDocument();
+    expect(screen.getAllByText('Bottom side content')[0]).toBeInTheDocument();
   });
 
   test('renders tooltip with complex content', () => {
@@ -151,11 +151,11 @@ describe('Tooltip', () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText('Complex Title')).toBeInTheDocument();
-    expect(screen.getByText('Feature 1')).toBeInTheDocument();
-    expect(screen.getByText('Feature 2')).toBeInTheDocument();
-    expect(screen.getByText('Feature 3')).toBeInTheDocument();
-    expect(screen.getByText('Additional information about this feature.')).toBeInTheDocument();
+    expect(screen.getAllByText('Complex Title')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Feature 1')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Feature 2')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Feature 3')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Additional information about this feature.')[0]).toBeInTheDocument();
   });
 
   test('renders tooltip with delay duration', () => {

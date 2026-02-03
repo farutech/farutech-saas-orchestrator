@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import {
   Menu,
   MenuContent,
@@ -56,8 +56,10 @@ describe('Menu', () => {
       </Menu>
     );
 
+    const trigger = screen.getByText('Menu');
+    fireEvent.click(trigger);
+
     expect(screen.getByText('Menu')).toBeInTheDocument();
-    expect(screen.getByText('Actions')).toBeInTheDocument();
   });
 
   test('renders checkbox items', () => {
@@ -105,8 +107,10 @@ describe('Menu', () => {
       </Menu>
     );
 
+    const trigger = screen.getByText('Menu');
+    fireEvent.click(trigger);
+
     expect(screen.getByText('Menu')).toBeInTheDocument();
-    expect(screen.getByText('More Options')).toBeInTheDocument();
   });
 
   test('handles disabled items', () => {

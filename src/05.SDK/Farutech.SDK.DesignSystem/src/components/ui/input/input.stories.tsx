@@ -28,6 +28,7 @@ import { Input } from './input';
 import { Button } from '../button/Button';
 import { Label } from '../label/Label';
 import { Search, Mail, Lock, User, Phone, Globe } from 'lucide-react';
+import SearchableSelect from '../select/SearchableSelect';
 
 
 const meta: Meta<typeof Input> = {
@@ -90,37 +91,37 @@ export const InputTypes: Story = {
   render: () => (
     <div className="space-y-6 w-80">
       <div className="space-y-2">
-        <Label htmlFor="text">Text Input</Label>
+        <Label htmlFor="text">Text Input</Label>&nbsp;
         <Input id="text" type="text" placeholder="Enter your name" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email Input</Label>
+        <Label htmlFor="email">Email Input</Label>&nbsp;
         <Input id="email" type="email" placeholder="Enter your email" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password Input</Label>
+        <Label htmlFor="password">Password Input</Label>&nbsp;
         <Input id="password" type="password" placeholder="Enter your password" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="number">Number Input</Label>
+        <Label htmlFor="number">Number Input</Label>&nbsp;
         <Input id="number" type="number" placeholder="Enter a number" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="search">Search Input</Label>
+        <Label htmlFor="search">Search Input</Label>&nbsp;
         <Input id="search" type="search" placeholder="Search..." />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="tel">Phone Input</Label>
+        <Label htmlFor="tel">Phone Input</Label>&nbsp;
         <Input id="tel" type="tel" placeholder="Enter phone number" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">URL Input</Label>
+        <Label htmlFor="url">URL Input</Label>&nbsp;
         <Input id="url" type="url" placeholder="https://example.com" />
       </div>
     </div>
@@ -181,28 +182,28 @@ export const States: Story = {
   render: () => (
     <div className="space-y-6 w-80">
       <div className="space-y-2">
-        <Label htmlFor="default">Default State</Label>
+        <Label htmlFor="default">Default State</Label>&nbsp;
         <Input id="default" placeholder="Default input" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="disabled">Disabled State</Label>
+        <Label htmlFor="disabled">Disabled State</Label>&nbsp;
         <Input id="disabled" disabled placeholder="Disabled input" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="readonly">Read-only State</Label>
+        <Label htmlFor="readonly">Read-only State</Label>&nbsp;
         <Input id="readonly" readOnly value="Read-only content" />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="success">Success State</Label>
+        <Label htmlFor="success">Success State</Label>&nbsp;
         <Input id="success" className="border-green-500 focus:border-green-500" placeholder="Valid input" />
         <p className="text-sm text-green-600">✓ Input is valid</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="error">Error State</Label>
+        <Label htmlFor="error">Error State</Label>&nbsp;
         <Input id="error" className="border-red-500 focus:border-red-500" placeholder="Invalid input" />
         <p className="text-sm text-red-600">✗ This field is required</p>
       </div>
@@ -239,7 +240,7 @@ export const FormExample: Story = {
       <form onSubmit={handleSubmit} className="space-y-6 w-96">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName">First Name</Label>&nbsp;
             <Input
               id="firstName"
               value={formData.firstName}
@@ -248,7 +249,7 @@ export const FormExample: Story = {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName">Last Name</Label>&nbsp;
             <Input
               id="lastName"
               value={formData.lastName}
@@ -259,7 +260,7 @@ export const FormExample: Story = {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email</Label>&nbsp;
           <Input
             id="email"
             type="email"
@@ -270,13 +271,27 @@ export const FormExample: Story = {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">Phone</Label>&nbsp;
           <Input
             id="phone"
             type="tel"
             value={formData.phone}
             onChange={handleChange('phone')}
             placeholder="+1 (555) 123-4567"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="assignee">Assignee</Label>&nbsp;
+          <SearchableSelect
+            options={[
+              { label: 'Alice Johnson', value: '1' },
+              { label: 'Bob Smith', value: '2' },
+              { label: 'Cecilia Gomez', value: '3' },
+            ]}
+            mapOption={{ label: 'label', value: 'value' }}
+            onChange={(v) => console.log('Assignee selected', v)}
+            placeholder="Search assignee..."
           />
         </div>
 
@@ -299,17 +314,17 @@ export const Sizes: Story = {
   render: () => (
     <div className="space-y-4 w-80">
       <div className="space-y-2">
-        <Label>Small Size</Label>
+        <Label>Small Size</Label>&nbsp;
         <Input className="h-8 text-sm" placeholder="Small input" />
       </div>
 
       <div className="space-y-2">
-        <Label>Default Size</Label>
+        <Label>Default Size</Label>&nbsp;
         <Input placeholder="Default input" />
       </div>
 
       <div className="space-y-2">
-        <Label>Large Size</Label>
+        <Label>Large Size</Label>&nbsp;
         <Input className="h-12 text-lg" placeholder="Large input" />
       </div>
     </div>
@@ -327,7 +342,7 @@ export const Responsive: Story = {
   render: () => (
     <div className="space-y-4 w-full max-w-md px-4">
       <div className="space-y-2">
-        <Label htmlFor="responsive">Responsive Input</Label>
+        <Label htmlFor="responsive">Responsive Input</Label>&nbsp;
         <Input
           id="responsive"
           className="w-full"
@@ -337,11 +352,11 @@ export const Responsive: Story = {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="col1">Column 1</Label>
+          <Label htmlFor="col1">Column 1</Label>&nbsp;
           <Input id="col1" placeholder="Responsive column" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="col2">Column 2</Label>
+          <Label htmlFor="col2">Column 2</Label>&nbsp;
           <Input id="col2" placeholder="Responsive column" />
         </div>
       </div>

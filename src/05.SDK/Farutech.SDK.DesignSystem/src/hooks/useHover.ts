@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
  * Supports both mouse and touch interactions
  */
 export function useHover<T extends HTMLElement = HTMLElement>(): [
-  React.RefObject<T>,
+  React.RefObject<T | null>,
   boolean
 ] {
   const [isHover, setIsHover] = useState(false);

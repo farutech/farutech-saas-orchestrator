@@ -45,6 +45,8 @@ export function ModuleCard({
         className
       )}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -66,9 +68,9 @@ export function ModuleCard({
               <Icon className="h-8 w-8 text-primary" />
             )}
             <div>
-              <CardTitle className="text-lg">{title}</CardTitle>
+              <CardTitle className="text-lg" style={{ fontFamily: 'var(--ft-font-family, Inter, system-ui, sans-serif)' }}>{title}</CardTitle>
               {version && (
-                <span className="text-sm text-muted-foreground">v{version}</span>
+                <span className="text-xs text-muted-foreground">v{version}</span>
               )}
             </div>
           </div>
@@ -78,7 +80,7 @@ export function ModuleCard({
         </div>
       </CardHeader>
       <CardContent>
-        <CardDescription className="text-sm leading-relaxed">
+        <CardDescription className="text-sm leading-relaxed" style={{ fontFamily: 'var(--ft-font-family, Inter, system-ui, sans-serif)' }}>
           {description}
         </CardDescription>
       </CardContent>

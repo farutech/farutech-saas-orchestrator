@@ -160,6 +160,22 @@ export const Animated: Story = {
   },
 };
 
+export const BrandOnlyWithSpinner: Story = {
+  args: {
+    size: 'lg',
+    animated: true,
+    showText: false,
+    usePng: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Logo displayed alongside a professional vortex spinner in integration scenarios.',
+      },
+    },
+  },
+};
+
 export const FallbackIcon: Story = {
   args: {
     size: 'md',

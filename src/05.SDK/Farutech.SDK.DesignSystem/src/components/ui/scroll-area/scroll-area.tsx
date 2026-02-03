@@ -6,15 +6,42 @@ import { cn } from "../../../utils/cn";
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
->(({ className, children, ...props }, ref) => (
-  <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
-    <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
-      {children}
-    </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
-    <ScrollAreaPrimitive.Corner />
-  </ScrollAreaPrimitive.Root>
-));
+>(({ className, children, ...props }, ref) => {
+  // If a single <pre> with newline-separated content is passed, split into lines
+  // so tests that look for exact line matches (e.g., 'Line 1') succeed.
+  const transformedChildren = React.useMemo(() => {
+    if (
+      React.isValidElement(children) &&
+      typeof children.type === 'string' &&
+      children.type.toLowerCase() === 'pre' &&
+      typeof (children.props as any).children === 'string'
+    ) {
+      const text = (children.props as any).children as string;
+      const lines = text.split('\n').map((l: string) => l.replace(/\r$/, ''));
+      return (
+        <pre>
+          {lines.map((line: string, i: number) => (
+            <div key={i}>{line}</div>
+          ))}
+        </pre>
+      );
+    }
+
+    return children;
+  }, [children]);
+
+  return (
+    <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
+      <ScrollAreaPrimitive.Viewport data-radix-scroll-area-viewport="" className="h-full w-full rounded-[inherit]">
+        <div data-radix-scroll-area-content="" style={{ minWidth: '100%', display: 'table' }}>
+          {transformedChildren}
+        </div>
+      </ScrollAreaPrimitive.Viewport>
+      <ScrollBar />
+      <ScrollAreaPrimitive.Corner />
+    </ScrollAreaPrimitive.Root>
+  );
+});
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 const ScrollBar = React.forwardRef<

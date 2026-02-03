@@ -58,6 +58,20 @@ const meta: Meta<typeof LoadingSpinner> = {
       control: { type: 'text' },
       description: 'Additional CSS classes to apply to the spinner container.',
     },
+    orientation: {
+      control: { type: 'select' },
+      options: ['vertical', 'horizontal'],
+      description: "Spin orientation: 'vertical' rotates around Y, 'horizontal' around X.",
+    },
+    showText: {
+      control: { type: 'boolean' },
+      description: 'Whether to show the text when provided.',
+    },
+    textPosition: {
+      control: { type: 'select' },
+      options: ['left', 'right'],
+      description: 'Position of the optional text relative to the spinner.',
+    },
   },
 };
 
@@ -120,6 +134,7 @@ export const WithText: Story = {
   args: {
     size: 'md',
     text: 'Loading...',
+    showText: true,
   },
   parameters: {
     docs: {
@@ -134,6 +149,7 @@ export const FullScreen: Story = {
   args: {
     size: 'lg',
     text: 'Please wait...',
+    showText: true,
     fullScreen: true,
   },
   parameters: {
@@ -150,6 +166,7 @@ export const CustomStyling: Story = {
     size: 'md',
     className: 'text-blue-500',
     text: 'Custom styled',
+    showText: true,
   },
   parameters: {
     docs: {
@@ -164,6 +181,7 @@ export const MobileView: Story = {
   args: {
     size: 'sm',
     text: 'Loading...',
+    showText: true,
   },
   parameters: {
     viewport: {
@@ -181,6 +199,7 @@ export const TabletView: Story = {
   args: {
     size: 'md',
     text: 'Loading...',
+    showText: true,
   },
   parameters: {
     viewport: {
@@ -198,6 +217,7 @@ export const DesktopView: Story = {
   args: {
     size: 'lg',
     text: 'Loading...',
+    showText: true,
   },
   parameters: {
     viewport: {
@@ -206,6 +226,40 @@ export const DesktopView: Story = {
     docs: {
       description: {
         story: 'Full desktop view of the loading spinner.',
+      },
+    },
+  },
+};
+
+export const VortexLogoSlow: Story = {
+  args: {
+    size: 'lg',
+    text: 'Cargando...',
+    vortex: true,
+    logoSrc: '/logo.png',
+    speed: 0.6,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Vortex spinner usando el logo principal con velocidad lenta para efecto profesional.',
+      },
+    },
+  },
+};
+
+export const VortexLogoFast: Story = {
+  args: {
+    size: 'lg',
+    text: 'Cargando rápido...',
+    vortex: true,
+    logoSrc: '/logo.png',
+    speed: 1.8,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Vortex spinner usando el logo principal con velocidad rápida para micro-interacciones.',
       },
     },
   },

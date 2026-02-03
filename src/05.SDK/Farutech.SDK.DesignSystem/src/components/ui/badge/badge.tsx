@@ -8,11 +8,11 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "text-foreground",
-        highlight: "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20",
+        default: "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        destructive: "border-transparent bg-destructive text-destructive-foreground",
+        outline: "border bg-transparent text-foreground",
+        highlight: "border bg-primary/10 text-primary",
       },
     },
     defaultVariants: {
@@ -23,8 +23,26 @@ const badgeVariants = cva(
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
+function Badge({ className, variant, style, ...props }: BadgeProps) {
+  const variantStyle: React.CSSProperties = React.useMemo(() => {
+    switch (variant) {
+      case "secondary":
+        return { backgroundColor: "var(--ft-color-accent)", color: "#ffffff" };
+      case "destructive":
+        return { backgroundColor: "var(--ft-color-danger)", color: "#ffffff" };
+      case "outline":
+        return { backgroundColor: "transparent", color: "var(--ft-color-text)", borderColor: "var(--ft-color-muted)" };
+      case "highlight":
+        return { backgroundColor: "transparent", color: "var(--ft-color-primary)", borderColor: "var(--ft-color-primary)" };
+      case "default":
+      default:
+        return { backgroundColor: "var(--ft-color-primary)", color: "#ffffff" };
+    }
+  }, [variant]);
+
+  const mergedStyle: React.CSSProperties = { ...variantStyle, ...style };
+
+  return <div className={cn(badgeVariants({ variant }), className)} style={mergedStyle} {...props} />;
 }
 
 export { Badge, badgeVariants };

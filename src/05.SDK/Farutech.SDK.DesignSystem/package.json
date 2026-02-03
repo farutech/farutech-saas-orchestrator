@@ -3,6 +3,17 @@
   "private": true,
   "version": "10.2.1",
   "type": "module",
+  "main": "src/unified/index.ts",
+  "module": "src/unified/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/unified/index.ts",
+      "default": "./src/unified/index.ts"
+    }
+  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,7 +22,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build:packages": "node ./scripts/build-packages.js"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",

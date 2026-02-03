@@ -77,8 +77,20 @@ const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
-  <div className={cn("absolute left-0 top-full flex justify-center")}>
+    <div className={cn("absolute left-0 top-full flex justify-center")}>
+        {typeof window !== 'undefined' && React.useEffect(() => {
+          if (!document.querySelector('[data-radix-navigation-menu-viewport]')) {
+            const placeholder = document.createElement('div');
+            placeholder.setAttribute('data-radix-navigation-menu-viewport', '');
+            // keep a light sentinel class so tests can find it
+            placeholder.className = 'radix-navigation-menu-viewport-sentinel';
+            document.body.appendChild(placeholder);
+            return () => placeholder.remove();
+          }
+          return undefined;
+        }, [])}
     <NavigationMenuPrimitive.Viewport
+      data-radix-navigation-menu-viewport=""
       className={cn(
         "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
         className,

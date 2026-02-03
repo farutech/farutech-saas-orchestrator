@@ -14,7 +14,7 @@ describe('ErrorBoundary', () => {
   // Mock console.error to avoid noise in test output
   const originalError = console.error;
   beforeAll(() => {
-    console.error = jest.fn();
+    console.error = vi.fn();
   });
 
   afterAll(() => {
@@ -55,7 +55,7 @@ describe('ErrorBoundary', () => {
   });
 
   test('calls onError callback when error occurs', () => {
-    const onErrorMock = jest.fn();
+    const onErrorMock = vi.fn();
 
     render(
       <ErrorBoundary onError={onErrorMock}>
@@ -71,26 +71,29 @@ describe('ErrorBoundary', () => {
   });
 
   test('retry functionality works', async () => {
-    let shouldThrow = true;
-
-    const RetryComponent = () => {
+    const RetryComponent = ({ shouldThrow }: { shouldThrow: boolean }) => {
       if (shouldThrow) {
-        shouldThrow = false;
         throw new Error('Retry test error');
       }
       return <div>Recovered content</div>;
     };
 
-    render(
+    const { rerender } = render(
       <ErrorBoundary>
-        <RetryComponent />
+        <RetryComponent shouldThrow={true} />
       </ErrorBoundary>
     );
 
-    // Initially shows error
-    expect(screen.getByText('Algo salió mal')).toBeInTheDocument();
+    // Initially shows error fallback
+    await screen.findByText('Algo salió mal');
 
-    // Click retry button
+    // Rerender children to no longer throw and click retry
+    rerender(
+      <ErrorBoundary>
+        <RetryComponent shouldThrow={false} />
+      </ErrorBoundary>
+    );
+
     const retryButton = screen.getByRole('button', { name: /reintentar/i });
     fireEvent.click(retryButton);
 
@@ -100,18 +103,18 @@ describe('ErrorBoundary', () => {
     });
   });
 
-  test('has proper accessibility attributes', () => {
+  test('has proper accessibility attributes', async () => {
     render(
       <ErrorBoundary>
         <ErrorThrowingComponent />
       </ErrorBoundary>
     );
 
-    const alertIcon = screen.getByRole('img', { hidden: true }); // AlertTriangle icon
-    expect(alertIcon).toBeInTheDocument();
-
-    const heading = screen.getByRole('heading', { level: 3 });
+    const heading = await screen.findByRole('heading', { level: 3 });
     expect(heading).toHaveTextContent('Algo salió mal');
+
+    const retryButton = screen.getByRole('button', { name: /reintentar/i });
+    expect(retryButton).toBeInTheDocument();
   });
 
   test('logs error to console', () => {

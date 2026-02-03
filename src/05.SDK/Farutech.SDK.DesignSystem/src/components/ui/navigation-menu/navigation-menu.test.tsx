@@ -92,8 +92,8 @@ describe('NavigationMenu', () => {
       </NavigationMenu>
     );
 
-    // Viewport should be present in the DOM
-    expect(container.querySelector('[data-radix-navigation-menu-viewport]')).toBeInTheDocument();
+    // Viewport should be present in the DOM (may be portalled)
+    expect(document.querySelector('[data-radix-navigation-menu-viewport]')).toBeInTheDocument();
   });
 
   test('navigation menu has proper structure', () => {

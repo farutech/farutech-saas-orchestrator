@@ -61,7 +61,7 @@ describe('ModuleCard', () => {
   });
 
   test('calls onClick when clicked', () => {
-    const onClickMock = jest.fn();
+    const onClickMock = vi.fn();
     render(<ModuleCard {...defaultProps} onClick={onClickMock} />);
     const card = screen.getByRole('button');
     fireEvent.click(card);

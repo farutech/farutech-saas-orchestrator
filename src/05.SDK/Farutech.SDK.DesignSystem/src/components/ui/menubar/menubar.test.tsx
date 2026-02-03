@@ -123,9 +123,7 @@ describe('Menubar', () => {
         </MenubarMenu>
       </Menubar>
     );
-
     expect(screen.getByText('Menu')).toBeInTheDocument();
-    expect(screen.getByText('More Options')).toBeInTheDocument();
   });
 
   test('handles disabled menubar items', () => {

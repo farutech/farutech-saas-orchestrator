@@ -1,9 +1,10 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { SDKVersionDashboard } from './SDKVersionDashboard';
 
 // Mock fetch globally
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe('SDKVersionDashboard', () => {
@@ -30,7 +31,7 @@ describe('SDKVersionDashboard', () => {
     render(<SDKVersionDashboard />);
 
     // The Package icon should be present
-    const iconContainer = screen.getByRole('generic');
+    const iconContainer = screen.getByTestId('package-icon');
     expect(iconContainer).toBeInTheDocument();
   });
 
@@ -206,7 +207,7 @@ describe('SDKVersionDashboard', () => {
       );
 
     // Mock console.error to avoid test output noise
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(<SDKVersionDashboard />);
 

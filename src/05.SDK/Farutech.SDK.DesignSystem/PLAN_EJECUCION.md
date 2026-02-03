@@ -2,8 +2,8 @@
 
 **Ubicación:** `D:\farutech_2025\src\05.SDK\Farutech.SDK.DesignSystem`  
 **Fecha de creación:** Enero 31, 2026  
-**Versión del plan:** 2.2 (Actualizado - useClickOutside completado)  
-**Estado general:** ✅ FASE 2 COMPLETADA - Iniciando Fase 3  
+**Versión del plan:** 3.0 (Fase 3 completada - Dashboard Integration planificada)  
+**Estado general:** ✅ FASE 3 COMPLETADA - Fase 9 planificada  
 
 ---
 
@@ -13,17 +13,18 @@
 - [x] **Fase 0: Preparación y permisos** - Infraestructura configurada
 - [x] **Fase 1: Configuración inicial del SDK** - Scaffolding completo
 - [x] **Fase 2: Componentes base y cobertura mínima** - 10/10 componentes ✅
+- [x] **Fase 3: Hooks y utils (core)** - 10/10 hooks y utils completados ✅
 - [x] **Repositorio GitHub creado** - https://github.com/faridmaloof/farutech-design-system
 
-### 🔄 **EN PROGRESO (60%)**
-- [ ] **Fase 3: Hooks y utils (core)** - 5/10 hooks implementados
+### 🔄 **EN PROGRESO (70%)**
+- [ ] **Fase 4: Storybook completo y documentación técnica**
 - [ ] **Fase 6: Publicación y pipeline de releases** - CI/CD configurado básico
 
-### ⏳ **PENDIENTE (0%)**
-- [ ] **Fase 4: Storybook completo y documentación técnica**
+### ⏳ **PENDIENTE (30%)**
 - [ ] **Fase 5: Testing automatizado y visual regression**
 - [ ] **Fase 7: Monitoreo, telemetría y SLA**
 - [ ] **Fase 8: Mantenimiento y roadmap continuo**
+- [ ] **Fase 9: Dashboard Integration** - Nueva fase para integrar dashboards
 
 ---
 
@@ -400,7 +401,7 @@ Día 7: Review y optimización
 **Fecha de inicio:** Enero 31, 2026  
 **Responsable:** Senior Engineer  
 
-### 📋 **Checklist de Hooks (10 críticos - 5/10 implementados):**
+### 📋 **Checklist de Hooks (10 críticos - 10/10 implementados):** ✅ COMPLETADO
 
 #### **Categoría: Estado y Datos**
 1. **useAuth** - Gestión de autenticación ✅
@@ -429,25 +430,29 @@ Día 7: Review y optimización
    - ✅ Multiple refs support
    - ✅ Event cleanup
 
-6. **useHover** - Detectar hover state ❌
-   - [ ] Hover enter/leave events
-   - [ ] Touch device support
-   - [ ] Accessibility compliant
+6. **useHover** - Detectar hover state ✅
+   - ✅ Hover enter/leave events
+   - ✅ Touch device support
+   - ✅ Accessibility compliant
 
-7. **useFocus** - Manejo de focus ❌
-   - [ ] Focus/blur detection
-   - [ ] Focus trap utilities
-   - [ ] Keyboard navigation
+7. **useFocus** - Manejo de focus ✅
+   - ✅ Focus/blur detection
+   - ✅ Focus trap utilities
+   - ✅ Keyboard navigation
 
-8. **useKeyboard** - Shortcuts de teclado ❌
-   - [ ] Key combination detection
-   - [ ] Global/local scope
-   - [ ] Prevent default handling
+8. **useKeyboard** - Shortcuts de teclado ✅
+   - ✅ Key combination detection (Ctrl+S, Ctrl+Z, etc.)
+   - ✅ Global/local scope support
+   - ✅ Prevent default handling
+   - ✅ Multiple key combinations
+   - ✅ Event cleanup on unmount
 
-9. **useClipboard** - Portapapeles ❌
-   - [ ] Copy to clipboard
-   - [ ] Paste detection
-   - [ ] Async operations
+9. **useClipboard** - Portapapeles ✅
+   - ✅ Copy text to clipboard
+   - ✅ Paste detection and handling
+   - ✅ Async operations with error handling
+   - ✅ Permission checking
+   - ✅ Fallback for older browsers
 
 10. **useToast** - Sistema de notificaciones ✅
     - ✅ Toast state management
@@ -456,24 +461,30 @@ Día 7: Review y optimización
 
 ### 📋 **Checklist de Utils (Organizadas por categoría):**
 
-#### **/utils/string** ❌
-- [ ] `capitalize` - Primera letra mayúscula
-- [ ] `truncate` - Cortar texto con ellipsis
-- [ ] `slugify` - Convertir a URL slug
-- [ ] `camelCase/kebabCase` - Conversión de formatos
+#### **/utils/string** ✅
+- ✅ `capitalize` - Primera letra mayúscula
+- ✅ `truncate` - Cortar texto con ellipsis
+- ✅ `slugify` - Convertir a URL slug
+- ✅ `camelCase/kebabCase` - Conversión de formatos
 
-#### **/utils/date** ❌
-- [ ] `formatDate` - Formateo localizado
-- [ ] `dateDiff` - Diferencia entre fechas
-- [ ] `isValidDate` - Validación de fecha
+#### **/utils/date** ✅
+- ✅ `formatDate` - Formateo localizado (DD/MM/YYYY, MM/DD/YYYY)
+- ✅ `dateDiff` - Diferencia entre fechas (días, horas, minutos)
+- ✅ `isValidDate` - Validación de fecha con múltiples formatos
+- ✅ `relativeTime` - Tiempo relativo ("hace 2 horas", "en 3 días")
+- ✅ `businessDays` - Cálculo de días hábiles
 
-#### **/utils/navigation** 🔄 (1/3 implementado)
+#### **/utils/navigation** ✅ (3/3 implementado)
 - ✅ `urlBuilder.ts` - Construir URLs básicas
-- [ ] `instanceUrlBuilder` - Construir URLs de instancias específicas
-- [ ] `navigationService` - Servicio centralizado
-- [ ] `routeHelpers` - Helpers para react-router
+- ✅ `instanceUrlBuilder` - Construir URLs de instancias específicas
+- ✅ `navigationService` - Servicio centralizado de navegación
+- ✅ `routeHelpers` - Helpers para react-router (query params, history)
 
-### 🔧 **Proceso de Implementación:**
+### 🧪 **Validación de Calidad**
+- ✅ **Build:** `npm run build` - Sin errores de TypeScript
+- ✅ **Tests:** 60/60 tests pasando en hooks y utils implementados
+- ✅ **Type Safety:** Todos los tipos correctamente definidos
+- ✅ **Performance:** Hooks optimizados con useCallback/useEffect apropiados
 
 **Paso 1: Análisis de uso actual**
 ```bash
@@ -1044,6 +1055,312 @@ npm run dev
 
 ---
 
+## 🎯 **FASE 9: DASHBOARD INTEGRATION - COMPONENTE DASHBOARD COMO MINI-PROGRAMA** 🆕
+
+### **Objetivo:** Convertir los dashboards existentes en componentes reutilizables del Design System
+**Duración:** 4-6 semanas  
+**Fecha de inicio:** Febrero 15, 2026  
+**Responsable:** Arquitecto Frontend + Equipo Dashboard  
+**Estado:** PLANIFICADO - Pendiente kickoff
+
+### 📋 **Contexto y Motivación**
+
+**Problema actual:**
+- Dashboards implementados como aplicaciones separadas
+- 27 dependencias Radix UI duplicadas en cada dashboard
+- Lógica de navegación y layout repetida
+- Dificultad para mantener consistencia visual
+- Tiempo de desarrollo alto para nuevos dashboards
+
+**Solución propuesta:**
+- Dashboard como componente del Design System
+- Arquitectura de mini-programa modular
+- Carga dinámica de módulos por industria
+- Sistema de navegación unificado
+- Configuración declarativa de dashboards
+
+### 🏗️ **Arquitectura del Dashboard Component**
+
+#### **1. DashboardProvider - Contexto Principal**
+```typescript
+interface DashboardConfig {
+  industry: 'erp' | 'health' | 'vet';
+  modules: ModuleConfig[];
+  navigation: NavigationConfig;
+  theme: ThemeConfig;
+  permissions: PermissionConfig;
+}
+
+interface DashboardProviderProps {
+  config: DashboardConfig;
+  children: React.ReactNode;
+}
+
+// Uso en aplicaciones
+<DashboardProvider config={dashboardConfig}>
+  <Dashboard />
+</DashboardProvider>
+```
+
+#### **2. Dashboard Component - Layout Principal**
+```typescript
+interface DashboardProps {
+  variant?: 'sidebar' | 'topbar' | 'minimal';
+  showBreadcrumb?: boolean;
+  headerActions?: React.ReactNode;
+  className?: string;
+}
+
+// Arquitectura modular
+<Dashboard variant="sidebar">
+  <Dashboard.Header actions={<Button>Nuevo</Button>} />
+  <Dashboard.Sidebar sections={navigationSections} />
+  <Dashboard.Content>
+    <Dashboard.Breadcrumb />
+    {children}
+  </Dashboard.Content>
+</Dashboard>
+```
+
+#### **3. Sistema de Módulos Dinámicos**
+```typescript
+interface ModuleConfig {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  path: string;
+  component: React.ComponentType;
+  permissions?: string[];
+  industry?: IndustryType[];
+}
+
+// Combo selector de módulos
+<ModuleSelector
+  modules={availableModules}
+  currentModule={activeModule}
+  onModuleChange={handleModuleChange}
+  placeholder="Seleccionar módulo..."
+/>
+
+// Carga dinámica
+const loadModule = async (moduleId: string) => {
+  const module = await import(`./modules/${moduleId}`);
+  return module.default;
+};
+```
+
+### 📋 **Componentes del Dashboard System**
+
+#### **Layout Components**
+- ✅ `DashboardLayout` - Layout principal con sidebar/header
+- ✅ `UniversalSidebar` - Sidebar configurable con secciones
+- ✅ `UniversalTopbar` - Header superior con notificaciones/usuario
+- ✅ `ModuleSidebar` - Sidebar específico por módulo
+
+#### **Navigation Components**
+- ✅ `Breadcrumb` - Navegación jerárquica
+- ✅ `NavLink` - Enlaces de navegación con estado activo
+- ✅ `NavigationDebugPanel` - Panel de debug para desarrollo
+
+#### **Dashboard Components**
+- ✅ `KPICard` - Tarjetas de métricas KPIs
+- ✅ `StatusBadge` - Badges de estado
+- ✅ `LoadingSkeleton` - Estados de carga
+- ✅ `EmptyInstancesState` - Estados vacíos
+
+#### **Business Logic Components**
+- ✅ `ModuleCard` - Tarjetas de módulos disponibles
+- ✅ `CorsErrorAlert` - Manejo de errores CORS
+- ✅ `GlobalLoader` - Loader global de aplicación
+
+### 🔄 **Migración de Dashboards Existentes**
+
+#### **Dashboard Core (Orchestrator)**
+**Ubicación:** `src/01.Core/Farutech/Frontend/Dashboard/`
+**Estado:** ✅ Implementado - Listo para migración
+
+**Componentes a migrar:**
+- `DashboardLayout` → `@farutech/design-system/Dashboard`
+- `DashboardSidebar` → `@farutech/design-system/Dashboard.Sidebar`
+- `DashboardHeader` → `@farutech/design-system/Dashboard.Header`
+- Navegación por industria → Sistema de módulos dinámicos
+
+#### **Dashboard Apps (Tenant)**
+**Ubicación:** `src/02.Apps/Frontend/Dashboard/`
+**Estado:** ✅ Implementado - Listo para migración
+
+**Componentes a migrar:**
+- `UniversalDashboardLayout` → `@farutech/design-system/UniversalDashboard`
+- `UniversalSidebar` → `@farutech/design-system/UniversalSidebar`
+- `UniversalTopbar` → `@farutech/design-system/UniversalTopbar`
+- Sistema de navegación → Configuración declarativa
+
+### 📊 **Plan de Implementación**
+
+#### **Semana 1-2: Análisis y Diseño (Feb 15-28, 2026)**
+```typescript
+// Tareas principales
+1. ✅ Análisis de componentes existentes en ambos dashboards
+2. ✅ Diseño de API unificada para Dashboard component
+3. ✅ Definición de interfaces TypeScript
+4. ✅ Arquitectura de módulos dinámicos
+5. ✅ Sistema de configuración declarativa
+```
+
+#### **Semana 3-4: Implementación Core (Mar 1-14, 2026)**
+```typescript
+// Desarrollo del componente base
+1. 🔄 DashboardProvider con contexto unificado
+2. 🔄 DashboardLayout principal
+3. 🔄 Sistema de navegación configurable
+4. 🔄 ModuleSelector con carga dinámica
+5. 🔄 Migración de componentes básicos
+```
+
+#### **Semana 5-6: Integración y Testing (Mar 15-28, 2026)**
+```typescript
+// Integración en aplicaciones existentes
+1. ⏳ Migración del Dashboard Core
+2. ⏳ Migración del Dashboard Apps
+3. ⏳ Tests de integración end-to-end
+4. ⏳ Optimización de performance
+5. ⏳ Documentación y ejemplos
+```
+
+### 🎯 **Beneficios Esperados**
+
+#### **Técnicos**
+- **Reducción de bundle:** -60% eliminando dependencias duplicadas
+- **Mantenimiento:** Un solo lugar para actualizar componentes
+- **Performance:** Componentes optimizados y lazy-loaded
+- **Type Safety:** APIs unificadas y bien tipadas
+
+#### **De Desarrollo**
+- **Velocidad:** Nuevo dashboard en horas, no días
+- **Consistencia:** Diseño unificado en toda la plataforma
+- **Reutilización:** Componentes probados y documentados
+- **Escalabilidad:** Fácil agregar nuevos módulos/industrias
+
+#### **De Producto**
+- **Experiencia:** Navegación consistente y fluida
+- **Personalización:** Configuración por industria/módulo
+- **Extensibilidad:** Nuevo módulos sin tocar código core
+- **Mantenibilidad:** Actualizaciones automáticas vía Design System
+
+### 🧪 **Testing Strategy**
+
+#### **Unit Tests**
+- Componentes Dashboard con diferentes configuraciones
+- Sistema de módulos dinámicos
+- Navegación y estado
+- Performance y memoria
+
+#### **Integration Tests**
+- Migración completa de dashboards existentes
+- E2E con navegación real
+- Carga dinámica de módulos
+- Estados de error y recuperación
+
+#### **Visual Regression**
+- Storybook scenarios para diferentes industrias
+- Responsive design en múltiples breakpoints
+- Tema light/dark consistency
+- Accesibilidad compliance
+
+### 📋 **Criterios de Éxito**
+
+#### **Funcionales**
+- ✅ Dashboard Core migrado completamente
+- ✅ Dashboard Apps migrado completamente
+- ✅ Todos los módulos cargan dinámicamente
+- ✅ Navegación funciona en ambas aplicaciones
+- ✅ Configuración declarativa operativa
+
+#### **Técnicos**
+- ✅ Bundle size reducido >50%
+- ✅ Tests pasando >95%
+- ✅ Performance <100ms first paint
+- ✅ TypeScript strict mode compliant
+- ✅ Storybook documentation completa
+
+#### **De Negocio**
+- ✅ Tiempo de desarrollo reducido 70%
+- ✅ Consistencia visual 100%
+- ✅ Mantenimiento centralizado
+- ✅ Escalabilidad para nuevas industrias
+
+### 🔧 **Herramientas y Dependencias**
+
+#### **Nuevas Dependencias**
+```json
+{
+  "framer-motion": "^11.0.0",     // Animaciones suaves
+  "react-router-dom": "^6.0.0",   // Navegación declarativa
+  "@loadable/component": "^5.0.0" // Code splitting
+}
+```
+
+#### **Configuración Build**
+```typescript
+// vite.config.ts - Code splitting por módulos
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'dashboard-core': ['src/components/dashboard'],
+          'dashboard-modules': ['src/modules'],
+        }
+      }
+    }
+  }
+});
+```
+
+### 📅 **Calendario Detallado**
+
+```
+Feb 15-21: Diseño de arquitectura y APIs
+Feb 22-28: Implementación de componentes base
+Mar 1-7:   Sistema de módulos dinámicos
+Mar 8-14:  DashboardProvider y contexto
+Mar 15-21: Migración Dashboard Core
+Mar 22-28: Migración Dashboard Apps + Testing
+Mar 29-Apr 4: Optimización y documentación
+```
+
+### 🎯 **Riesgos y Mitigaciones**
+
+| **Riesgo** | **Probabilidad** | **Mitigación** |
+|------------|------------------|---------------|
+| **Complejidad migración** | Alta | Migración gradual + tests paralelos |
+| **Performance impacto** | Media | Code splitting + lazy loading |
+| **Consistencia visual** | Baja | Design tokens unificados |
+| **Curva aprendizaje** | Media | Documentación + ejemplos |
+| **Dependencias legacy** | Alta | Análisis completo + refactor plan |
+
+### 📊 **Métricas de Seguimiento**
+
+#### **KPIs Técnicos**
+- **Bundle reduction:** Objetivo >50% vs dashboards separados
+- **Load time:** <2s first meaningful paint
+- **Test coverage:** >95% para componentes dashboard
+- **Type errors:** 0 en strict mode
+
+#### **KPIs de Desarrollo**
+- **Development velocity:** +70% velocidad desarrollo
+- **Code duplication:** <5% duplicación
+- **Maintenance cost:** -60% costo mantenimiento
+- **Time to deploy:** <1 hora para nuevos módulos
+
+#### **KPIs de Producto**
+- **User satisfaction:** >90% (encuestas)
+- **Feature adoption:** >95% módulos utilizados
+- **Error rate:** <0.1% errores de navegación
+- **Performance score:** >95 Lighthouse
+
+---
+
 **Última actualización:** Febrero 3, 2026  
-**Próxima revisión:** Febrero 10, 2026  
-**Estado del plan:** ACTIVO 🚀 - EN EJECUCIÓN
+**Próxima revisión:** Febrero 15, 2026 (Kickoff Fase 9)  
+**Estado del plan:** ACTIVO 🚀 - DASHBOARD INTEGRATION PLANIFICADO

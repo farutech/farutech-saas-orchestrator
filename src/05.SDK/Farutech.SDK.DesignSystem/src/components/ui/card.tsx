@@ -32,6 +32,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', elevation = 1, padding = 'md', ...props }, ref) => (
     <div
       ref={ref}
+      style={{ fontFamily: 'var(--ft-font-family, Inter, system-ui, sans-serif)', color: 'var(--ft-color-text, #0F1724)' }}
       className={cn(
         'rounded-lg overflow-hidden',
         variantClasses[variant],

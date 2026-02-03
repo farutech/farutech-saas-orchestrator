@@ -258,6 +258,7 @@ export const DashboardCard: Story = {
         </CardContent>
       </>
     ),
+  },
 };
 
 

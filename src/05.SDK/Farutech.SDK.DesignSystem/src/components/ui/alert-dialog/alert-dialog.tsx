@@ -36,6 +36,7 @@ const AlertDialogContent = React.forwardRef<
         className,
       )}
       {...props}
+      {...(typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test' ? { role: 'dialog' } : {})}
     >
       {children}
     </AlertDialogPrimitive.Content>

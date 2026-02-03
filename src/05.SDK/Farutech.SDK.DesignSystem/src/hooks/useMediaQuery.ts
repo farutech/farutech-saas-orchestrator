@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useLayoutEffect, useCallback } from 'react';
 
 export type Breakpoint = 'mobile' | 'tablet' | 'desktop' | 'wide';
 
@@ -57,7 +57,7 @@ export const useMediaQuery = (options: MediaQueryOptions = {}): UseMediaQueryRet
     return window.matchMedia(query).matches;
   }, [defaultValue]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Skip on SSR unless explicitly enabled
     if (typeof window === 'undefined' && !ssr) {
       return;
@@ -90,18 +90,36 @@ export const useMediaQuery = (options: MediaQueryOptions = {}): UseMediaQueryRet
     const handleDesktopChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     const handleWideChange = (e: MediaQueryListEvent) => setIsWide(e.matches);
 
-    // Add listeners
-    mobileQuery.addEventListener('change', handleMobileChange);
-    tabletQuery.addEventListener('change', handleTabletChange);
-    desktopQuery.addEventListener('change', handleDesktopChange);
-    wideQuery.addEventListener('change', handleWideChange);
+    // Add listeners (support both modern and legacy APIs and be defensive)
+    const tryAdd = (q: any, h: (e: MediaQueryListEvent) => void) => {
+      try {
+        if (typeof q.addEventListener === 'function') q.addEventListener('change', h);
+        if (typeof q.addListener === 'function') q.addListener(h);
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    tryAdd(mobileQuery, handleMobileChange);
+    tryAdd(tabletQuery, handleTabletChange);
+    tryAdd(desktopQuery, handleDesktopChange);
+    tryAdd(wideQuery, handleWideChange);
 
     // Cleanup
     return () => {
-      mobileQuery.removeEventListener('change', handleMobileChange);
-      tabletQuery.removeEventListener('change', handleTabletChange);
-      desktopQuery.removeEventListener('change', handleDesktopChange);
-      wideQuery.removeEventListener('change', handleWideChange);
+      const tryRemove = (q: any, h: (e: MediaQueryListEvent) => void) => {
+        try {
+          if (typeof q.removeEventListener === 'function') q.removeEventListener('change', h);
+          if (typeof q.removeListener === 'function') q.removeListener(h);
+        } catch (e) {
+          // ignore
+        }
+      };
+
+      tryRemove(mobileQuery, handleMobileChange);
+      tryRemove(tabletQuery, handleTabletChange);
+      tryRemove(desktopQuery, handleDesktopChange);
+      tryRemove(wideQuery, handleWideChange);
     };
   }, [ssr, defaultValue]);
 

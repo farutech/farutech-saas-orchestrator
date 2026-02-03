@@ -9,7 +9,8 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
-    <DayPicker
+    <div role="application" className={cn(className)}>
+      <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
@@ -49,6 +50,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
       }}
       {...props}
     />
+    </div>
   );
 }
 Calendar.displayName = "Calendar";

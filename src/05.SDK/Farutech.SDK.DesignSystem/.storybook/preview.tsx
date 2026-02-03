@@ -1,58 +1,18 @@
-import '../src/styles/globals.css';
-import type { Preview } from '@storybook/react';
-
-const preview: Preview = {
-  parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
-    controls: { matchers: { color: /(background|color)$/i, date: /Date$/ } },
-  },
-};
-
-export default preview;
 import React from 'react';
-import type { Preview } from '@storybook/react';
 import '../src/styles/globals.css';
+import type { Preview } from '@storybook/react';
 
-const withDesignWrapper = (Story: any, context: any) => {
-  const theme = context.globals?.theme || 'light';
-  return (
-    <div className={theme === 'dark' ? 'dark' : ''}>
-      <div className="min-h-screen bg-background text-foreground p-6">
-        <Story />
-      </div>
+export const parameters: Preview['parameters'] = {
+  actions: { argTypesRegex: '^on[A-Z].*' },
+  controls: { matchers: { date: /Date$/, color: /(background|color)$/i } },
+};
+
+export const decorators = [
+  (Story: any) => (
+    <div style={{ padding: 12 }}>
+      <Story />
     </div>
-  );
-};
+  ),
+];
 
-const preview: Preview = {
-  globalTypes: {
-    theme: {
-      name: 'Theme',
-      description: 'Global theme for components',
-      defaultValue: 'light',
-      toolbar: {
-        icon: 'mirror',
-        items: [
-          { value: 'light', title: 'Light' },
-          { value: 'dark', title: 'Dark' },
-        ],
-      },
-    },
-  },
-  decorators: [withDesignWrapper],
-  parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
-      },
-    },
-    docs: {
-      toc: true,
-    },
-  },
-  tags: ['autodocs'],
-};
-
-export default preview;
+export default { parameters };

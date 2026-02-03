@@ -85,9 +85,9 @@ describe('Popover', () => {
       </Popover>
     );
 
-    const content = container.querySelector('.custom-popover');
+    const content = document.querySelector('.custom-popover');
     expect(content).toBeInTheDocument();
-    expect(screen.getByText('Custom styled content')).toBeInTheDocument();
+    expect(screen.getAllByText('Custom styled content')[0]).toBeInTheDocument();
   });
 
   test('handles popover with complex content', () => {
