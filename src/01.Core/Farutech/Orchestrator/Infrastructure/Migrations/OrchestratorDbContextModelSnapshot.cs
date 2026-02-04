@@ -819,6 +819,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("DatabaseInstanceId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("DeploymentType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -850,6 +853,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ThemeColor")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

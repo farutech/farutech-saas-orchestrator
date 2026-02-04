@@ -56,6 +56,9 @@ public class FarutechDataSeeder(
             // Seed subscription plans and their feature associations
             await SeedSubscriptionPlansAsync();
 
+            // Seed sample data for development/demo
+            await SeedSampleDataAsync();
+
             // Solo seed de roles y SuperAdmin
             await SeedRolesAsync();
             await SeedSuperAdminUserAsync();
@@ -536,5 +539,122 @@ public class FarutechDataSeeder(
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("✅ Asociación de features a planes completada");
+    }
+
+    private async Task SeedSampleDataAsync()
+    {
+        _logger.LogInformation("🏢 Iniciando seeding de datos de ejemplo...");
+
+        // Seed sample customers and tenants for development/demo
+        await SeedSampleCustomersAsync();
+        await SeedSampleTenantsAsync();
+
+        _logger.LogInformation("✅ Seeding de datos de ejemplo completado");
+    }
+
+    private async Task SeedSampleCustomersAsync()
+    {
+        var sampleCustomers = new[]
+        {
+            new Domain.Entities.Tenants.Customer
+            {
+                Id = new Guid("30000000-0000-0000-0001-000000000001"),
+                Code = "DEMO001",
+                CompanyName = "Tienda Demo S.A.",
+                TaxId = "12345678-9",
+                Email = "contacto@tiendademo.com",
+                Phone = "+56912345678",
+                Address = "Av. Providencia 123, Santiago, Chile",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Domain.Entities.Tenants.Customer
+            {
+                Id = new Guid("30000000-0000-0000-0001-000000000002"),
+                Code = "FARUTECH001",
+                CompanyName = "Farutech SpA",
+                TaxId = "87654321-0",
+                Email = "admin@farutech.com",
+                Phone = "+56987654321",
+                Address = "Calle Tech 456, Santiago, Chile",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            }
+        };
+
+        foreach (var customer in sampleCustomers)
+        {
+            var existing = await _context.Customers.FirstOrDefaultAsync(c => c.Code == customer.Code);
+            if (existing == null)
+            {
+                _context.Customers.Add(customer);
+                _logger.LogInformation($"✅ Cliente de ejemplo creado: {customer.CompanyName}");
+            }
+            else
+            {
+                _logger.LogInformation($"⏭️  Cliente ya existe: {customer.CompanyName}, omitiendo...");
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedSampleTenantsAsync()
+    {
+        var sampleTenants = new[]
+        {
+            new Domain.Entities.Tenants.TenantInstance
+            {
+                Id = new Guid("40000000-0000-0000-0001-000000000001"),
+                CustomerId = new Guid("30000000-0000-0000-0001-000000000001"), // Tienda Demo
+                TenantCode = "demo001",
+                Code = "DEMO001_POS",
+                Name = "Tienda Demo - POS Principal",
+                DeploymentType = "Shared",
+                ApplicationType = "FaruPOS",
+                Status = "Active",
+                ConnectionString = "Host=localhost;Database=farutech_demo001;Username=postgres;Password=password",
+                ApiBaseUrl = "https://api-demo.farutech.com",
+                ActiveFeaturesJson = "{\"pos\": true, \"inventory\": true}",
+                ThemeColor = "#3B82F6",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            },
+            new Domain.Entities.Tenants.TenantInstance
+            {
+                Id = new Guid("40000000-0000-0000-0001-000000000002"),
+                CustomerId = new Guid("30000000-0000-0000-0001-000000000002"), // Farutech
+                TenantCode = "farutech001",
+                Code = "FARUTECH001_DEV",
+                Name = "Farutech - Desarrollo",
+                DeploymentType = "Dedicated",
+                ApplicationType = "Orchestrator",
+                Status = "Active",
+                ConnectionString = "Host=localhost;Database=farutech_dev;Username=postgres;Password=password",
+                ApiBaseUrl = "https://api-dev.farutech.com",
+                ActiveFeaturesJson = "{\"orchestrator\": true, \"billing\": true, \"monitoring\": true}",
+                ThemeColor = "#10B981",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            }
+        };
+
+        foreach (var tenant in sampleTenants)
+        {
+            var existing = await _context.TenantInstances.FirstOrDefaultAsync(t => t.TenantCode == tenant.TenantCode);
+            if (existing == null)
+            {
+                _context.TenantInstances.Add(tenant);
+                _logger.LogInformation($"✅ Tenant de ejemplo creado: {tenant.Name}");
+            }
+            else
+            {
+                _logger.LogInformation($"⏭️  Tenant ya existe: {tenant.Name}, omitiendo...");
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

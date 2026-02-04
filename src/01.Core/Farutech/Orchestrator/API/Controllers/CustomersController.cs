@@ -15,6 +15,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ApiExplorerSettings(GroupName = "organizations")]
 public class CustomersController(OrchestratorDbContext context,
                                  IAuthService authService,
                                  ILogger<CustomersController> logger) : ControllerBase

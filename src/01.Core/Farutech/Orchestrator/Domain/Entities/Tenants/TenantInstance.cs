@@ -42,6 +42,17 @@ public class TenantInstance : BaseEntity
     public DateTime? ProvisionedAt { get; set; }
     public DateTime? LastAccessAt { get; set; }
     
+    /// <summary>
+    /// Color personalizado del tema para la aplicación
+    /// Heredable de la organización
+    /// </summary>
+    public string? ThemeColor { get; set; }
+    
+    /// <summary>
+    /// ID de la instancia de base de datos dedicada (nullable para shared)
+    /// </summary>
+    public Guid? DatabaseInstanceId { get; set; }
+    
     // Navigation
     public Customer Customer { get; set; } = null!;
 
