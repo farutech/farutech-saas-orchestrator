@@ -181,6 +181,12 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICatalogService, Farutech.Orchestrator.Infrastructure.Services.CatalogService>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
+builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
+builder.Services.AddScoped<IResolveService, ResolveService>();
+
+// Generic repositories for billing entities
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
 // Database provisioner: creates DB/schema and returns tenant-scoped connection string
 builder.Services.AddScoped<IDatabaseProvisioner, DatabaseProvisioner>();
@@ -223,7 +229,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Handle circular references in JSON serialization
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -239,7 +251,50 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Farutech SaaS Orchestrator API",
         Version = "v1",
-        Description = "Hybrid API (REST + GraphQL) for multi-tenant SaaS orchestration with JWT authentication"
+        Description = "API híbrida (REST + GraphQL) para orquestación multi-tenant SaaS con autenticación JWT. Gestiona organizaciones, aplicaciones y facturación."
+    });
+
+    // Documentos separados por dominio
+    options.SwaggerDoc("auth", new OpenApiInfo
+    {
+        Title = "Autenticación",
+        Version = "v1",
+        Description = "Endpoints para login, registro y gestión de sesiones multi-tenant"
+    });
+
+    options.SwaggerDoc("organizations", new OpenApiInfo
+    {
+        Title = "Organizaciones",
+        Version = "v1",
+        Description = "Gestión de organizaciones (customers) y membresías de usuarios"
+    });
+
+    options.SwaggerDoc("applications", new OpenApiInfo
+    {
+        Title = "Aplicaciones",
+        Version = "v1",
+        Description = "Gestión de instancias de aplicaciones por organización"
+    });
+
+    options.SwaggerDoc("marketplace", new OpenApiInfo
+    {
+        Title = "Marketplace",
+        Version = "v1",
+        Description = "Catálogo de aplicaciones disponibles y planes de suscripción"
+    });
+
+    options.SwaggerDoc("billing", new OpenApiInfo
+    {
+        Title = "Facturación",
+        Version = "v1",
+        Description = "Gestión de suscripciones, facturas y pagos"
+    });
+
+    options.SwaggerDoc("workers", new OpenApiInfo
+    {
+        Title = "Workers",
+        Version = "v1",
+        Description = "Monitoreo de colas de procesamiento y workers asíncronos"
     });
 
     // Configurar autenticación JWT en Swagger
@@ -250,7 +305,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT Authorization header. Ejemplo: \"Bearer {token}\""
+        Description = "Token JWT de autorización. Ejemplo: \"Bearer {token}\""
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -266,6 +321,22 @@ builder.Services.AddSwaggerGen(options =>
             },
             Array.Empty<string>()
         }
+    });
+
+    // Asignar controladores a documentos
+    options.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        var groupName = apiDesc.GroupName ?? apiDesc.ActionDescriptor.RouteValues["controller"];
+        return docName switch
+        {
+            "auth" => groupName == "Auth",
+            "organizations" => groupName == "Customers" || groupName == "Applications",
+            "applications" => groupName == "Instances" || groupName == "Applications",
+            "marketplace" => groupName == "Marketplace" || groupName == "Catalog",
+            "billing" => groupName == "Billing",
+            "workers" => groupName == "Workers",
+            _ => docName == "v1"
+        };
     });
 });
 
@@ -364,7 +435,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Farutech Orchestrator API v1");
+        c.SwaggerEndpoint("/swagger/auth/swagger.json", "Autenticación");
+        c.SwaggerEndpoint("/swagger/organizations/swagger.json", "Organizaciones");
+        c.SwaggerEndpoint("/swagger/applications/swagger.json", "Aplicaciones");
+        c.SwaggerEndpoint("/swagger/marketplace/swagger.json", "Marketplace");
+        c.SwaggerEndpoint("/swagger/billing/swagger.json", "Facturación");
+        c.SwaggerEndpoint("/swagger/workers/swagger.json", "Workers");
         c.RoutePrefix = "swagger";
+        c.DocumentTitle = "Farutech SaaS Orchestrator API";
+        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+        c.DefaultModelsExpandDepth(-1); // Ocultar modelos por defecto
     });
 }
 
@@ -376,6 +456,9 @@ app.UseCors("AllowFrontend");
 Console.WriteLine("Setting up authentication and authorization...");
 try
 {
+    // Middleware de subdominios (debe ir antes de autenticación)
+    app.UseMiddleware<SubdomainMiddleware>();
+    
     // IMPORTANTE: El orden es crítico - CORS debe estar antes de Authentication
     app.UseAuthentication();
     app.UseAuthorization();

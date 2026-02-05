@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     [DbContext(typeof(OrchestratorDbContext))]
-    [Migration("20260131052736_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260204220117_ConsolidatedSetup")]
+    partial class ConsolidatedSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -822,6 +822,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("DatabaseInstanceId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("DeploymentType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -853,6 +856,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ThemeColor")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

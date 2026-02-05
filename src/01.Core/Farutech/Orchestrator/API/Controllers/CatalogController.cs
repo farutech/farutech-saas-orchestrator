@@ -12,6 +12,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Requiere autenticación
+[ApiExplorerSettings(GroupName = "Catalog")]
 public class CatalogController(ICatalogService catalogService,
                                ILogger<CatalogController> logger) : ControllerBase
 {

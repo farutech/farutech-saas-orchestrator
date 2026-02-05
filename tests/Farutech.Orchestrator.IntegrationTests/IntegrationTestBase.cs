@@ -9,21 +9,18 @@ using Farutech.Orchestrator.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Testcontainers.Nats;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Farutech.Orchestrator.IntegrationTests;
 
 /// <summary>
-/// Base class for integration tests with real database and message bus
+/// Base class for integration tests with SQLite in-memory database
 /// </summary>
 public class IntegrationTestBase : IAsyncLifetime
 {
     protected HttpClient _client = null!;
-    protected PostgreSqlContainer _postgresContainer = null!;
-    protected NatsContainer _natsContainer = null!;
     protected WebApplicationFactory<Farutech.Orchestrator.API.TestStartup> _factory = null!;
 
     // Test data IDs
@@ -35,53 +32,26 @@ public class IntegrationTestBase : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Start PostgreSQL container
-        _postgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
-            .WithDatabase("test_farutec_db")
-            .WithUsername("test_farutec_admin")
-            .WithPassword("TestSecurePassword123")
-            .WithCleanUp(true)
-            .Build();
-
-        await _postgresContainer.StartAsync();
-
-        // Start NATS container
-        _natsContainer = new NatsBuilder()
-            .WithImage("nats:2.10-alpine")
-            .WithCleanUp(true)
-            .Build();
-
-        await _natsContainer.StartAsync();
-
-        // Configure test web application
+        // Configure test web application with SQLite in-memory database
         _factory = new WebApplicationFactory<Farutech.Orchestrator.API.TestStartup>()
             .WithWebHostBuilder(builder =>
             {
+                builder.ConfigureAppConfiguration((context, config) =>
+                {
+                    // Override configuration for tests
+                    config.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["Jwt:SecretKey"] = "TestSuperSecretKeyForIntegrationTests12345678901234567890",
+                        ["Jwt:Issuer"] = "TestIssuer",
+                        ["Jwt:Audience"] = "TestAudience",
+                        ["Jwt:ExpiryMinutes"] = "60",
+                        ["ConnectionStrings:DefaultConnection"] = $"DataSource={Path.GetTempFileName()}.db"
+                    });
+                });
+
                 builder.ConfigureServices(services =>
                 {
-                    // Remove the existing DbContext registration
-                    var descriptor = services.SingleOrDefault(
-                        d => d.ServiceType == typeof(DbContextOptions<OrchestratorDbContext>));
-                    if (descriptor != null)
-                    {
-                        services.Remove(descriptor);
-                    }
-
-                    // Add test database
-                    services.AddDbContext<OrchestratorDbContext>(options =>
-                        options.UseNpgsql(_postgresContainer.GetConnectionString()));
-
-                    // Override NATS connection - commented out for simplified testing
-                    // services.AddSingleton<INatsConnection>(sp =>
-                    // {
-                    //     var opts = NatsOpts.Default with
-                    //     {
-                    //         Url = _natsContainer.GetConnectionString(),
-                    //         ConnectTimeout = TimeSpan.FromSeconds(5)
-                    //     };
-                    //     return new NatsConnection(opts);
-                    // });
+                    // The TestStartup already configures SQLite, no need to override
                 });
             });
 
@@ -95,12 +65,7 @@ public class IntegrationTestBase : IAsyncLifetime
     {
         _client?.Dispose();
         _factory?.Dispose();
-
-        if (_postgresContainer != null)
-            await _postgresContainer.DisposeAsync();
-
-        if (_natsContainer != null)
-            await _natsContainer.DisposeAsync();
+        await Task.CompletedTask; // Avoid async warning
     }
 
     /// <summary>
@@ -129,17 +94,21 @@ public class IntegrationTestBase : IAsyncLifetime
         await context.SaveChangesAsync();
         _testCustomerId = customer.Id;
 
-        // Create test product
-        var product = new Domain.Entities.Catalog.Product
+        // Get test product (created by migration)
+        var product = await context.Products.FirstOrDefaultAsync(p => p.Code == "FARUPOS");
+        if (product == null)
         {
-            Code = "FARUPOS",
-            Name = "Farutech POS",
-            Description = "Point of Sale System",
-            IsActive = true
-        };
-
-        context.Products.Add(product);
-        await context.SaveChangesAsync();
+            // Fallback: create test product if migration didn't create it
+            product = new Domain.Entities.Catalog.Product
+            {
+                Code = "FARUPOS",
+                Name = "Farutech POS",
+                Description = "Point of Sale System",
+                IsActive = true
+            };
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+        }
         _testProductId = product.Id;
 
         // Create test subscription plan
@@ -183,6 +152,22 @@ public class IntegrationTestBase : IAsyncLifetime
         };
 
         context.UserCompanyMemberships.Add(membership);
+        await context.SaveChangesAsync();
+
+        // Create test tenant instance
+        var tenantInstance = new TenantInstance
+        {
+            CustomerId = _testCustomerId,
+            TenantCode = "TEST001-001",
+            Code = "TEST001",
+            Name = "Test Tenant Instance",
+            DeploymentType = "Shared",
+            Status = "active",
+            ConnectionString = "Host=localhost;Database=test_db;Username=test;Password=test",
+            ProvisionedAt = DateTime.UtcNow
+        };
+
+        context.TenantInstances.Add(tenantInstance);
         await context.SaveChangesAsync();
     }
 

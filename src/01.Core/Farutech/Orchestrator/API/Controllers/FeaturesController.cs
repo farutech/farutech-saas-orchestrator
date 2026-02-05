@@ -14,6 +14,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ApiExplorerSettings(GroupName = "Features")]
 public class FeaturesController(OrchestratorDbContext context,
                                 IPermissionService permissionService,
                                 ILogger<FeaturesController> logger) : ControllerBase

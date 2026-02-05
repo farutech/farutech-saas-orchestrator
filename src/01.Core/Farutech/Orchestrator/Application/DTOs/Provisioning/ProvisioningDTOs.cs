@@ -36,6 +36,12 @@ public class ProvisionTenantRequest
     public string? Name { get; set; }
     
     /// <summary>
+    /// Color personalizado del tema para la aplicación
+    /// Heredable de la organización
+    /// </summary>
+    public string? ThemeColor { get; set; }
+    
+    /// <summary>
     /// Configuraciones personalizadas opcionales
     /// </summary>
     public Dictionary<string, object>? CustomFeatures { get; set; }

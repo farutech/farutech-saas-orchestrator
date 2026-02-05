@@ -88,6 +88,7 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
             Status = "provisioning",
             ConnectionString = $"Host=localhost;Database=tenant_{tenantCode};",
             ApiBaseUrl = apiBaseUrl,
+            ThemeColor = request.ThemeColor,
             ActiveFeaturesJson = "{}",
             CreatedBy = "system",
             CreatedAt = DateTime.UtcNow

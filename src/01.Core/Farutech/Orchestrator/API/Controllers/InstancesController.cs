@@ -12,6 +12,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[ApiExplorerSettings(GroupName = "Instances")]
 public class InstancesController(IInstanceService instanceService) : ControllerBase
 {
     private readonly IInstanceService _instanceService = instanceService;

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class ConsolidatedSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -214,6 +214,8 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     ActiveFeaturesJson = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
                     ProvisionedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     LastAccessAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ThemeColor = table.Column<string>(type: "text", nullable: true),
+                    DatabaseInstanceId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -780,6 +782,87 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 table: "Users",
                 column: "NormalizedUserName",
                 unique: true);
+
+            // Seed data for Products and Modules
+            migrationBuilder.Sql(@"
+                -- Insert Product: FaruPOS
+                INSERT INTO ""catalog"".""Products"" (""Id"", ""Code"", ""Name"", ""Description"", ""IsActive"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
+                VALUES (
+                    '00000000-0000-0000-0000-000000000001',
+                    'FARUPOS',
+                    'FaruPOS - Point of Sale',
+                    'Sistema de punto de venta completo con gestión de inventario, ventas, clientes y reportes. Ideal para retail, farmacias, restaurantes y más.',
+                    true,
+                    NOW(),
+                    'System',
+                    false
+                );
+
+                -- Insert Modules for FaruPOS
+                -- POS BASIC (Shared)
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
+                VALUES (
+                    '10000000-0000-0000-0000-000000000001',
+                    '00000000-0000-0000-0000-000000000001',
+                    'POS_BASIC_SHARED',
+                    'POS Básico (Compartido)',
+                    'Ventas, cobros y cierre de caja básico en servidor compartido. Límite de 50 ventas/día.',
+                    false,
+                    true,
+                    'Shared',
+                    NOW(),
+                    'System',
+                    false
+                );
+
+                -- INVENTORY BASIC (Shared)
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
+                VALUES (
+                    '10000000-0000-0000-0000-000000000002',
+                    '00000000-0000-0000-0000-000000000001',
+                    'INV_BASIC_SHARED',
+                    'Inventario Básico (Compartido)',
+                    'Consulta de stock y movimientos básicos en servidor compartido. Hasta 500 productos.',
+                    false,
+                    true,
+                    'Shared',
+                    NOW(),
+                    'System',
+                    false
+                );
+
+                -- REPORTS STANDARD (Shared)
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
+                VALUES (
+                    '10000000-0000-0000-0000-000000000003',
+                    '00000000-0000-0000-0000-000000000001',
+                    'RPT_STANDARD_SHARED',
+                    'Reportes Estándar (Compartido)',
+                    'Reportes predefinidos de ventas e inventario en servidor compartido.',
+                    false,
+                    true,
+                    'Shared',
+                    NOW(),
+                    'System',
+                    false
+                );
+
+                -- CUSTOMERS BASIC (Shared)
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
+                VALUES (
+                    '10000000-0000-0000-0000-000000000004',
+                    '00000000-0000-0000-0000-000000000001',
+                    'CUS_BASIC_SHARED',
+                    'Clientes Básico (Compartido)',
+                    'Gestión básica de clientes en servidor compartido. Hasta 1000 clientes.',
+                    false,
+                    true,
+                    'Shared',
+                    NOW(),
+                    'System',
+                    false
+                );
+            ");
         }
 
         /// <inheritdoc />

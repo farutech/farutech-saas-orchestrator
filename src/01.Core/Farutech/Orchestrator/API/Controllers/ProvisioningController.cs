@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Farutech.Orchestrator.Application.DTOs.Provisioning;
 using Farutech.Orchestrator.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Farutech.Orchestrator.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
+[ApiExplorerSettings(GroupName = "Provisioning")]
 public class ProvisioningController(IProvisioningService provisioningService,
                                     ILogger<ProvisioningController> logger) : ControllerBase
 {

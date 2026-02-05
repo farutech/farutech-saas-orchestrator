@@ -11,6 +11,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[ApiExplorerSettings(GroupName = "auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;

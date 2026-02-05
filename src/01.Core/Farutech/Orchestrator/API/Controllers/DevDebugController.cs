@@ -7,6 +7,7 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiController]
 [Route("api/dev/debug")]
 [AllowAnonymous]
+[ApiExplorerSettings(GroupName = "Development")]
 public class DevDebugController(IConfiguration configuration, ICatalogRepository catalogRepository) : ControllerBase
 {
     private readonly IConfiguration _configuration = configuration;
