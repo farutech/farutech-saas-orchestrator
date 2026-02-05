@@ -1,0 +1,118 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Farutech Orchestrator Metrics",
+    "tags": ["farutech", "orchestrator", "async"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(farutech_http_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}} {{status_code}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "HTTP Request Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(farutech_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(farutech_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Active Tasks",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "farutech_active_tasks",
+            "legendFormat": "{{task_type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Task Completion Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(farutech_tasks_completed_total[5m])",
+            "legendFormat": "{{task_type}} {{status}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Service Token Generation",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(farutech_service_auth_tokens_generated_total[5m])",
+            "legendFormat": "{{service_type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 }
+      },
+      {
+        "id": 6,
+        "title": "Service Token Validation",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(farutech_service_auth_tokens_validated_total[5m])",
+            "legendFormat": "{{service_type}} {{result}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
+      },
+      {
+        "id": 7,
+        "title": "Task Retry Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(farutech_task_retries_total[5m])",
+            "legendFormat": "{{task_type}} {{retry_reason}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 }
+      },
+      {
+        "id": 8,
+        "title": "Database Query Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(farutech_database_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile {{operation}} {{table}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 }
+      }
+    ],
+    "time": { "from": "now-1h", "to": "now" },
+    "timepicker": {},
+    "templating": { "list": [] },
+    "annotations": { "list": [] },
+    "refresh": "5s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}

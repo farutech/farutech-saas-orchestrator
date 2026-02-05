@@ -288,6 +288,7 @@ public class BillingService : IBillingService
         // Esto requeriría acceso a información de suscripciones activas
 
         _logger.LogWarning("GenerateSubscriptionInvoicesAsync not implemented yet");
+        await Task.CompletedTask; // Make method truly async
         return 0;
     }
 
@@ -346,6 +347,7 @@ public class BillingService : IBillingService
         // Generar referencia de pago única
         var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
         var random = new Random().Next(1000, 9999);
+        await Task.CompletedTask; // Make method truly async
         return $"PAY-{timestamp}-{random}";
     }
 

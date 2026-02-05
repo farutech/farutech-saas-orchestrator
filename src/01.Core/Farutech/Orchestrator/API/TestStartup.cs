@@ -148,6 +148,8 @@ public class TestStartup
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IMessageBus, NatsMessageBus>();
         services.AddScoped<IProvisioningService, ProvisioningService>();
+        services.AddScoped<ITaskTrackerService, TaskTrackerService>();
+        services.AddScoped<IAsyncOrchestrator, AsyncOrchestratorService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IInstanceService, InstanceService>();
         services.AddScoped<IInvitationService, InvitationService>();

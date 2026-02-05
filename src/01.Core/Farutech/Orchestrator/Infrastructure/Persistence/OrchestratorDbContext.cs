@@ -5,6 +5,7 @@ using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Domain.Entities.Billing;
+using Farutech.Orchestrator.Domain.Entities.Tasks;
 using Catalog = Farutech.Orchestrator.Domain.Entities.Catalog;
 using Tenants = Farutech.Orchestrator.Domain.Entities.Tenants;
 
@@ -27,6 +28,9 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<TenantInstance> TenantInstances => Set<TenantInstance>();
     public DbSet<Tenants.Subscription> TenantSubscriptions => Set<Tenants.Subscription>();
+
+    // Tasks Schema (Async processing)
+    public DbSet<ProvisionTask> ProvisionTasks => Set<ProvisionTask>();
 
     // Billing Schema (Multi-tenant)
     public DbSet<Invoice> Invoices => Set<Invoice>();
@@ -75,6 +79,7 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
         modelBuilder.Entity<Customer>().HasQueryFilter(c => !c.IsDeleted);
         modelBuilder.Entity<TenantInstance>().HasQueryFilter(t => !t.IsDeleted);
         modelBuilder.Entity<Tenants.Subscription>().HasQueryFilter(s => !s.IsDeleted);
+        modelBuilder.Entity<ProvisionTask>().HasQueryFilter(t => !t.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

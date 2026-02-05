@@ -40,15 +40,23 @@ IResourceBuilder<IResourceWithConnectionString>? postgres = null;
 
 if (isDev)
 {
-    postgres = builder
-        .AddPostgres("postgres", password: postgresPassword)
-        .WithDataVolume("farutech-postgres-data")
-        .WithEnvironment("POSTGRES_DB", "farutec_db")
-        .WithEnvironment("POSTGRES_USER", "postgres")
-        .WithEnvironment("POSTGRES_PASSWORD", postgresPassword)
-        .WithPgAdmin(c => c.WithImage("dpage/pgadmin4:latest"))
-        // Default connection for core orchestrator
-        .AddDatabase("DefaultConnection", "farutec_db");
+    try
+    {
+        postgres = builder
+            .AddPostgres("postgres", password: postgresPassword)
+            .WithDataVolume("farutech-postgres-data")
+            .WithEnvironment("POSTGRES_DB", "farutec_db")
+            .WithEnvironment("POSTGRES_USER", "postgres")
+            .WithEnvironment("POSTGRES_PASSWORD", postgresPassword)
+            .WithPgAdmin(c => c.WithImage("dpage/pgadmin4:latest"))
+            // Default connection for core orchestrator
+            .AddDatabase("DefaultConnection", "farutec_db");
+    }
+    catch
+    {
+        // Fallback to SQLite when Docker is not available
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = "Data Source=farutech_dev.db";
+    }
 }
 
 // ----------------------- NATS ------------------------

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Farutech.Orchestrator.Infrastructure.Persistence;
 
@@ -10,12 +12,27 @@ public class OrchestratorDbContextFactory : IDesignTimeDbContextFactory<Orchestr
 {
     public OrchestratorDbContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true)
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("DefaultConnection") 
+            ?? "Host=localhost;Port=5432;Database=farutec_db;Username=postgres;Password=SuperSecurePassword123";
+
         var optionsBuilder = new DbContextOptionsBuilder<OrchestratorDbContext>();
         
-        // Connection string for migrations (should match your database)
-        optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5432;Database=farutec_db;Username=postgres;Password=SuperSecurePassword123",
-            b => b.MigrationsAssembly(typeof(OrchestratorDbContext).Assembly.FullName));
+        if (connectionString.Contains("Data Source=") || connectionString.Contains(".db"))
+        {
+            // SQLite
+            optionsBuilder.UseSqlite(connectionString);
+        }
+        else
+        {
+            // PostgreSQL
+            optionsBuilder.UseNpgsql(connectionString, 
+                b => b.MigrationsAssembly(typeof(OrchestratorDbContext).Assembly.FullName));
+        }
 
         return new OrchestratorDbContext(optionsBuilder.Options);
     }

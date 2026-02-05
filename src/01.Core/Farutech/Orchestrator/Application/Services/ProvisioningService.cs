@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Farutech.Orchestrator.Application.DTOs.Provisioning;
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
+using Farutech.Orchestrator.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Farutech.Orchestrator.Application.Extensions;
 
@@ -12,12 +13,15 @@ namespace Farutech.Orchestrator.Application.Services;
 /// <summary>
 /// Service for managing tenant provisioning lifecycle
 /// </summary>
-public partial class ProvisioningService(IRepository repository, IMessageBus messageBus, IConfiguration configuration, IDatabaseProvisioner databaseProvisioner) : IProvisioningService
+public partial class ProvisioningService(IRepository repository, IMessageBus messageBus, IConfiguration configuration, IDatabaseProvisioner databaseProvisioner, IAsyncOrchestrator asyncOrchestrator, ITaskTrackerService taskTracker, IMetricsService metricsService) : IProvisioningService
 {
     private readonly IRepository _repository = repository;
     private readonly IMessageBus _messageBus = messageBus;
     private readonly IConfiguration _configuration = configuration;
     private readonly IDatabaseProvisioner _databaseProvisioner = databaseProvisioner;
+    private readonly IAsyncOrchestrator _asyncOrchestrator = asyncOrchestrator;
+    private readonly ITaskTrackerService _taskTracker = taskTracker;
+    private readonly IMetricsService _metricsService = metricsService;
 
     public async Task<ProvisionTenantResponse> ProvisionTenantAsync(ProvisionTenantRequest request)
     {
@@ -74,7 +78,7 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
         // Generate ApiBaseUrl based on environment configuration
         var apiBaseUrl = GenerateApiBaseUrl(tenantCode, product.Code);
 
-        // Create tenant instance
+        // Create tenant instance with PENDING status
         var tenantInstance = new TenantInstance
         {
             Id = Guid.NewGuid(),
@@ -85,7 +89,7 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
             Environment = "production", // production, staging, development
             ApplicationType = product.Code ?? "Generic",
             DeploymentType = request.DeploymentType, // Shared or Dedicated
-            Status = "provisioning",
+            Status = "PENDING_PROVISION", // Changed from "provisioning"
             ConnectionString = $"Host=localhost;Database=tenant_{tenantCode};",
             ApiBaseUrl = apiBaseUrl,
             ThemeColor = request.ThemeColor,
@@ -97,164 +101,144 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
         await _repository.AddTenantInstanceAsync(tenantInstance);
         await _repository.SaveChangesAsync();
 
-        // === DATABASE LIFECYCLE: Ensure DB exists and create schema for tenant ===
-        // Decide target database name depending on deployment type
-        var isDedicated = string.Equals(request.DeploymentType, "Dedicated", StringComparison.OrdinalIgnoreCase);
+        // Queue async provisioning task
+        var asyncResponse = await _asyncOrchestrator.QueueTenantProvisionAsync(tenantInstance.Id, request, "system"); // TODO: Get actual user ID
 
-        var commonDbName = _configuration["Database:CommonName"] ?? "farutech_db_customers";
-        var dedicatedPrefix = _configuration["Database:DedicatedPrefix"] ?? "farutech_db_customer_";
-
-        var targetDatabase = isDedicated
-            ? ($"{dedicatedPrefix}{customer.Code?.ToLowerInvariant()}")
-            : commonDbName;
-
-        // Schema name requested by product owner: use TenantCode from TenantInstances
-        var schemaName = tenantInstance.TenantCode;
-
-        try
-        {
-            var baseConn = _configuration.GetConnectionString("DefaultConnection")
-                           ?? throw new InvalidOperationException("DefaultConnection is not configured");
-
-            // Use infrastructure implementation to prepare DB/schema and obtain tenant-scoped connection string
-            var tenantConn = await _databaseProvisioner.PrepareDatabaseAndGetConnectionStringAsync(baseConn, targetDatabase, schemaName);
-
-            tenantInstance.ConnectionString = tenantConn;
-            tenantInstance.Status = "provisioning"; // reaffirm status
-            tenantInstance.UpdatedAt = DateTime.UtcNow;
-
-            await _repository.UpdateTenantInstanceAsync(tenantInstance);
-            await _repository.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            // If DB lifecycle fails, mark tenant as failed and rethrow
-            tenantInstance.Status = "provisioning_failed";
-            tenantInstance.UpdatedAt = DateTime.UtcNow;
-            tenantInstance.UpdatedBy = "system";
-            await _repository.UpdateTenantInstanceAsync(tenantInstance);
-            await _repository.SaveChangesAsync();
-
-            throw new InvalidOperationException($"Error provisioning database/schema: {ex.Message}", ex);
-        }
-
-        // Get modules included in the subscription plan (through features)
-        var moduleIds = subscriptionPlan.SubscriptionFeatures
-            .Where(sf => sf.IsEnabled && !sf.Feature.IsDeleted)
-            .Select(sf => sf.Feature.ModuleId)
-            .Distinct()
-            .ToList();
-
-        moduleIds.ThrowIfEmpty($"⚠️  El plan de suscripción '{subscriptionPlan.Name}' no tiene módulos/features habilitados. Verifique la configuración del plan.");
-
-        // Publish provisioning tasks to NATS for each module
-        foreach (var moduleId in moduleIds)
-        {
-            var taskId = Guid.NewGuid().ToString();
-                var task = new ProvisioningTaskMessage
-            {
-                TaskId = taskId,
-                TenantId = tenantInstance.Id.ToString(),
-                TaskType = "provision",
-                ModuleId = moduleId.ToString(),
-                Payload = new Dictionary<string, object>
-                {
-                    ["tenant_code"] = tenantCode,
-                    ["customer_id"] = customer.Id.ToString(),
-                    ["deployment_type"] = request.DeploymentType, // Shared or Dedicated
-                    ["subscription_plan_id"] = request.SubscriptionPlanId.ToString(),
-                    ["subscription_plan_name"] = subscriptionPlan.Name,
-                        ["custom_features"] = request.CustomFeatures ?? [],
-                        // Inform the worker which physical DB and schema were prepared (no credentials)
-                        ["database"] = targetDatabase,
-                        ["schema"] = schemaName
-                },
-                Attempt = 1,
-                MaxRetries = 5,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _messageBus.PublishProvisioningTaskAsync(task);
-        }
+        // Record metrics
+        _metricsService.RecordTaskCreated(ProvisionTaskType.TenantProvision, "pending");
 
         return new ProvisionTenantResponse
         {
             TenantInstanceId = tenantInstance.Id,
             TenantCode = tenantCode,
-            Status = "provisioning",
-            TaskId = Guid.NewGuid().ToString(),
-            CreatedAt = tenantInstance.CreatedAt
+            Status = "QUEUED",
+            TaskId = asyncResponse.TaskId,
+            CreatedAt = tenantInstance.CreatedAt,
+            Tracking = new TaskTrackingInfo
+            {
+                StatusUrl = $"/api/provisioning/tasks/{asyncResponse.TaskId}/status", // Relative URL, will be made absolute in controller
+                WebSocketUrl = $"/ws/tasks/{asyncResponse.TaskId}", // Relative URL, will be made absolute in controller
+                EstimatedCompletion = tenantInstance.CreatedAt.AddMinutes(5), // Estimated 5 minutes for provisioning
+                ProgressUpdateFrequency = 5
+            }
         };
     }
 
-    public async Task<bool> DeprovisionTenantAsync(Guid tenantInstanceId)
+    public async Task<DeprovisionTenantResponse> DeprovisionTenantAsync(Guid tenantInstanceId)
     {
         var tenant = await _repository.GetTenantInstanceByIdAsync(tenantInstanceId);
         if (tenant == null)
-            return false;
+            throw new InvalidOperationException($"Tenant instance {tenantInstanceId} not found");
 
-        tenant.Status = "deprovisioning";
+        tenant.Status = "PENDING_DEPROVISION";
         tenant.UpdatedAt = DateTime.UtcNow;
         tenant.UpdatedBy = "system";
 
         await _repository.UpdateTenantInstanceAsync(tenant);
         await _repository.SaveChangesAsync();
 
-        // Publish deprovision task
-        var task = new ProvisioningTaskMessage
+        // Queue async deprovision task
+        var asyncResponse = await _asyncOrchestrator.QueueTenantDeprovisionAsync(tenantInstanceId);
+
+        // Record metrics
+        _metricsService.RecordTaskCreated(ProvisionTaskType.TenantDeprovision, "pending");
+
+        return new DeprovisionTenantResponse
         {
-            TaskId = Guid.NewGuid().ToString(),
-            TenantId = tenantInstanceId.ToString(),
-            TaskType = "deprovision",
-            ModuleId = "all",
-            Payload = new Dictionary<string, object>
+            TenantInstanceId = tenantInstanceId,
+            TaskId = asyncResponse.TaskId,
+            InitiatedAt = DateTime.UtcNow,
+            Tracking = new TaskTrackingInfo
             {
-                ["tenant_code"] = tenant.TenantCode,
-                ["reason"] = "manual_deprovision"
-            },
-            Attempt = 1,
-            MaxRetries = 5,
-            CreatedAt = DateTime.UtcNow
+                StatusUrl = $"/api/provisioning/tasks/{asyncResponse.TaskId}/status",
+                WebSocketUrl = $"/ws/tasks/{asyncResponse.TaskId}",
+                EstimatedCompletion = DateTime.UtcNow.AddMinutes(3), // Estimated 3 minutes for deprovisioning
+                ProgressUpdateFrequency = 5
+            }
         };
-
-        await _messageBus.PublishProvisioningTaskAsync(task);
-
-        return true;
     }
 
-    public async Task<bool> UpdateTenantFeaturesAsync(Guid tenantInstanceId, Dictionary<string, object> features)
+    public async Task<UpdateFeaturesResponse> UpdateTenantFeaturesAsync(Guid tenantInstanceId, Dictionary<string, object> features)
     {
         var tenant = await _repository.GetTenantInstanceByIdAsync(tenantInstanceId);
         if (tenant == null)
-            return false;
+            throw new InvalidOperationException($"Tenant instance {tenantInstanceId} not found");
 
-        tenant.SetActiveFeatures(features);
+        // Mark as pending update - actual update will be done by worker
+        tenant.Status = "PENDING_FEATURE_UPDATE";
         tenant.UpdatedAt = DateTime.UtcNow;
         tenant.UpdatedBy = "system";
 
         await _repository.UpdateTenantInstanceAsync(tenant);
         await _repository.SaveChangesAsync();
 
-        // Publish update task
-        var task = new ProvisioningTaskMessage
+        // Queue async feature update task
+        var asyncResponse = await _asyncOrchestrator.QueueFeatureUpdateAsync(tenantInstanceId, features);
+
+        // Record metrics
+        _metricsService.RecordTaskCreated(ProvisionTaskType.FeatureUpdate, "pending");
+
+        return new UpdateFeaturesResponse
         {
-            TaskId = Guid.NewGuid().ToString(),
-            TenantId = tenantInstanceId.ToString(),
-            TaskType = "update",
-            ModuleId = "all",
-            Payload = new Dictionary<string, object>
+            TenantInstanceId = tenantInstanceId,
+            TaskId = asyncResponse.TaskId,
+            InitiatedAt = DateTime.UtcNow,
+            Tracking = new TaskTrackingInfo
             {
-                ["tenant_code"] = tenant.TenantCode,
-                ["features"] = features
-            },
-            Attempt = 1,
-            MaxRetries = 5,
-            CreatedAt = DateTime.UtcNow
+                StatusUrl = $"/api/provisioning/tasks/{asyncResponse.TaskId}/status",
+                WebSocketUrl = $"/ws/tasks/{asyncResponse.TaskId}",
+                EstimatedCompletion = DateTime.UtcNow.AddMinutes(2), // Estimated 2 minutes for feature updates
+                ProgressUpdateFrequency = 5
+            }
         };
+    }
 
-        await _messageBus.PublishProvisioningTaskAsync(task);
+    public async Task<TaskStatusResponse> GetTaskStatusAsync(string taskId)
+    {
+        var task = await _taskTracker.GetTaskAsync(taskId);
+        if (task == null)
+            throw new InvalidOperationException($"Task {taskId} not found");
 
-        return true;
+        // Parse steps completed from JSON
+        var stepsCompleted = new List<string>();
+        if (!string.IsNullOrEmpty(task.StepsCompletedJson))
+        {
+            try
+            {
+                stepsCompleted = System.Text.Json.JsonSerializer.Deserialize<List<string>>(task.StepsCompletedJson) ?? new List<string>();
+            }
+            catch
+            {
+                // If JSON parsing fails, leave stepsCompleted empty
+            }
+        }
+
+        return new TaskStatusResponse
+        {
+            TaskId = task.TaskId,
+            TaskType = task.TaskType,
+            Status = task.Status,
+            Progress = task.Progress,
+            CurrentStep = task.CurrentStep,
+            StepsCompleted = stepsCompleted,
+            ErrorMessage = task.ErrorMessage,
+            RetryCount = task.RetryCount,
+            MaxRetries = task.MaxRetries,
+            CreatedAt = task.CreatedAt,
+            StartedAt = task.StartedAt,
+            CompletedAt = task.CompletedAt,
+            EstimatedCompletion = task.EstimatedCompletion,
+            InitiatedBy = task.InitiatedBy,
+            WorkerId = task.WorkerId,
+            TenantInstanceId = task.TenantInstanceId,
+            Tracking = new TaskTrackingInfo
+            {
+                StatusUrl = $"/api/provisioning/tasks/{taskId}/status",
+                WebSocketUrl = $"/ws/tasks/{taskId}",
+                EstimatedCompletion = task.EstimatedCompletion,
+                ProgressUpdateFrequency = 5
+            }
+        };
     }
 
     /// <summary>
@@ -289,6 +273,47 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
             // Production mode: Use subdomain pattern
             return $"https://{tenantCode}.{productionDomain}";
         }
+    }
+
+    // Worker callback methods
+    public async Task UpdateTaskStatusAsync(string taskId, ProvisionTaskStatus status, int progress, string? currentStep = null, string? errorMessage = null)
+    {
+        var task = await _taskTracker.GetTaskAsync(taskId);
+        if (task == null)
+            throw new InvalidOperationException($"Task {taskId} not found");
+
+        await _taskTracker.UpdateTaskStatusAsync(taskId, status, progress, currentStep, errorMessage);
+    }
+
+    public async Task AddCompletedStepAsync(string taskId, string step)
+    {
+        await _taskTracker.AddCompletedStepAsync(taskId, step);
+    }
+
+    public async Task MarkTaskCompletedAsync(string taskId)
+    {
+        var task = await _taskTracker.GetTaskAsync(taskId);
+        if (task == null)
+            throw new InvalidOperationException($"Task {taskId} not found");
+
+        var duration = DateTime.UtcNow - task.CreatedAt;
+        await _taskTracker.MarkTaskCompletedAsync(taskId);
+
+        // Record completion metrics
+        _metricsService.RecordTaskCompleted(task.TaskType, "completed", duration.TotalSeconds);
+    }
+
+    public async Task MarkTaskFailedAsync(string taskId, string errorMessage)
+    {
+        var task = await _taskTracker.GetTaskAsync(taskId);
+        if (task == null)
+            throw new InvalidOperationException($"Task {taskId} not found");
+
+        var duration = DateTime.UtcNow - task.CreatedAt;
+        await _taskTracker.MarkTaskFailedAsync(taskId, errorMessage);
+
+        // Record failure metrics
+        _metricsService.RecordTaskCompleted(task.TaskType, "failed", duration.TotalSeconds);
     }
 
     // Database lifecycle operations are delegated to IDatabaseProvisioner implemented in Infrastructure

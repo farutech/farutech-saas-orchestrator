@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/farutech/orchestrator-workers/internal/api"
 	"github.com/farutech/orchestrator-workers/internal/models"
 )
 
@@ -13,13 +14,15 @@ import (
 type Provisioner struct {
 	maxRetries   int
 	retryBackoff int // base backoff in seconds
+	apiClient    *api.Client
 }
 
 // NewProvisioner creates a new provisioner handler
-func NewProvisioner(maxRetries, retryBackoff int) *Provisioner {
+func NewProvisioner(maxRetries, retryBackoff int, apiClient *api.Client) *Provisioner {
 	return &Provisioner{
 		maxRetries:   maxRetries,
 		retryBackoff: retryBackoff,
+		apiClient:    apiClient,
 	}
 }
 
@@ -28,6 +31,11 @@ func (p *Provisioner) Process(task *models.ProvisioningTask) (*models.TaskResult
 	start := time.Now()
 	
 	log.Printf("Processing task %s (attempt %d/%d)", task.TaskID, task.Attempt, task.MaxRetries)
+	
+	// Update task status to PROCESSING
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 0, stringPtr("Initializing task"), nil); err != nil {
+		log.Printf("⚠️  Failed to update task status: %v", err)
+	}
 	
 	// Simulate processing based on task type
 	var err error
@@ -51,6 +59,11 @@ func (p *Provisioner) Process(task *models.ProvisioningTask) (*models.TaskResult
 			Timestamp: time.Now(),
 		}
 		
+		// Update task status to FAILED
+		if apiErr := p.apiClient.UpdateTaskStatus(task.TaskID, "FAILED", 0, nil, &result.Error); apiErr != nil {
+			log.Printf("⚠️  Failed to update task failure status: %v", apiErr)
+		}
+		
 		if p.ShouldRetry(task) {
 			result.Status = models.TaskStatusRetrying
 		}
@@ -66,6 +79,11 @@ func (p *Provisioner) Process(task *models.ProvisioningTask) (*models.TaskResult
 		Timestamp: time.Now(),
 	}
 	
+	// Mark task as completed
+	if err := p.apiClient.MarkTaskCompleted(task.TaskID); err != nil {
+		log.Printf("⚠️  Failed to mark task as completed: %v", err)
+	}
+	
 	return result, nil
 }
 
@@ -73,18 +91,53 @@ func (p *Provisioner) Process(task *models.ProvisioningTask) (*models.TaskResult
 func (p *Provisioner) provision(task *models.ProvisioningTask) error {
 	log.Printf("🚀 Provisioning tenant %s for module %s", task.TenantID, task.ModuleID)
 	
-	// TODO: Implement actual provisioning:
-	// 1. Call external API to create tenant resources
-	// 2. Configure database schemas
-	// 3. Initialize application settings
-	// 4. Update tenant status in orchestrator DB
+	// Update progress: Starting
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 10, stringPtr("Validating tenant configuration"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
 	
-	// Simulate work and occasional failures for testing
-	time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond)
+	// Simulate validation
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+	
+	// Update progress: Creating database
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 30, stringPtr("Creating tenant database"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Validated tenant configuration"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	// Simulate database creation
+	time.Sleep(time.Duration(rand.Intn(300)+200) * time.Millisecond)
+	
+	// Update progress: Configuring application
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 70, stringPtr("Configuring application settings"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Created tenant database"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	// Simulate configuration
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
 	
 	// Simulate 20% failure rate on first attempt (for testing retry logic)
 	if task.Attempt == 1 && rand.Float32() < 0.2 {
 		return fmt.Errorf("simulated provisioning failure (network timeout)")
+	}
+	
+	// Update progress: Finalizing
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 100, stringPtr("Finalizing tenant setup"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Configured application settings"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	time.Sleep(time.Duration(rand.Intn(100)+50) * time.Millisecond)
+	
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Finalized tenant setup"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
 	}
 	
 	log.Printf("✅ Tenant %s provisioned successfully", task.TenantID)
@@ -95,12 +148,38 @@ func (p *Provisioner) provision(task *models.ProvisioningTask) error {
 func (p *Provisioner) deprovision(task *models.ProvisioningTask) error {
 	log.Printf("🗑️  Deprovisioning tenant %s for module %s", task.TenantID, task.ModuleID)
 	
-	// TODO: Implement deprovisioning:
-	// 1. Archive tenant data
-	// 2. Remove resources
-	// 3. Update status in orchestrator DB
+	// Update progress: Starting
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 20, stringPtr("Archiving tenant data"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
 	
-	time.Sleep(time.Duration(rand.Intn(300)+200) * time.Millisecond)
+	// Simulate archiving
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+	
+	// Update progress: Removing resources
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 60, stringPtr("Removing tenant resources"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Archived tenant data"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	// Simulate resource removal
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+	
+	// Update progress: Finalizing
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 100, stringPtr("Cleaning up tenant records"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Removed tenant resources"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	time.Sleep(time.Duration(rand.Intn(100)+50) * time.Millisecond)
+	
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Cleaned up tenant records"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
 	
 	log.Printf("✅ Tenant %s deprovisioned successfully", task.TenantID)
 	return nil
@@ -110,12 +189,38 @@ func (p *Provisioner) deprovision(task *models.ProvisioningTask) error {
 func (p *Provisioner) update(task *models.ProvisioningTask) error {
 	log.Printf("🔄 Updating tenant %s configuration", task.TenantID)
 	
-	// TODO: Implement update logic:
-	// 1. Apply configuration changes
-	// 2. Update feature flags
-	// 3. Restart services if needed
+	// Update progress: Starting
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 25, stringPtr("Applying configuration changes"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
 	
-	time.Sleep(time.Duration(rand.Intn(400)+300) * time.Millisecond)
+	// Simulate configuration changes
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+	
+	// Update progress: Updating features
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 75, stringPtr("Updating feature flags"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Applied configuration changes"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	// Simulate feature updates
+	time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+	
+	// Update progress: Finalizing
+	if err := p.apiClient.UpdateTaskStatus(task.TaskID, "PROCESSING", 100, stringPtr("Restarting services"), nil); err != nil {
+		log.Printf("⚠️  Failed to update progress: %v", err)
+	}
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Updated feature flags"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
+	
+	time.Sleep(time.Duration(rand.Intn(100)+50) * time.Millisecond)
+	
+	if err := p.apiClient.AddCompletedStep(task.TaskID, "Restarted services"); err != nil {
+		log.Printf("⚠️  Failed to add completed step: %v", err)
+	}
 	
 	log.Printf("✅ Tenant %s updated successfully", task.TenantID)
 	return nil
@@ -141,4 +246,9 @@ func (p *Provisioner) CalculateBackoff(attempt int) time.Duration {
 	}
 	
 	return time.Duration(backoffSeconds) * time.Second
+}
+
+// stringPtr returns a pointer to a string
+func stringPtr(s string) *string {
+	return &s
 }

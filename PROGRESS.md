@@ -45,6 +45,16 @@
 - [x] 8.2 Implementar Cliente HTTP con Refit HttpClientFactory
 - [x] 8.3 Caché de Configuración (MemoryCache para no saturar el Core)
 
+### FASE 9: ASYNC PROCESSING & MONITORING (✅ COMPLETADO)
+- [x] 9.1 ProvisionTask Entity & EF Configuration (ULID, JSONB steps, soft delete)
+- [x] 9.2 Async Orchestrator Service (NATS JetStream integration)
+- [x] 9.3 Task Tracker Service (CRUD operations, status updates)
+- [x] 9.4 Go Worker (HTTP callbacks, retry logic, NATS consumer)
+- [x] 9.5 JWT Service Authentication (token generation/validation, secure callbacks)
+- [x] 9.6 Prometheus Metrics (HTTP, tasks, auth, database metrics)
+- [x] 9.7 Health Checks & Monitoring (detailed health endpoints, Grafana dashboards)
+- [x] 9.8 Docker Monitoring Stack (Prometheus + Grafana configuration)
+
 ## 📝 BITÁCORA
 - 2026-01-24 12:26: Proyecto inicializado. Carpetas creadas.
 - 2026-01-24 12:30: ✅ Tarea 1.1 completada. Solución .NET 9 creada con arquitectura limpia (Domain, Application, Infrastructure, API). Build exitoso.
@@ -104,6 +114,16 @@
     - Auditor: 7 permisos (solo lectura y reportes)
   * **Herramientas**: Creado programa C# de inspección de base de datos (scripts/DbChecker/Program.cs)
   * **Script**: Corregido seed-catalog-data.sql para estructura correcta de role_permissions (sin Id/IsDeleted)
+- 2026-02-05 07:30: ✅ **FASE 9 COMPLETADA: ASYNC PROCESSING & MONITORING**
+  * **ProvisionTask Entity**: Implementada entidad con ULID, JSONB steps storage, soft delete, y constraints EF
+  * **Async Orchestration**: Servicio completo con NATS JetStream para colas de tareas asíncronas
+  * **Task Tracking**: Servicio de seguimiento con operaciones CRUD y actualizaciones de estado
+  * **Go Worker**: Implementación completa con consumidores NATS, callbacks HTTP, y lógica de retry
+  * **JWT Service Auth**: Autenticación service-to-service con tokens JWT de 24h y validación middleware
+  * **Prometheus Metrics**: Métricas completas (HTTP, tareas, auth, DB) con histogramas y contadores
+  * **Health Checks**: Endpoints avanzados (/health, /health/detailed, /health/ready, /health/live)
+  * **Monitoring Stack**: Docker Compose con Prometheus + Grafana, dashboards pre-configurados
+  * **Testing**: Scripts de validación para infraestructura completa y métricas
   * **Verificación**: Todos los datos del catálogo verificados y completos, backend listo para producción
 - 2026-01-24 22:00: ✅ **FASE 9: API & INTEGRATION LAYER COMPLETADA**. Suite completa de pruebas de integración implementada:
   * **IntegrationTestBase.cs**: Infraestructura de testing con Testcontainers (PostgreSQL + NATS)

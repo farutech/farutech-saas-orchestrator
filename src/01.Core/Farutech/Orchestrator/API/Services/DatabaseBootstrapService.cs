@@ -23,7 +23,7 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
     private readonly ILogger<DatabaseBootstrapService> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly IConfiguration _configuration = configuration;
-    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
+    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "tasks", "core"];
 
     private string CommonDatabaseName => _configuration["Database:CommonName"] ?? "farutech_db_custs";
     private string DedicatedDatabasePrefix => _configuration["Database:DedicatedPrefix"] ?? "farutech_db_cust_";
@@ -107,6 +107,17 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
                     command.CommandText = createSchemaQuery;
                     await command.ExecuteNonQueryAsync();
                     _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
+                }
+
+                // Crear extensiones necesarias para PostgreSQL
+                var extensions = new[] { "uuid-ossp", "btree_gin" };
+                foreach (var extension in extensions)
+                {
+                    var createExtensionQuery = $"CREATE EXTENSION IF NOT EXISTS \"{extension}\";";
+                    using var command = connection.CreateCommand();
+                    command.CommandText = createExtensionQuery;
+                    await command.ExecuteNonQueryAsync();
+                    _logger.LogInformation($"✅ Extensión '{extension}' creada/verificada");
                 }
 
                 // Asegurar que exista la base de datos para customers (configurable)
