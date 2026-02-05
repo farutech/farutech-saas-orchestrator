@@ -16,11 +16,8 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
             .IsRequired()
             .HasMaxLength(500);
 
-        builder.Property(ii => ii.ItemType)
-            .HasConversion<string>();
-
-        builder.Property(ii => ii.ProductCode)
-            .HasMaxLength(100);
+        builder.Property(ii => ii.InvoiceId)
+            .IsRequired();
 
         builder.Property(ii => ii.Quantity)
             .HasPrecision(18, 4);

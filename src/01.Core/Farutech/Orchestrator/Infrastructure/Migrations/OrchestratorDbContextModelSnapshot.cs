@@ -149,22 +149,17 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Property<Guid>("InvoiceId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("InvoiceId1")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ItemType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ItemType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
                     b.Property<string>("ProductCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(18, 4)
@@ -189,8 +184,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("InvoiceId");
-
-                    b.HasIndex("InvoiceId1");
 
                     b.HasIndex("ProductCode");
 
@@ -1037,9 +1030,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CorrelationId")
-                        .HasFilter("CorrelationId IS NOT NULL");
-
                     b.HasIndex("TaskId")
                         .IsUnique();
 
@@ -1049,11 +1039,11 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.ToTable("ProvisionTasks", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ProvisionTask_Progress", "progress >= 0 AND progress <= 100");
+                            t.HasCheckConstraint("CK_ProvisionTask_Progress", "\"Progress\" >= 0 AND \"Progress\" <= 100");
 
-                            t.HasCheckConstraint("CK_ProvisionTask_Status", "Status IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
+                            t.HasCheckConstraint("CK_ProvisionTask_Status", "\"Status\" IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
 
-                            t.HasCheckConstraint("CK_ProvisionTask_TaskType", "TaskType IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
+                            t.HasCheckConstraint("CK_ProvisionTask_TaskType", "\"TaskType\" IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
                         });
                 });
 
@@ -1423,14 +1413,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", "Invoice")
-                        .WithMany()
-                        .HasForeignKey("InvoiceId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoicePayment", b =>

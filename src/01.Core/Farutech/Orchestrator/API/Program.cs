@@ -217,7 +217,7 @@ builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
 builder.Services.AddScoped<IResolveService, ResolveService>();
 
 // Metrics service
-builder.Services.AddScoped<IMetricsService, MetricsService>();
+builder.Services.AddSingleton<IMetricsService, MetricsService>();
 
 // Authorization handlers
 builder.Services.AddScoped<IAuthorizationHandler, ServiceTokenAuthorizationHandler>();

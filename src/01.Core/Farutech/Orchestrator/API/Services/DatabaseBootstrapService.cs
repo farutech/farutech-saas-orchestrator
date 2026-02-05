@@ -93,23 +93,15 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         await ExecuteWithRetryAsync(async () =>
         {
-            try
-            {
-                var connection = _context.Database.GetDbConnection();
-                await connection.OpenAsync();
+            using var connection = _context.Database.GetDbConnection();
+            await connection.OpenAsync();
 
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT 1";
-                await command.ExecuteScalarAsync();
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1";
+            await command.ExecuteScalarAsync();
 
-                _logger.LogInformation("✅ Base de datos conectada y operativa");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "❌ Base de datos no disponible");
-                throw;
-            }
+            _logger.LogInformation("✅ Base de datos conectada y operativa");
+            return true;
         }, "verificar conectividad de base de datos", maxRetries: 10, initialDelayMs: 1000);
     }
 
@@ -125,44 +117,34 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         await ExecuteWithRetryAsync(async () =>
         {
-            var connection = _context.Database.GetDbConnection();
-            await connection.OpenAsync();
+#pragma warning disable EF1002 // Suppress SQL injection warning for constant strings
+            // Create a separate service scope and context for schema operations to avoid connection conflicts
+            using var scope = _serviceProvider.CreateScope();
+            var schemaContext = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
 
-            try
+            var schemas = stringArray;
+
+            foreach (var schema in schemas)
             {
-                var schemas = stringArray;
-
-                foreach (var schema in schemas)
-                {
-                    var createSchemaQuery = $"CREATE SCHEMA IF NOT EXISTS \"{schema}\";";
-                    using var command = connection.CreateCommand();
-                    command.CommandText = createSchemaQuery;
-                    await command.ExecuteNonQueryAsync();
-                    _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
-                }
-
-                // Crear extensiones necesarias para PostgreSQL
-                var extensions = new[] { "uuid-ossp", "btree_gin" };
-                foreach (var extension in extensions)
-                {
-                    var createExtensionQuery = $"CREATE EXTENSION IF NOT EXISTS \"{extension}\";";
-                    using var command = connection.CreateCommand();
-                    command.CommandText = createExtensionQuery;
-                    await command.ExecuteNonQueryAsync();
-                    _logger.LogInformation($"✅ Extensión '{extension}' creada/verificada");
-                }
-
-                // Nota: Creación de base de datos adicional deshabilitada por ahora
-                // La base de datos principal ya está configurada y desplegada
-                _logger.LogInformation("ℹ️ Omitiendo creación de base de datos adicional (ya desplegada)");
-
-                _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
-                return true; // Retornar algo para que el método funcione
+                await schemaContext.Database.ExecuteSqlRawAsync($"CREATE SCHEMA IF NOT EXISTS \"{schema}\";");
+                _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
             }
-            finally
+
+            // Crear extensiones necesarias para PostgreSQL
+            var extensions = new[] { "uuid-ossp", "btree_gin" };
+            foreach (var extension in extensions)
             {
-                await connection.CloseAsync();
+                await schemaContext.Database.ExecuteSqlRawAsync($"CREATE EXTENSION IF NOT EXISTS \"{extension}\";");
+                _logger.LogInformation($"✅ Extensión '{extension}' creada/verificada");
             }
+#pragma warning restore EF1002
+
+            // Nota: Creación de base de datos adicional deshabilitada por ahora
+            // La base de datos principal ya está configurada y desplegada
+            _logger.LogInformation("ℹ️ Omitiendo creación de base de datos adicional (ya desplegada)");
+
+            _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
+            return true; // Retornar algo para que el método funcione
         }, "crear esquemas de base de datos", maxRetries: 5, initialDelayMs: 2000); // Reducido a 5 intentos
     }
 
@@ -175,8 +157,12 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         await ExecuteWithRetryAsync(async () =>
         {
+            // Use a separate scope and context for migrations to avoid connection conflicts
+            using var scope = _serviceProvider.CreateScope();
+            var migrationContext = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
+
             // Aplicar todas las migraciones pendientes
-            await _context.Database.MigrateAsync();
+            await migrationContext.Database.MigrateAsync();
             return true;
         }, "aplicar migraciones EF Core", maxRetries: 10, initialDelayMs: 1000);
 

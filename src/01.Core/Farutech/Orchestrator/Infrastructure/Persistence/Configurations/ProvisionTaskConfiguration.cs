@@ -11,9 +11,9 @@ public class ProvisionTaskConfiguration : IEntityTypeConfiguration<ProvisionTask
     {
         builder.ToTable("ProvisionTasks", t =>
         {
-            t.HasCheckConstraint("CK_ProvisionTask_Progress", "progress >= 0 AND progress <= 100");
-            t.HasCheckConstraint("CK_ProvisionTask_Status", "Status IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
-            t.HasCheckConstraint("CK_ProvisionTask_TaskType", "TaskType IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
+            t.HasCheckConstraint("CK_ProvisionTask_Progress", "\"Progress\" >= 0 AND \"Progress\" <= 100");
+            t.HasCheckConstraint("CK_ProvisionTask_Status", "\"Status\" IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
+            t.HasCheckConstraint("CK_ProvisionTask_TaskType", "\"TaskType\" IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
         });
 
         builder.Property(t => t.TaskId)
@@ -67,8 +67,8 @@ public class ProvisionTaskConfiguration : IEntityTypeConfiguration<ProvisionTask
 
         builder.HasIndex(t => new { t.Status, t.CreatedAt });
 
-        builder.HasIndex(t => t.CorrelationId)
-            .HasFilter("CorrelationId IS NOT NULL");
+        // builder.HasIndex(t => t.CorrelationId)
+        //     .HasFilter("CorrelationId IS NOT NULL");
 
         // Relationships
         builder.HasOne(t => t.TenantInstance)
