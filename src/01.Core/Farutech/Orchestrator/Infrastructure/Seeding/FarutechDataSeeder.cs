@@ -30,7 +30,7 @@ public class FarutechDataSeeder(
     private static readonly Guid AuditorRoleId = new("00000000-0000-0000-0001-000000000005");
 
     // Catalog seeding GUIDs
-    private static readonly Guid FarutechPosProductId = new("10000000-0000-0000-0001-000000000001");
+    private static readonly Guid FarutechPosProductId = new("00000000-0000-0000-0000-000000000001");
     private static readonly Guid SalesModuleId = new("10000000-0000-0000-0001-000000000002");
     private static readonly Guid InventoryModuleId = new("10000000-0000-0000-0001-000000000003");
     private static readonly Guid SecurityModuleId = new("10000000-0000-0000-0001-000000000004");
@@ -188,7 +188,7 @@ public class FarutechDataSeeder(
 
     private async Task SeedProductAsync()
     {
-        var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.Code == "farutech_pos");
+        var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.Code == "FARUPOS");
         if (existingProduct != null)
         {
             _logger.LogInformation("⏭️  Producto 'Farutech POS & Services' ya existe, omitiendo...");
@@ -198,7 +198,7 @@ public class FarutechDataSeeder(
         var product = new Product
         {
             Id = FarutechPosProductId,
-            Code = "farutech_pos",
+            Code = "FARUPOS",
             Name = "Farutech POS & Services",
             Description = "Sistema de gestión de punto de venta, servicios y control de inventario.",
             IsActive = true,

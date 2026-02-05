@@ -16,8 +16,8 @@ public class TenantProvisioningIntegrationTests : IntegrationTestBase
     public async Task ProvisionTenant_WithValidData_CreatesTenantInstance()
     {
         // Arrange
-        var accessToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(accessToken);
+        var accessToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(accessToken);
 
         var request = new ProvisionTenantRequest
         {
@@ -36,17 +36,18 @@ public class TenantProvisioningIntegrationTests : IntegrationTestBase
 
         var result = await response.Content.ReadFromJsonAsync<ProvisionTenantResponse>();
         result.Should().NotBeNull();
+        Assert.NotNull(result); // Explicit null check for compiler
         result.TenantCode.Should().NotBeNullOrEmpty();
         result.TenantInstanceId.Should().NotBe(Guid.Empty);
-        result.ApiBaseUrl.Should().NotBeNullOrEmpty();
+        result.Status.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
     public async Task ProvisionTenant_WithInvalidCustomerId_ReturnsBadRequest()
     {
         // Arrange
-        var accessToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(accessToken);
+        var accessToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(accessToken);
 
         var request = new ProvisionTenantRequest
         {
@@ -68,8 +69,8 @@ public class TenantProvisioningIntegrationTests : IntegrationTestBase
     public async Task GetTenantInstances_WithValidToken_ReturnsCustomerTenants()
     {
         // Arrange - First provision a tenant
-        var accessToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(accessToken);
+        var accessToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(accessToken);
 
         var provisionRequest = new ProvisionTenantRequest
         {
@@ -90,6 +91,7 @@ public class TenantProvisioningIntegrationTests : IntegrationTestBase
 
         var instances = await response.Content.ReadFromJsonAsync<IEnumerable<TenantInstance>>();
         instances.Should().NotBeNull();
+        Assert.NotNull(instances); // Explicit null check for compiler
         instances.Should().NotBeEmpty();
         instances.All(i => i.CustomerId == _testCustomerId).Should().BeTrue();
     }
@@ -98,8 +100,8 @@ public class TenantProvisioningIntegrationTests : IntegrationTestBase
     public async Task UpdateTenantInstance_WithValidData_Succeeds()
     {
         // Arrange - Provision tenant first
-        var accessToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(accessToken);
+        var accessToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(accessToken);
 
         var provisionRequest = new ProvisionTenantRequest
         {

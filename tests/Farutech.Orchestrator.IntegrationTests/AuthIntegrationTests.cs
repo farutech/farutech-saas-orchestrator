@@ -29,7 +29,7 @@ public class AuthIntegrationTests : IntegrationTestBase
         result.Should().NotBeNull();
         result!.IntermediateToken.Should().NotBeNullOrEmpty();
         result.AccessToken.Should().BeNull();
-        result.TenantOptions.Should().NotBeNull();
+        result.AvailableTenants.Should().NotBeNull();
     }
 
     [Fact]
@@ -55,8 +55,7 @@ public class AuthIntegrationTests : IntegrationTestBase
         var result = await response.Content.ReadFromJsonAsync<SelectContextResponse>();
         result.Should().NotBeNull();
         result!.AccessToken.Should().NotBeNullOrEmpty();
-        result.Customer.Should().NotBeNull();
-        result.Customer.Id.Should().Be(_testCustomerId);
+        result.TenantId.Should().Be(_testCustomerId);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Farutech.Orchestrator.Application.DTOs.Auth;
+using Farutech.Orchestrator.Application.DTOs.Provisioning;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Farutech.Orchestrator.Domain.Enums;
@@ -55,8 +56,8 @@ public class SecurityIntegrationTests : IntegrationTestBase
         await context.SaveChangesAsync();
 
         // Get access token for our test user (belongs to different customer)
-        var accessToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(accessToken);
+        var accessToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(accessToken);
 
         // Act - Try to access other customer's tenant
         var response = await _client.GetAsync($"/api/Instances/{otherTenant.Id}");
@@ -112,12 +113,12 @@ public class SecurityIntegrationTests : IntegrationTestBase
 
         await userManager.CreateAsync(limitedUser, "LimitedPass123!");
 
-        // Add as Cashier (limited permissions)
+        // Add as User (limited permissions)
         var limitedMembership = new UserCompanyMembership
         {
             UserId = limitedUser.Id,
             CustomerId = _testCustomerId,
-            Role = FarutechRole.Cashier,
+            Role = FarutechRole.User,
             IsActive = true
         };
 
@@ -125,8 +126,8 @@ public class SecurityIntegrationTests : IntegrationTestBase
         await context.SaveChangesAsync();
 
         // Provision a tenant first
-        var ownerToken = await _fixture.GetAccessTokenAsync();
-        _fixture.SetAuthorizationHeader(ownerToken);
+        var ownerToken = await GetAccessTokenAsync();
+        SetAuthorizationHeader(ownerToken);
 
         var provisionRequest = new ProvisionTenantRequest
         {
@@ -141,25 +142,17 @@ public class SecurityIntegrationTests : IntegrationTestBase
         var provisionResult = await provisionResponse.Content.ReadFromJsonAsync<ProvisionTenantResponse>();
 
         // Now try to update with limited user
-        var limitedLoginRequest = new LoginRequest
-        {
-            Email = "limited@example.com",
-            Password = "LimitedPass123!"
-        };
+        var limitedLoginRequest = new LoginRequest("limited@example.com", "LimitedPass123!", false);
 
         var limitedLoginResponse = await _client.PostAsJsonAsync("/api/Auth/login", limitedLoginRequest);
         var limitedLoginResult = await limitedLoginResponse.Content.ReadFromJsonAsync<SecureLoginResponse>();
 
-        var limitedContextRequest = new SelectContextRequest
-        {
-            IntermediateToken = limitedLoginResult!.IntermediateToken!,
-            CustomerId = _testCustomerId
-        };
+        var limitedContextRequest = new SelectContextRequest(limitedLoginResult!.IntermediateToken!, _testCustomerId);
 
         var limitedContextResponse = await _client.PostAsJsonAsync("/api/Auth/select-context", limitedContextRequest);
         var limitedContextResult = await limitedContextResponse.Content.ReadFromJsonAsync<SelectContextResponse>();
 
-        _fixture.SetAuthorizationHeader(limitedContextResult!.AccessToken!);
+        SetAuthorizationHeader(limitedContextResult!.AccessToken!);
 
         // Act - Try to update tenant status with limited permissions
         var updateRequest = new { Status = "suspended" };

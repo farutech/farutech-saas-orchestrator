@@ -786,7 +786,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
             // Seed data for Products and Modules
             migrationBuilder.Sql(@"
                 -- Insert Product: FaruPOS
-                INSERT INTO ""catalog"".""Products"" (""Id"", ""Code"", ""Name"", ""Description"", ""IsActive"", ""CreatedAt"", ""IsDeleted"")
+                INSERT INTO ""catalog"".""Products"" (""Id"", ""Code"", ""Name"", ""Description"", ""IsActive"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
                 VALUES (
                     '00000000-0000-0000-0000-000000000001',
                     'FARUPOS',
@@ -794,12 +794,13 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     'Sistema de punto de venta completo con gestión de inventario, ventas, clientes y reportes. Ideal para retail, farmacias, restaurantes y más.',
                     true,
                     NOW(),
+                    'System',
                     false
                 );
 
                 -- Insert Modules for FaruPOS
                 -- POS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""IsDeleted"")
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
                 VALUES (
                     '10000000-0000-0000-0000-000000000001',
                     '00000000-0000-0000-0000-000000000001',
@@ -810,11 +811,12 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     true,
                     'Shared',
                     NOW(),
+                    'System',
                     false
                 );
 
                 -- INVENTORY BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""IsDeleted"")
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
                 VALUES (
                     '10000000-0000-0000-0000-000000000002',
                     '00000000-0000-0000-0000-000000000001',
@@ -825,11 +827,12 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     true,
                     'Shared',
                     NOW(),
+                    'System',
                     false
                 );
 
                 -- REPORTS STANDARD (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""IsDeleted"")
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
                 VALUES (
                     '10000000-0000-0000-0000-000000000003',
                     '00000000-0000-0000-0000-000000000001',
@@ -840,11 +843,12 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     true,
                     'Shared',
                     NOW(),
+                    'System',
                     false
                 );
 
                 -- CUSTOMERS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""IsDeleted"")
+                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
                 VALUES (
                     '10000000-0000-0000-0000-000000000004',
                     '00000000-0000-0000-0000-000000000001',
@@ -855,6 +859,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     true,
                     'Shared',
                     NOW(),
+                    'System',
                     false
                 );
             ");

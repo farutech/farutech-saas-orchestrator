@@ -185,6 +185,9 @@ builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
 builder.Services.AddScoped<IResolveService, ResolveService>();
 
+// Generic repositories for billing entities
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
 // Database provisioner: creates DB/schema and returns tenant-scoped connection string
 builder.Services.AddScoped<IDatabaseProvisioner, DatabaseProvisioner>();
 
@@ -226,7 +229,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Handle circular references in JSON serialization
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

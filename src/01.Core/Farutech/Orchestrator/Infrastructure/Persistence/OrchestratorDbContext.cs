@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Farutech.Orchestrator.Domain.Entities.Identity;
+using Farutech.Orchestrator.Domain.Entities.Billing;
 using Catalog = Farutech.Orchestrator.Domain.Entities.Catalog;
 using Tenants = Farutech.Orchestrator.Domain.Entities.Tenants;
 
@@ -26,6 +27,12 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<TenantInstance> TenantInstances => Set<TenantInstance>();
     public DbSet<Tenants.Subscription> TenantSubscriptions => Set<Tenants.Subscription>();
+
+    // Billing Schema (Multi-tenant)
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<InvoicePayment> InvoicePayments => Set<InvoicePayment>();
 
     // Identity Schema
     public DbSet<UserCompanyMembership> UserCompanyMemberships => Set<UserCompanyMembership>();
