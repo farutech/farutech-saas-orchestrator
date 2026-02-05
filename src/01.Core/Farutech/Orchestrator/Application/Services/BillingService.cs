@@ -117,7 +117,7 @@ public class BillingService : IBillingService
         return new InvoiceDetailsDto(
             Id: invoice.Id,
             InvoiceNumber: invoice.InvoiceNumber,
-            CustomerId: invoice.CustomerId,
+            CustomerId: invoice.CustomerId ?? Guid.Empty,
             CustomerName: invoice.Customer?.CompanyName ?? "Unknown",
             IssueDate: invoice.IssueDate,
             DueDate: invoice.DueDate,
@@ -380,7 +380,7 @@ public class BillingService : IBillingService
 
     private static double CalculateAveragePaymentTime(IEnumerable<Invoice> invoices)
     {
-        var paidInvoices = invoices.Where(i => i.Status == InvoiceStatus.Paid && i.Payments.Any());
+        var paidInvoices = invoices.Where(i => i.Status == InvoiceStatus.Paid && i.InvoicePayments.Any());
         if (!paidInvoices.Any())
         {
             return 0;
@@ -388,7 +388,7 @@ public class BillingService : IBillingService
 
         var paymentTimes = paidInvoices.Select(i =>
         {
-            var firstPayment = i.Payments.Min(p => p.CreatedAt);
+            var firstPayment = i.InvoicePayments.Min(ip => ip.CreatedAt);
             return (firstPayment - i.IssueDate).TotalDays;
         });
 

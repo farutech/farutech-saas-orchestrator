@@ -8,7 +8,7 @@ public class UserCompanyMembershipConfiguration : IEntityTypeConfiguration<UserC
 {
     public void Configure(EntityTypeBuilder<UserCompanyMembership> builder)
     {
-        builder.ToTable("UserCompanyMemberships", "identity");
+        builder.ToTable("UserCompanyMemberships");
 
         builder.HasKey(m => m.Id);
 

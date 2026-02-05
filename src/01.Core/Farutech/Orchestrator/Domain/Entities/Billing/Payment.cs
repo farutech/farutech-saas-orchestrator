@@ -14,7 +14,7 @@ public class Payment : BaseEntity
     /// <summary>
     /// ID del cliente que realizó el pago
     /// </summary>
-    public Guid CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     /// <summary>
     /// Número único de referencia del pago
@@ -67,7 +67,7 @@ public class Payment : BaseEntity
     public string? Metadata { get; set; }
 
     // Navigation properties
-    public Customer Customer { get; set; } = null!;
+    public Customer? Customer { get; set; }
     public ICollection<InvoicePayment> InvoicePayments { get; set; } = [];
 
     // Helper methods

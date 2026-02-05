@@ -85,11 +85,43 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
     }
 
     /// <summary>
+    /// Verifica que la base de datos esté disponible y accesible antes de proceder con operaciones.
+    /// </summary>
+    private async Task EnsureDatabaseConnectivityAsync()
+    {
+        _logger.LogInformation("🔍 Verificando conectividad de base de datos...");
+
+        await ExecuteWithRetryAsync(async () =>
+        {
+            try
+            {
+                var connection = _context.Database.GetDbConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandText = "SELECT 1";
+                await command.ExecuteScalarAsync();
+
+                _logger.LogInformation("✅ Base de datos conectada y operativa");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "❌ Base de datos no disponible");
+                throw;
+            }
+        }, "verificar conectividad de base de datos", maxRetries: 10, initialDelayMs: 1000);
+    }
+
+    /// <summary>
     /// PASO 1: Crear los esquemas físicos base antes de cualquier operación EF Core.
     /// </summary>
     private async Task CreateDatabaseFoundationsAsync()
     {
         _logger.LogInformation("🏗️ Creando cimientos de base de datos (esquemas físicos)...");
+
+        // PRIMERO: Verificar que la base de datos esté disponible antes de intentar operaciones
+        await EnsureDatabaseConnectivityAsync();
 
         await ExecuteWithRetryAsync(async () =>
         {
@@ -120,43 +152,9 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
                     _logger.LogInformation($"✅ Extensión '{extension}' creada/verificada");
                 }
 
-                // Asegurar que exista la base de datos para customers (configurable)
-                try
-                {
-                    var connStringBuilder = new NpgsqlConnectionStringBuilder(connection.ConnectionString)
-                    {
-                        Database = "postgres"
-                    };
-
-                    await using var adminConn = new NpgsqlConnection(connStringBuilder.ConnectionString);
-                    await adminConn.OpenAsync();
-
-                    try
-                    {
-                        await using var checkCmd = adminConn.CreateCommand();
-                        checkCmd.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{CommonDatabaseName}'";
-                        var exists = await checkCmd.ExecuteScalarAsync();
-                        if (exists == null)
-                        {
-                            await using var createCmd = adminConn.CreateCommand();
-                            createCmd.CommandText = $"CREATE DATABASE \"{CommonDatabaseName}\"";
-                            await createCmd.ExecuteNonQueryAsync();
-                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' creada");
-                        }
-                        else
-                        {
-                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' ya existe");
-                        }
-                    }
-                    finally
-                    {
-                        await adminConn.CloseAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"No se pudo crear/verificar la base '{CommonDatabaseName}' -- continuando");
-                }
+                // Nota: Creación de base de datos adicional deshabilitada por ahora
+                // La base de datos principal ya está configurada y desplegada
+                _logger.LogInformation("ℹ️ Omitiendo creación de base de datos adicional (ya desplegada)");
 
                 _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
                 return true; // Retornar algo para que el método funcione
@@ -165,7 +163,7 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
             {
                 await connection.CloseAsync();
             }
-        }, "crear esquemas de base de datos", maxRetries: 15, initialDelayMs: 2000);
+        }, "crear esquemas de base de datos", maxRetries: 5, initialDelayMs: 2000); // Reducido a 5 intentos
     }
 
     /// <summary>

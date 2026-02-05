@@ -8,7 +8,7 @@ public class FeatureConfiguration : IEntityTypeConfiguration<Feature>
 {
     public void Configure(EntityTypeBuilder<Feature> builder)
     {
-        builder.ToTable("Features", "catalog");
+        builder.ToTable("Features");
 
         builder.HasKey(f => f.Id);
 

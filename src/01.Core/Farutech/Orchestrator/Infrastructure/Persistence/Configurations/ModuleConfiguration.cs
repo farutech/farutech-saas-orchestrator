@@ -8,7 +8,7 @@ public class ModuleConfiguration : IEntityTypeConfiguration<Module>
 {
     public void Configure(EntityTypeBuilder<Module> builder)
     {
-        builder.ToTable("Modules", "catalog");
+        builder.ToTable("Modules");
 
         builder.HasKey(m => m.Id);
 

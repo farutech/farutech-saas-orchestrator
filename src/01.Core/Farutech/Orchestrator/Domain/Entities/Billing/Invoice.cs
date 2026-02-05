@@ -14,7 +14,7 @@ public class Invoice : BaseEntity
     /// <summary>
     /// ID del cliente al que se emite la factura
     /// </summary>
-    public Guid CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     /// <summary>
     /// Número único de factura (generado automáticamente)
@@ -98,9 +98,9 @@ public class Invoice : BaseEntity
     public string? ExternalReference { get; set; }
 
     // Navigation properties
-    public Customer Customer { get; set; } = null!;
+    public Customer? Customer { get; set; }
     public ICollection<InvoiceItem> Items { get; set; } = [];
-    public ICollection<Payment> Payments { get; set; } = [];
+    public ICollection<InvoicePayment> InvoicePayments { get; set; } = [];
 
     // Helper methods
     /// <summary>
@@ -120,7 +120,7 @@ public class Invoice : BaseEntity
     /// <summary>
     /// Obtiene el saldo pendiente de pago
     /// </summary>
-    public decimal GetPendingAmount() => TotalAmount - Payments.Sum(p => p.Amount);
+    public decimal GetPendingAmount() => TotalAmount - InvoicePayments.Sum(ip => ip.Amount);
 }
 
 /// <summary>

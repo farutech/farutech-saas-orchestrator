@@ -49,15 +49,32 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     {
         base.OnModelCreating(modelBuilder);
 
+        // Detect if we're using SQLite (which doesn't support schemas)
+        var isSqlite = Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite";
+
         // Renombrar tablas Identity sin prefijo AspNet
-        modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
-        modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
-        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
-        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
-        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
-        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
-        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
-        modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens", "identity");
+        if (!isSqlite)
+        {
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens", "identity");
+        }
+        else
+        {
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens");
+        }
 
         // Apply all configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);

@@ -42,6 +42,7 @@ if (isDev)
 {
     try
     {
+        // Intentar primero con Podman (prioridad)
         postgres = builder
             .AddPostgres("postgres", password: postgresPassword)
             .WithDataVolume("farutech-postgres-data")
@@ -54,7 +55,7 @@ if (isDev)
     }
     catch
     {
-        // Fallback to SQLite when Docker is not available
+        // Fallback to SQLite when container runtime (Podman/Docker) is not available
         builder.Configuration["ConnectionStrings:DefaultConnection"] = "Data Source=farutech_dev.db";
     }
 }

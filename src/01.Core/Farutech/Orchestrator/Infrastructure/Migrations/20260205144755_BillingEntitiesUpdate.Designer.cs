@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     [DbContext(typeof(OrchestratorDbContext))]
-    [Migration("20260204231336_AddBillingEntities")]
-    partial class AddBillingEntities
+    [Migration("20260205144755_BillingEntitiesUpdate")]
+    partial class BillingEntitiesUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,7 +40,10 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasDefaultValue("USD");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
@@ -52,11 +55,13 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ExternalReference")
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -65,16 +70,24 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PaymentMethod")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Draft");
 
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("numeric");
@@ -83,7 +96,8 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("Terms")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
@@ -98,7 +112,16 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Invoices");
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("IssueDate");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Invoices", "billing");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoiceItem", b =>
@@ -119,28 +142,36 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<decimal>("Discount")
-                        .HasColumnType("numeric");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvoiceId1")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ItemType")
-                        .HasColumnType("integer");
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
                     b.Property<string>("ProductCode")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Quantity")
-                        .HasColumnType("numeric");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.Property<Guid?>("ReferenceId")
                         .HasColumnType("uuid");
@@ -149,7 +180,8 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -161,20 +193,31 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceItems");
+                    b.HasIndex("InvoiceId1");
+
+                    b.HasIndex("ProductCode");
+
+                    b.HasIndex("ReferenceId");
+
+                    b.ToTable("InvoiceItems", "billing");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoicePayment", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PaymentId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<DateTime>("AppliedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -183,17 +226,15 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("InvoiceId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("uuid");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -201,13 +242,15 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("InvoiceId", "PaymentId");
 
-                    b.HasIndex("InvoiceId");
+                    b.HasIndex("AppliedAt");
 
                     b.HasIndex("PaymentId");
 
-                    b.ToTable("InvoicePayments");
+                    b.HasIndex("InvoiceId", "PaymentId");
+
+                    b.ToTable("InvoicePayments", "billing");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.Payment", b =>
@@ -228,38 +271,49 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasDefaultValue("USD");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("GatewayTransactionId")
-                        .HasColumnType("text");
+                    b.Property<string>("ExternalReference")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<Guid?>("InvoiceId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("GatewayTransactionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Metadata")
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
-                    b.Property<int>("Method")
-                        .HasColumnType("integer");
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("PaymentReference")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -271,9 +325,14 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("InvoiceId");
+                    b.HasIndex("PaymentReference")
+                        .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.HasIndex("ProcessedAt");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Payments", "billing");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.Feature", b =>
@@ -335,7 +394,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("ModuleId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Features", "catalog");
+                    b.ToTable("Features", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.Module", b =>
@@ -404,7 +463,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("ProductId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Modules", "catalog");
+                    b.ToTable("Modules", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.Product", b =>
@@ -456,7 +515,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.ToTable("Products", "catalog");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.Subscription", b =>
@@ -531,7 +590,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("ProductId", "Code")
                         .IsUnique();
 
-                    b.ToTable("SubscriptionPlans", "catalog");
+                    b.ToTable("SubscriptionPlans", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.SubscriptionFeature", b =>
@@ -572,7 +631,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("SubscriptionId", "FeatureId")
                         .IsUnique();
 
-                    b.ToTable("SubscriptionPlanFeatures", "catalog");
+                    b.ToTable("SubscriptionPlanFeatures", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.ApplicationRole", b =>
@@ -694,7 +753,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("Users", "identity");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.PasswordResetToken", b =>
@@ -757,7 +816,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_PasswordResetTokens_Token");
 
-                    b.ToTable("PasswordResetTokens", "identity");
+                    b.ToTable("PasswordResetTokens", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserCompanyMembership", b =>
@@ -818,7 +877,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_UserCompanyMemberships_User_Customer");
 
-                    b.ToTable("UserCompanyMemberships", "identity");
+                    b.ToTable("UserCompanyMemberships", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Identity.UserInvitation", b =>
@@ -885,7 +944,120 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("Email", "Status");
 
-                    b.ToTable("UserInvitations", "identity");
+                    b.ToTable("UserInvitations", (string)null);
+                });
+
+            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tasks.ProvisionTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CurrentStep")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("EstimatedCompletion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InitiatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxRetries")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(3);
+
+                    b.Property<int>("Progress")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Queued");
+
+                    b.Property<string>("StepsCompletedJson")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("[]");
+
+                    b.Property<string>("TaskId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TaskType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("TenantInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("WorkerId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CorrelationId")
+                        .HasFilter("CorrelationId IS NOT NULL");
+
+                    b.HasIndex("TaskId")
+                        .IsUnique();
+
+                    b.HasIndex("TenantInstanceId");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("ProvisionTasks", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProvisionTask_Progress", "progress >= 0 AND progress <= 100");
+
+                            t.HasCheckConstraint("CK_ProvisionTask_Status", "Status IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
+
+                            t.HasCheckConstraint("CK_ProvisionTask_TaskType", "TaskType IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
+                        });
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", b =>
@@ -955,7 +1127,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasIndex("TaxId")
                         .IsUnique();
 
-                    b.ToTable("Customers", "tenants");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.Subscription", b =>
@@ -1030,7 +1202,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("CustomerId", "ProductId");
 
-                    b.ToTable("Subscriptions", "tenants");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.TenantInstance", b =>
@@ -1131,7 +1303,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("CustomerId", "DeploymentType");
 
-                    b.ToTable("TenantInstances", "tenants");
+                    b.ToTable("TenantInstances", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1242,7 +1414,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasOne("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Customer");
@@ -1250,9 +1422,15 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoiceItem", b =>
                 {
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", "Invoice")
+                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", null)
                         .WithMany("Items")
                         .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1262,7 +1440,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoicePayment", b =>
                 {
                     b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", "Invoice")
-                        .WithMany()
+                        .WithMany("InvoicePayments")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1283,12 +1461,8 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.HasOne("Farutech.Orchestrator.Domain.Entities.Tenants.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", null)
-                        .WithMany("Payments")
-                        .HasForeignKey("InvoiceId");
 
                     b.Navigation("Customer");
                 });
@@ -1362,6 +1536,17 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tasks.ProvisionTask", b =>
+                {
+                    b.HasOne("Farutech.Orchestrator.Domain.Entities.Tenants.TenantInstance", "TenantInstance")
+                        .WithMany()
+                        .HasForeignKey("TenantInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TenantInstance");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Tenants.Subscription", b =>
@@ -1439,9 +1624,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.Invoice", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("InvoicePayments");
 
-                    b.Navigation("Payments");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.Payment", b =>
