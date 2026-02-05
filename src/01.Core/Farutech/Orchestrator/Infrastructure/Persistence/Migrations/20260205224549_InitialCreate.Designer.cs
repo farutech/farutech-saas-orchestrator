@@ -9,17 +9,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Farutech.Orchestrator.Infrastructure.Migrations
+namespace Farutech.Orchestrator.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OrchestratorDbContext))]
-    [Migration("20260204231336_AddBillingEntities")]
-    partial class AddBillingEntities
+    [Migration("20260205224549_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("identity")
                 .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -67,6 +68,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -98,7 +102,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoiceItem", b =>
@@ -161,7 +165,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceItems");
+                    b.ToTable("InvoiceItems", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.InvoicePayment", b =>
@@ -207,7 +211,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("PaymentId");
 
-                    b.ToTable("InvoicePayments");
+                    b.ToTable("InvoicePayments", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Billing.Payment", b =>
@@ -232,6 +236,9 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ExternalReference")
+                        .HasColumnType("text");
 
                     b.Property<string>("GatewayTransactionId")
                         .HasColumnType("text");
@@ -273,7 +280,7 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", "identity");
                 });
 
             modelBuilder.Entity("Farutech.Orchestrator.Domain.Entities.Catalog.Feature", b =>

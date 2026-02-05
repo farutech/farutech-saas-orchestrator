@@ -402,3 +402,65 @@ export const useInstance = (id: string, options?: UseQueryOptions<API.TenantInst
     ...options,
   });
 };
+
+// ============================================================================
+// ORGANIZATION APPLICATIONS
+// ============================================================================
+
+import { applicationsService, type ApplicationSummary, type OrganizationSummary } from '@/services/applications.service';
+
+export const useOrganizationApplications = (orgId: string, options?: Omit<UseQueryOptions<ApplicationSummary[]>, 'queryKey'>) => {
+  return useQuery({
+    queryKey: ['organizations', orgId, 'applications'],
+    queryFn: () => applicationsService.getApplicationsByOrganization(orgId),
+    enabled: !!orgId,
+    ...options,
+  });
+};
+
+export const useOrganizationSummary = (orgId: string) => {
+  const { data: apps, isLoading, error } = useOrganizationApplications(orgId);
+  
+  const summary: OrganizationSummary | null = apps 
+    ? applicationsService.calculateOrganizationSummary(apps) 
+    : null;
+  
+  return { summary, apps, isLoading, error };
+};
+
+export const useReactivateApplication = (options?: UseMutationOptions<void, Error, { orgId: string; appId: string }>) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ orgId, appId }) => applicationsService.reactivateApplication(orgId, appId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['organizations', variables.orgId, 'applications'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customer(variables.orgId) });
+      toast.success('Aplicación reactivada exitosamente');
+    },
+    onError: (error: unknown) => {
+      const err = error as { message?: string };
+      toast.error(err.message || 'Error al reactivar aplicación');
+    },
+    ...options,
+  });
+};
+
+export const useDeactivateApplication = (options?: UseMutationOptions<void, Error, { orgId: string; appId: string }>) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ orgId, appId }) => applicationsService.deactivateApplication(orgId, appId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['organizations', variables.orgId, 'applications'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customer(variables.orgId) });
+      toast.success('Aplicación desactivada exitosamente');
+    },
+    onError: (error: unknown) => {
+      const err = error as { message?: string };
+      toast.error(err.message || 'Error al desactivar aplicación');
+    },
+    ...options,
+  });
+};
+

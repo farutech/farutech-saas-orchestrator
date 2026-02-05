@@ -102,6 +102,13 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
     /// </summary>
     private async Task CreateAdditionalSchemasAsync()
     {
+        // Skip schema creation for SQLite since it doesn't support schemas
+        if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            _logger.LogInformation("🏗️ Saltando creación de esquemas (SQLite no soporta schemas)");
+            return;
+        }
+
         _logger.LogInformation("🏗️ Creando esquemas físicos adicionales...");
 
         await ExecuteWithRetryAsync(async () =>
@@ -154,32 +161,79 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
     /// </summary>
     private async Task EnsureDeploymentTypeColumnExistsAsync()
     {
-        const string checkColumnQuery = @"
-            SELECT COUNT(*)
-            FROM information_schema.columns
-            WHERE table_schema = 'tenants'
-            AND table_name = 'TenantInstances'
-            AND column_name = 'DeploymentType'
-        ";
-
         var connection = _context.Database.GetDbConnection();
         await connection.OpenAsync();
 
         try
         {
+            // Detectar el tipo de base de datos
+            var isSqlite = connection.GetType().Name.Contains("Sqlite");
+
+            string checkColumnQuery;
+            if (isSqlite)
+            {
+                // Para SQLite: usar PRAGMA table_info
+                checkColumnQuery = "PRAGMA table_info(TenantInstances)";
+            }
+            else
+            {
+                // Para PostgreSQL: usar information_schema
+                checkColumnQuery = @"
+                    SELECT COUNT(*)
+                    FROM information_schema.columns
+                    WHERE table_schema = 'tenants'
+                    AND table_name = 'TenantInstances'
+                    AND column_name = 'DeploymentType'
+                ";
+            }
+
             using var command = connection.CreateCommand();
             command.CommandText = checkColumnQuery;
-            var result = await command.ExecuteScalarAsync();
-            var columnExists = Convert.ToInt32(result) > 0;
+
+            bool columnExists;
+            if (isSqlite)
+            {
+                // Para SQLite: verificar si DeploymentType existe en los resultados de PRAGMA
+                using var reader = await command.ExecuteReaderAsync();
+                columnExists = false;
+                while (await reader.ReadAsync())
+                {
+                    var columnName = reader.GetString(1); // name column
+                    if (columnName == "DeploymentType")
+                    {
+                        columnExists = true;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // Para PostgreSQL: resultado directo del COUNT
+                var result = await command.ExecuteScalarAsync();
+                columnExists = Convert.ToInt32(result) > 0;
+            }
 
             if (!columnExists)
             {
                 _logger.LogWarning("⚠️ Columna DeploymentType no detectada. Aplicando parche de emergencia...");
 
-                const string alterTableQuery = @"
-                    ALTER TABLE tenants.""TenantInstances""
-                    ADD COLUMN IF NOT EXISTS ""DeploymentType"" text DEFAULT 'Shared';
-                ";
+                string alterTableQuery;
+                if (isSqlite)
+                {
+                    // Para SQLite: sintaxis simple sin esquema
+                    alterTableQuery = @"
+                        ALTER TABLE TenantInstances
+                        ADD COLUMN DeploymentType TEXT DEFAULT 'Shared';
+                    ";
+                }
+                else
+                {
+                    // Para PostgreSQL: con esquema
+                    alterTableQuery = @"
+                        ALTER TABLE tenants.""TenantInstances""
+                        ADD COLUMN IF NOT EXISTS ""DeploymentType"" text DEFAULT 'Shared';
+                    ";
+                }
 
                 using var alterCommand = connection.CreateCommand();
                 alterCommand.CommandText = alterTableQuery;
@@ -203,42 +257,82 @@ public class DatabasePostMigrationService(OrchestratorDbContext context,
     /// </summary>
     private async Task EnsureCriticalTablesExistAsync()
     {
-        var criticalTables = new[]
+        var criticalTables = new[] { "Users", "TenantInstances", "Products", "Roles" };
+
+        var connection = _context.Database.GetDbConnection();
+        await connection.OpenAsync();
+
+        try
         {
-            ("identity", "Users"),
-            ("tenants", "TenantInstances"),
-            ("catalog", "Products"),
-            ("identity", "Roles")
-        };
+            // Detectar el tipo de base de datos
+            var isSqlite = connection.GetType().Name.Contains("Sqlite");
 
-        foreach (var (schema, table) in criticalTables)
+            foreach (var table in criticalTables)
+            {
+                bool exists;
+                if (isSqlite)
+                {
+                    // Para SQLite: consultar sqlite_master
+                    using var command = connection.CreateCommand();
+                    command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@tableName";
+                    var param = command.CreateParameter();
+                    param.ParameterName = "@tableName";
+                    param.Value = table;
+                    command.Parameters.Add(param);
+
+                    var result = await command.ExecuteScalarAsync();
+                    exists = Convert.ToInt32(result) > 0;
+                }
+                else
+                {
+                    // Para PostgreSQL: usar information_schema
+                    var schema = table switch
+                    {
+                        "Users" or "Roles" => "identity",
+                        "TenantInstances" => "tenants",
+                        "Products" => "catalog",
+                        _ => "public"
+                    };
+
+                    exists = await _context.Database.SqlQueryRaw<bool>($@"
+                        SELECT EXISTS (
+                            SELECT 1
+                            FROM information_schema.tables
+                            WHERE table_schema = {{0}}
+                              AND table_name = {{1}}
+                        ) AS ""Value""
+                    ", schema, table).SingleAsync();
+                }
+
+                if (!exists)
+                {
+                    var schema = table switch
+                    {
+                        "Users" or "Roles" => "identity",
+                        "TenantInstances" => "tenants",
+                        "Products" => "catalog",
+                        _ => "public"
+                    };
+
+                    _logger.LogCritical(
+                        "❌ Tabla crítica faltante: {Schema}.{Table}. " +
+                        "Esto indica que las migraciones de EF Core no se aplicaron correctamente. " +
+                        "Verifique la configuración de Identity y el schema '{Schema}'.",
+                        schema, table, schema);
+
+                    throw new InvalidOperationException(
+                        $"Tabla crítica faltante: {schema}.{table}. " +
+                        "Las migraciones de EF Core fallaron o Identity no está configurado correctamente.");
+                }
+                else
+                {
+                    _logger.LogInformation("✅ Tabla crítica verificada: {Table}", table);
+                }
+            }
+        }
+        finally
         {
-            // SQL claro y eficiente usando EXISTS con alias explícito para PostgreSQL
-            var exists = await _context.Database.SqlQueryRaw<bool>($@"
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM information_schema.tables
-                    WHERE table_schema = {{0}}
-                      AND table_name = {{1}}
-                ) AS ""Value""
-            ", schema, table).SingleAsync();
-
-            if (!exists)
-            {
-                _logger.LogCritical(
-                    "❌ Tabla crítica faltante: {Schema}.{Table}. " +
-                    "Esto indica que las migraciones de EF Core no se aplicaron correctamente. " +
-                    "Verifique la configuración de Identity y el schema '{Schema}'.",
-                    schema, table, schema);
-
-                throw new InvalidOperationException(
-                    $"Tabla crítica faltante: {schema}.{table}. " +
-                    "Las migraciones de EF Core fallaron o Identity no está configurado correctamente.");
-            }
-            else
-            {
-                _logger.LogInformation("✅ Tabla crítica verificada: {Schema}.{Table}", schema, table);
-            }
+            await connection.CloseAsync();
         }
     }
 }

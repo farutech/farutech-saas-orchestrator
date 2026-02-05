@@ -20,11 +20,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { AppHeader } from '@/components/layout/AppHeader';
-import { CreateInstanceModal } from '@/components/CreateInstanceModal';
 import { OrganizationCard } from '@/components/home/OrganizationCard';
 import { CreateOrganizationModal } from '@/components/modals/CreateOrganizationModal';
 import { EditOrganizationModal } from '@/components/modals/EditOrganizationModal';
 import { Customer } from '@/types/api';
+import { toast } from 'sonner';
 
 // Helper Functions
 // ============================================================================
@@ -205,41 +205,9 @@ export default function HomePage() {
     }
   };
 
-  // Handle Create Instance - Open modal instead of navigating
+  // Handle Create Instance - Navigate to new page
   const handleCreateInstance = (organizationId: string) => {
-    // Find organization from correct data source
-    let orgData;
-    if (requiresContextSelection) {
-      // In context selection mode, search in availableTenants
-      const tenant = availableTenants?.find(t => t.tenantId === organizationId);
-      if (tenant) {
-        // Create a Customer-like object from TenantOptionDto
-        orgData = {
-          id: tenant.tenantId,
-          code: tenant.companyCode || '',
-          companyName: tenant.companyName || 'Organización',
-          taxId: tenant.taxId || '',
-          isActive: tenant.isActive !== false,
-          tenantInstances: (tenant.instances || []).map(i => ({
-            id: i.instanceId,
-            tenantCode: i.code,
-            environment: i.type,
-            status: i.status,
-            apiBaseUrl: i.url
-          }))
-        };
-      }
-    } else {
-      // In authenticated mode, search in customers
-      orgData = customersData?.organizations?.find(c => c.id === organizationId);
-    }
-
-    if (orgData) {
-      setSelectedOrganization(orgData);
-      modal.open('new-instance'); // Open modal via URL
-    } else {
-      console.error('[HomePage] Organization not found for ID:', organizationId);
-    }
+    navigate(`/organizations/${organizationId}/provision`);
   };
 
   // Handle Edit Organization
@@ -309,6 +277,10 @@ export default function HomePage() {
   const { mutate: updateCustomerStatus } = useUpdateCustomer();
 
   const handleToggleStatus = (organizationId: string, currentIsActive: boolean) => {
+    // Find organization to get required fields for update
+    const org = organizations.find(o => o.organizationId === organizationId);
+    if (!org) return;
+
     // If we are deactivating, collapse the card
     if (currentIsActive && expandedOrgId === organizationId) {
       setExpandedOrgId(null);
@@ -317,6 +289,8 @@ export default function HomePage() {
     updateCustomerStatus({
       id: organizationId,
       data: {
+        companyName: org.organizationName,
+        email: (customersData?.organizations?.find(c => c.id === organizationId))?.email || '',
         isActive: !currentIsActive
       }
     });
@@ -451,18 +425,6 @@ export default function HomePage() {
         isOpen={modal.isOpen('new-org')}
         onClose={modal.close}
       />
-
-      {/* Create Instance Modal */}
-      {(selectedOrganization || modal.isOpen('new-instance')) && (
-        <CreateInstanceModal
-          isOpen={modal.isOpen('new-instance')}
-          onClose={() => {
-            modal.close();
-            setSelectedOrganization(null);
-          }}
-          organization={selectedOrganization || filteredOrgs[0]} 
-        />
-      )}
 
       {/* Edit Organization Modal */}
       {selectedOrganization && (

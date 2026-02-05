@@ -1,7 +1,8 @@
-import { Building2, ChevronDown, ChevronUp, MoreVertical, ExternalLink, Plus, Lock } from 'lucide-react';
+import { Building2, ChevronDown, ChevronUp, MoreVertical, ExternalLink, Plus, Lock, LayoutDashboard, Settings } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -38,247 +39,144 @@ interface Organization {
 
 interface OrganizationCardProps {
   organization: Organization;
-  isExpanded: boolean;
-  onToggle: () => void;
   onLaunchInstance: (tenantId: string, instanceId: string, isActive: boolean, orgCode?: string, instanceCode?: string) => void;
   onCreateInstance: (tenantId: string) => void;
   onEditOrganization: (tenantId: string) => void;
   onToggleStatus: (tenantId: string, currentStatus: boolean) => void;
-  limitApps?: number;
-  onViewAll?: (tenantId: string) => void;
-  onSelectOrganization?: (tenantId: string) => void; // Nueva prop para selección de organización
+  onSelectOrganization?: (tenantId: string) => void;
 }
 
 export function OrganizationCard({ 
   organization, 
-  isExpanded, 
-  onToggle,
   onLaunchInstance,
-  onCreateInstance,
   onEditOrganization,
   onToggleStatus,
-  limitApps = 3,
-  onViewAll,
   onSelectOrganization
 }: OrganizationCardProps) {
   
   const instanceCount = organization.instances.length;
-  const displayInstances = (limitApps > 0 && instanceCount > limitApps) 
-    ? organization.instances.slice(0, limitApps) 
-    : organization.instances;
   
-  const hasMore = instanceCount > displayInstances.length;
-  const remainingCount = instanceCount - displayInstances.length;
-
-  // Determinar si la card debe ser clickable
-  const isCardClickable = organization.isActive && instanceCount > 1 && onSelectOrganization;
+  // Determinar si la card debe ser clickable para ir al dashboard
+  const handleGoToDashboard = () => {
+    if (organization.isActive && onSelectOrganization) {
+      onSelectOrganization(organization.organizationId);
+    }
+  };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Card className={cn(
-            "group transition-all duration-300 border-slate-200 bg-white relative overflow-hidden w-full min-w-0 flex flex-col",
-            isExpanded && organization.isActive ? "ring-2 ring-primary/20 shadow-lg" : "hover:border-primary/50 hover:shadow-md",
-            !organization.isActive && "opacity-75 grayscale-[0.5]",
-            isCardClickable && "cursor-pointer hover:ring-2 hover:ring-primary/20"
-          )}
-          onClick={isCardClickable ? () => onSelectOrganization(organization.organizationId) : undefined}
-          >
-            {!organization.isActive && (
-              <div className="absolute top-0 right-0 p-2 z-10">
-                <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Inactiva</Badge>
-              </div>
+    <Card className={cn(
+      "group transition-all duration-200 border-slate-200 bg-white relative overflow-hidden w-full hover:shadow-md hover:border-violet-200",
+      !organization.isActive && "opacity-75 grayscale-[0.5]"
+    )}>
+      <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Left Section: Icon and Info */}
+        <div className="flex items-center gap-4 w-full md:w-auto flex-1 min-w-0">
+          <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0 flex items-center justify-center text-slate-400 group-hover:bg-violet-50 group-hover:text-violet-600 transition-colors">
+            {organization.organizationCode ? (
+               <span className="font-bold text-xs">{organization.organizationCode.substring(0, 2).toUpperCase()}</span>
+            ) : (
+               <Building2 className="h-5 w-5" />
             )}
-      
-      <CardHeader className="p-5 pb-3">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-100 flex-shrink-0 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-slate-900 group-hover:text-primary transition-colors truncate">
+          </div>
+          
+          <div className="min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors truncate text-base">
                 {organization.organizationName}
               </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
-                  {instanceCount} {instanceCount === 1 ? 'Aplicación' : 'Aplicaciones'}
-                </span>
-                {organization.isActive ? (
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                ) : (
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                <span className="font-mono">{organization.organizationCode}</span>
+                {organization.taxId && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <span>{organization.taxId}</span>
+                  </>
                 )}
               </div>
             </div>
+
+            <div className="flex items-center gap-3">
+              <Badge 
+                variant={organization.isActive ? "default" : "destructive"} 
+                className={cn(
+                  "font-medium border-0 px-2 py-0.5 h-auto text-[10px]",
+                  organization.isActive ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-red-50 text-red-700 hover:bg-red-100"
+                )}
+              >
+                  {organization.isActive ? (
+                    <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>Activa</span>
+                  ) : 'Inactiva'}
+              </Badge>
+              
+              <span className="text-xs text-slate-500 font-medium whitespace-nowrap hidden sm:inline-block">
+                {instanceCount} {instanceCount === 1 ? 'aplicación' : 'aplicaciones'}
+              </span>
+            </div>
           </div>
+        </div>
+
+        {/* Right Section: Actions */}
+        <div className="flex items-center gap-3 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 mt-2 md:mt-0 justify-end">
+          <Button 
+            variant="secondary" 
+            size="sm"
+            className="flex-1 md:flex-none justify-center bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium h-9 px-4"
+            onClick={handleGoToDashboard}
+            disabled={!organization.isActive}
+          >
+            Ir al Dashboard
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-slate-400 hover:text-slate-700 ml-2 flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
+                variant="default" 
+                size="sm"
+                className="flex-1 md:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-md gap-2 font-medium h-9 px-3"
               >
-                <MoreVertical className="h-4 w-4" />
+                + Administrar
+                <ChevronDown className="h-3.5 w-3.5 opacity-80" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56 p-1 rounded-lg">
+              <DropdownMenuItem 
+                className="rounded-md gap-2 cursor-pointer py-2"
+                onClick={handleGoToDashboard}
+                disabled={!organization.isActive}
+              >
+                <LayoutDashboard className="h-4 w-4 text-slate-400" />
+                <span>Panel de Control</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="rounded-md gap-2 cursor-pointer py-2"
+                onClick={() => onEditOrganization(organization.organizationId)}
+              >
+                <Settings className="h-4 w-4 text-slate-400" />
+                <span>Configuración</span>
+              </DropdownMenuItem>
+              <Separator className="my-1" />
               {organization.isActive ? (
-                <>
-                  <DropdownMenuItem onClick={() => onEditOrganization(organization.organizationId)}>
-                    Configuración
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    className="text-red-500"
-                    onClick={() => onToggleStatus(organization.organizationId, true)}
-                  >
-                    Desactivar
-                  </DropdownMenuItem>
-                </>
+                <DropdownMenuItem 
+                  className="rounded-md gap-2 text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer py-2"
+                  onClick={() => onToggleStatus(organization.organizationId, true)}
+                >
+                  <Lock className="h-4 w-4" />
+                  <span>Desactivar Organización</span>
+                </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem 
-                  className="text-emerald-600"
+                  className="rounded-md gap-2 text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50 cursor-pointer py-2"
                   onClick={() => onToggleStatus(organization.organizationId, false)}
                 >
-                  Activar
+                  <Building2 className="h-4 w-4" />
+                  <span>Activar Organización</span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
-
-      <CardContent className="px-5 py-2">
-        <div className="flex flex-wrap gap-2 mb-2">
-           {organization.isOwner && (
-             <Badge variant="secondary" className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100">
-               Owner
-             </Badge>
-           )}
-           {!organization.isOwner && organization.role === 'Admin' && (
-             <Badge variant="secondary" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100">
-               Admin
-             </Badge>
-           )}
-           {organization.taxId && (
-             <Badge variant="outline" className="text-[10px] h-5 text-slate-400 border-slate-200">
-               {organization.taxId}
-             </Badge>
-           )}
-        </div>
       </CardContent>
-
-      <CardFooter className="p-5 pt-0 flex flex-col gap-3">
-        {organization.isActive ? (
-          <Button 
-            variant={isExpanded ? "secondary" : "outline"}
-            className="w-full justify-between group-hover:border-primary/30 group-hover:bg-primary/5 transition-all text-xs h-9"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-          >
-            <span className="font-medium text-slate-700 group-hover:text-primary">
-              {isCardClickable 
-                ? (isExpanded ? 'Ocultar Aplicaciones' : 'Ver Aplicaciones') 
-                : (isExpanded ? 'Ocultar Aplicaciones' : 'Gestionar Aplicaciones')
-              }
-            </span>
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        ) : (
-           <div className="flex items-center justify-center text-slate-400 text-xs italic py-2 border border-dashed border-slate-200 rounded-md bg-slate-50/50">
-              <Lock className="h-3.5 w-3.5 mr-1.5" />
-              Gestión deshabilitada
-           </div>
-        )}
-
-        {/* Animated Accordion Content */}
-        {organization.isActive && (
-          <div className={cn(
-            "grid gap-2 w-full overflow-hidden transition-all duration-300 min-w-0",
-            isExpanded ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"
-          )}>
-            <div className="min-h-0 space-y-2 w-full min-w-0">
-              
-              {/* Instance List */}
-              {displayInstances.map(instance => (
-                <div 
-                  key={instance.instanceId}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onLaunchInstance(
-                      organization.organizationId,
-                      instance.instanceId,
-                      organization.isActive,
-                      organization.organizationCode,
-                      (instance as any).code
-                    );
-                  }}
-                  className="flex items-center justify-between p-3 rounded-md border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-primary/30 hover:shadow-sm cursor-pointer transition-all group/item min-w-0 w-full"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={cn("h-2 w-2 rounded-full flex-shrink-0", 
-                      (instance.status === 'active' || instance.status === 'online') ? "bg-emerald-500" : "bg-slate-300"
-                    )} />
-                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-sm font-medium text-slate-700 group-hover/item:text-primary truncate block w-full">
-                              {instance.name}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{instance.name}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <span className="text-[10px] text-slate-400 uppercase tracking-wider truncate block">
-                        {instance.applicationType || 'App'}
-                      </span>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-4 w-4 text-slate-300 flex-shrink-0 group-hover/item:text-primary ml-2" />
-                </div>
-              ))}
-              
-              {/* View All Action */}
-              {hasMore && onViewAll && (
-                 <Button 
-                    variant="ghost" 
-                    className="w-full text-slate-500 text-xs h-8 hover:text-primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewAll(organization.organizationId);
-                    }}
-                 >
-                    Ver las {remainingCount} aplicaciones restantes...
-                 </Button>
-              )}
-
-              {/* Create New Instance Action */}
-              <Button 
-                variant="ghost" 
-                className="w-full text-slate-500 border-dashed border border-slate-200 hover:border-primary/50 hover:bg-primary/5 hover:text-primary h-10"
-                onClick={() => onCreateInstance(organization.organizationId)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Aplicación
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardFooter>
     </Card>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Haz clic para seleccionar instancia</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }
+

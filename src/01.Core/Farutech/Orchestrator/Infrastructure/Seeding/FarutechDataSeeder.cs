@@ -106,19 +106,17 @@ public class FarutechDataSeeder(
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /// <summary>
+    /// Seeds the initial SuperAdmin user with a predefined email and password, and assigns the SuperAdmin role.
+    /// El usuario SuperAdmin tiene acceso completo a todas las funcionalidades y es ideal para administración inicial y pruebas.
+    /// Las credenciales por defecto se pueden configurar mediante variables de entorno:
+    /// - FARUTECH_SUPERADMIN_EMAIL (default: webmaster@farutech.com)
+    /// - FARUTECH_SUPERADMIN_PASSWORD (default: Holamundo1*)
+    /// Nota: En producción, es crucial cambiar estas credenciales por defecto para garantizar la seguridad. Se recomienda usar un password manager para generar y almacenar una contraseña fuerte.
+    /// El proceso de creación es idempotente, por lo que si el usuario ya existe, se omite la creación y se registra un mensaje en los logs. Si el usuario no existe, se crea, se le asigna el rol de SuperAdmin y se le agregan claims personalizados para TenantId y ScopeId con valores vacíos (indicating acceso global). Cualquier error durante la creación o asignación de roles se registra en los logs con detalles del error.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     private async Task SeedSuperAdminUserAsync()
     {
         var superAdminEmail = Environment.GetEnvironmentVariable("FARUTECH_SUPERADMIN_EMAIL") ?? "webmaster@farutech.com";

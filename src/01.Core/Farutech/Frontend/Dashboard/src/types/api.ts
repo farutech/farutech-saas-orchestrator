@@ -371,6 +371,8 @@ export type OrganizationDto = Customer; // Alias for consistency if needed
 
 export interface TenantInstance {
   id: string;
+  name?: string;
+  code?: string;
   createdAt: string;
   updatedAt?: string;
   createdBy?: string;
@@ -479,6 +481,34 @@ export interface UserCompanyMembership {
   isActive: boolean;
   grantedAt: string;
   grantedBy?: string;
+}
+
+// ============================================================================
+// Organization Summary Types (for Dashboard)
+// ============================================================================
+
+export interface OrganizationSummaryDto {
+  totalApps: number;
+  activeApps: number;
+  inactiveApps: number;
+  lastPaymentDate?: string;
+  lastPaymentAmount?: number;
+  billingStatus: 'Al día' | 'Pago Pendiente' | 'Próximo Vencimiento';
+  nextBillingDate?: string;
+}
+
+export interface ApplicationDetailDto {
+  id: string;
+  name: string;
+  code: string;
+  type: string;
+  status: 'Active' | 'Inactive' | 'Provisioning';
+  url?: string;
+  dashboardUrl?: string;
+  environment?: string;
+  version?: string;
+  provisionedAt?: string;
+  lastAccessAt?: string;
 }
 
 // ============================================================================

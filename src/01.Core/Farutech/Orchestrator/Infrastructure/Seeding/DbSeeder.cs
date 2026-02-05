@@ -24,6 +24,12 @@ public static class DbSeeder
 
     private static async Task CreateSchemasAsync(OrchestratorDbContext context)
     {
+        // Skip schema creation for SQLite since it doesn't support schemas
+        if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            return;
+        }
+
         var schemas = new[] { "identity", "catalog", "tenants", "rbac" };
         foreach (var schema in schemas)
         {
@@ -33,6 +39,12 @@ public static class DbSeeder
 
     private static async Task ApplySchemaMigrationsAsync(OrchestratorDbContext context)
     {
+        // Skip schema migrations for SQLite since it doesn't support schemas
+        if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            return;
+        }
+
         var checkColumnQuery = @"
             SELECT COUNT(*) 
             FROM information_schema.columns 

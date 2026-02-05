@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Farutech.Orchestrator.Infrastructure.Migrations
+namespace Farutech.Orchestrator.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class ConsolidatedSetup : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -158,6 +158,46 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Invoices",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceNumber = table.Column<string>(type: "text", nullable: false),
+                    IssueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Currency = table.Column<string>(type: "text", nullable: false),
+                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    Terms = table.Column<string>(type: "text", nullable: true),
+                    PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    PaymentMethod = table.Column<string>(type: "text", nullable: true),
+                    ExternalReference = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalSchema: "tenants",
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -457,6 +497,83 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvoiceItems",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    ItemType = table.Column<int>(type: "integer", nullable: false),
+                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductCode = table.Column<string>(type: "text", nullable: true),
+                    Quantity = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    BillingPeriod = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalSchema: "identity",
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentReference = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Currency = table.Column<string>(type: "text", nullable: false),
+                    Method = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    GatewayTransactionId = table.Column<string>(type: "text", nullable: true),
+                    ExternalReference = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    Metadata = table.Column<string>(type: "text", nullable: true),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payments_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalSchema: "tenants",
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Payments_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalSchema: "identity",
+                        principalTable: "Invoices",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Features",
                 schema: "catalog",
                 columns: table => new
@@ -483,6 +600,42 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                         column: x => x.ModuleId,
                         principalSchema: "catalog",
                         principalTable: "Modules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoicePayments",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    AppliedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoicePayments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoicePayments_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalSchema: "identity",
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoicePayments_Payments_PaymentId",
+                        column: x => x.PaymentId,
+                        principalSchema: "identity",
+                        principalTable: "Payments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -555,6 +708,30 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItems_InvoiceId",
+                schema: "identity",
+                table: "InvoiceItems",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_InvoiceId",
+                schema: "identity",
+                table: "InvoicePayments",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_PaymentId",
+                schema: "identity",
+                table: "InvoicePayments",
+                column: "PaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CustomerId",
+                schema: "identity",
+                table: "Invoices",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Modules_IsActive",
                 schema: "catalog",
                 table: "Modules",
@@ -591,6 +768,18 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 table: "PasswordResetTokens",
                 column: "Token",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_CustomerId",
+                schema: "identity",
+                table: "Payments",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_InvoiceId",
+                schema: "identity",
+                table: "Payments",
+                column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Code",
@@ -782,92 +971,19 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 table: "Users",
                 column: "NormalizedUserName",
                 unique: true);
-
-            // Seed data for Products and Modules
-            migrationBuilder.Sql(@"
-                -- Insert Product: FaruPOS
-                INSERT INTO ""catalog"".""Products"" (""Id"", ""Code"", ""Name"", ""Description"", ""IsActive"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '00000000-0000-0000-0000-000000000001',
-                    'FARUPOS',
-                    'FaruPOS - Point of Sale',
-                    'Sistema de punto de venta completo con gestión de inventario, ventas, clientes y reportes. Ideal para retail, farmacias, restaurantes y más.',
-                    true,
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- Insert Modules for FaruPOS
-                -- POS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000001',
-                    '00000000-0000-0000-0000-000000000001',
-                    'POS_BASIC_SHARED',
-                    'POS Básico (Compartido)',
-                    'Ventas, cobros y cierre de caja básico en servidor compartido. Límite de 50 ventas/día.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- INVENTORY BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000002',
-                    '00000000-0000-0000-0000-000000000001',
-                    'INV_BASIC_SHARED',
-                    'Inventario Básico (Compartido)',
-                    'Consulta de stock y movimientos básicos en servidor compartido. Hasta 500 productos.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- REPORTS STANDARD (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000003',
-                    '00000000-0000-0000-0000-000000000001',
-                    'RPT_STANDARD_SHARED',
-                    'Reportes Estándar (Compartido)',
-                    'Reportes predefinidos de ventas e inventario en servidor compartido.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- CUSTOMERS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000004',
-                    '00000000-0000-0000-0000-000000000001',
-                    'CUS_BASIC_SHARED',
-                    'Clientes Básico (Compartido)',
-                    'Gestión básica de clientes en servidor compartido. Hasta 1000 clientes.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "InvoiceItems",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "InvoicePayments",
+                schema: "identity");
+
             migrationBuilder.DropTable(
                 name: "PasswordResetTokens",
                 schema: "identity");
@@ -913,16 +1029,16 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "identity");
 
             migrationBuilder.DropTable(
+                name: "Payments",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
                 name: "Features",
                 schema: "catalog");
 
             migrationBuilder.DropTable(
                 name: "SubscriptionPlans",
                 schema: "catalog");
-
-            migrationBuilder.DropTable(
-                name: "Customers",
-                schema: "tenants");
 
             migrationBuilder.DropTable(
                 name: "Roles",
@@ -933,8 +1049,16 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "identity");
 
             migrationBuilder.DropTable(
+                name: "Invoices",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
                 name: "Modules",
                 schema: "catalog");
+
+            migrationBuilder.DropTable(
+                name: "Customers",
+                schema: "tenants");
 
             migrationBuilder.DropTable(
                 name: "Products",

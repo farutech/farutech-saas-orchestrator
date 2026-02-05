@@ -43,7 +43,10 @@ export function ProtectedRoute({ children, requiresOrchestrator = false }: Prote
 
   // Allow access to profile, settings, and organizations pages even with just intermediate token
   // These are management pages that don't require a selected tenant context
-  const isManagementPage = ['/profile', '/settings', '/organizations'].includes(location.pathname);
+  // Allow access to profile, settings, and organizations pages even with just intermediate token
+  // These are management pages that don't require a selected tenant context
+  const isManagementPage = ['/profile', '/settings'].includes(location.pathname) || 
+                          location.pathname.startsWith('/organizations');
   
   // If user needs to select context (has intermediate token) but is trying to access protected routes other than home/management
   if (requiresContextSelection && !isManagementPage) {

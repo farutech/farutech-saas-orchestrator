@@ -67,7 +67,7 @@ public class Payment : BaseEntity
     public string? Metadata { get; set; }
 
     // Navigation properties
-    public Customer Customer { get; set; } = null!;
+    public Customer? Customer { get; set; }
     public ICollection<InvoicePayment> InvoicePayments { get; set; } = [];
 
     // Helper methods

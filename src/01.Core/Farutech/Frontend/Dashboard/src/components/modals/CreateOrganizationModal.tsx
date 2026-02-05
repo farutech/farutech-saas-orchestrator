@@ -1,20 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Building2, Plus, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useCreateCustomer } from '@/hooks/useApi';
+import { useCreateCustomer, useUpdateCustomer } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
+import type { Customer } from '@/types/api';
 
 interface CreateOrganizationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
+  organization?: Customer | null;
+  isEditing?: boolean;
 }
 
-export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationModalProps) {
+export function CreateOrganizationModal({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  organization, 
+  isEditing = false 
+}: CreateOrganizationModalProps) {
   const { user, refreshAvailableTenants, requiresContextSelection } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -26,19 +37,61 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
     address: ''
   });
 
-  const { mutate: createCustomer, isPending } = useCreateCustomer({
+  const { mutate: createCustomer, isPending: isCreating } = useCreateCustomer({
     onSuccess: async () => {
       toast.success('Organización creada exitosamente');
-      
-      // Refresh logic based on context
-      if (requiresContextSelection) {
-        await refreshAvailableTenants();
-      } else {
-        await queryClient.invalidateQueries({ queryKey: ['customers'] });
-      }
-      
-      onClose();
-      // Reset form
+      onSuccess?.();
+      handleSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Error al crear la organización');
+    }
+  });
+
+  const { mutate: updateCustomer, isPending: isUpdating } = useUpdateCustomer({
+    onSuccess: async () => {
+      toast.success('Organización actualizada exitosamente');
+      onSuccess?.();
+      handleSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Error al actualizar la organización');
+    }
+  });
+
+  const handleSuccess = async () => {
+    // Refresh logic based on context
+    if (requiresContextSelection) {
+      await refreshAvailableTenants();
+    } else {
+      await queryClient.invalidateQueries({ queryKey: ['customers'] });
+    }
+    
+    onClose();
+    // Reset form
+    setFormData({
+      name: '',
+      taxId: '',
+      code: '',
+      email: '',
+      phone: '',
+      address: ''
+    });
+  };
+
+  const isLoading = isCreating || isUpdating;
+
+  useEffect(() => {
+    if (isEditing && organization) {
+      setFormData({
+        name: organization.companyName || '',
+        taxId: organization.taxId || '',
+        code: organization.code || '',
+        email: organization.email || '',
+        phone: organization.phone || '',
+        address: organization.address || ''
+      });
+    } else if (!isEditing) {
       setFormData({
         name: '',
         taxId: '',
@@ -47,13 +100,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
         phone: '',
         address: ''
       });
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Error al crear la organización');
     }
-  });
-
-  const isLoading = isPending;
+  }, [isEditing, organization, isOpen]);
   const isProfileLoading = !user?.id && !requiresContextSelection;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +111,21 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
     
     console.log('[CreateOrganizationModal] Submitting. User:', user);
     console.log('[CreateOrganizationModal] Context Selection:', requiresContextSelection);
+
+    if (isEditing && organization) {
+      updateCustomer({
+        id: organization.id,
+        data: {
+          companyName: formData.name,
+          taxId: formData.taxId,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          isActive: organization.isActive
+        }
+      });
+      return;
+    }
 
     if (!user?.id) {
        // Try to find ID in mixin if it's string-based
@@ -98,9 +161,11 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Nueva Organización</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Organización' : 'Nueva Organización'}</DialogTitle>
           <DialogDescription>
-            Crea una nueva organización para gestionar tus aplicaciones.
+            {isEditing 
+              ? 'Actualice los datos de su organización.' 
+              : 'Crea una nueva organización para gestionar tus aplicaciones.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -181,7 +246,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando...
+                  {isEditing ? 'Actualizando...' : 'Creando...'}
                 </>
               ) : isProfileLoading ? (
                 <>
@@ -189,7 +254,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationM
                   Cargando...
                 </>
               ) : (
-                'Crear Organización'
+                isEditing ? 'Guardar Cambios' : 'Crear Organización'
               )}
             </Button>
           </DialogFooter>

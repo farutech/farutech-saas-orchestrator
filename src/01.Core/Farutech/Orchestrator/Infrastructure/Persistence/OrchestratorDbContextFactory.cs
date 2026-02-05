@@ -12,9 +12,12 @@ public class OrchestratorDbContextFactory : IDesignTimeDbContextFactory<Orchestr
     {
         var optionsBuilder = new DbContextOptionsBuilder<OrchestratorDbContext>();
         
-        // Connection string for migrations (should match your database)
-        optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5432;Database=farutec_db;Username=postgres;Password=SuperSecurePassword123",
+        // Use PostgreSQL for production and default dev
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
+            ?? "Host=localhost;Database=farutech_dev;Username=postgres;Password=postgres"; // Default to Postgres for design time
+        
+        // Always use Npgsql unless explicitly requested otherwise (which is removed for consistency)
+        optionsBuilder.UseNpgsql(connectionString,
             b => b.MigrationsAssembly(typeof(OrchestratorDbContext).Assembly.FullName));
 
         return new OrchestratorDbContext(optionsBuilder.Options);

@@ -35,9 +35,10 @@ if (string.IsNullOrEmpty(connectionString))
     // Fallback para desarrollo local cuando no hay Aspire
     if (builder.Environment.IsDevelopment())
     {
-        connectionString = "Host=localhost;Port=5432;Database=farutec_db;Username=farutec_admin;Password=SuperSecurePassword123";
-        Console.WriteLine("⚠️  Usando cadena de conexión de desarrollo local");
-        Console.WriteLine($"   Connection: {connectionString.Replace("SuperSecurePassword123", "***")}");
+        // Usar SQLite para desarrollo local temporal
+        connectionString = "Data Source=farutech_dev.db";
+        Console.WriteLine("⚠️  Usando SQLite para desarrollo local");
+        Console.WriteLine($"   Database: farutech_dev.db");
     }
     else
     {
@@ -50,15 +51,36 @@ if (string.IsNullOrEmpty(connectionString))
 
 var postgresPassword = builder.Configuration["postgres-password"] ?? string.Empty;
 // ========== HEALTH CHECKS ==========
-builder.Services.AddHealthChecks()
-    .AddNpgSql(connectionString, name: "postgresql");
+if (connectionString.Contains("Data Source"))
+{
+    // SQLite para desarrollo local
+    builder.Services.AddHealthChecks()
+        .AddSqlite(connectionString, name: "sqlite");
+}
+else
+{
+    // PostgreSQL para producción
+    builder.Services.AddHealthChecks()
+        .AddNpgSql(connectionString, name: "postgresql");
+}
 var safeConnectionString = postgresPassword.Length > 0
     ? connectionString.Replace(postgresPassword, "***")
     : connectionString;
 Console.WriteLine($"✅ Connection string recibida de Aspire: {safeConnectionString}");
 
 builder.Services.AddDbContext<OrchestratorDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    if (connectionString.Contains("Data Source"))
+    {
+        // SQLite para desarrollo local
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        // PostgreSQL para producción
+        options.UseNpgsql(connectionString);
+    }
+});
 
 // ========== SEEDING ==========
 // using (var scope = builder.Services.BuildServiceProvider().CreateScope())
@@ -356,23 +378,15 @@ Console.WriteLine("Starting application build...");
 // ========== EF CORE MIGRATIONS (CON RETRY PARA RESILIENCIA) ==========
 if (app.Environment.IsDevelopment())
 {
-    try
-    {
-        Console.WriteLine("🔄 Aplicando migraciones EF Core con retry...");
+    Console.WriteLine("🔄 Iniciando proceso de migración de base de datos...");
 
-        await DatabaseMigrator.MigrateAsync(
-            app.Services,
-            app.Logger
-        );
+    // ESTO DEBE FALLAR SI HAY ERRORES - NO CAPTURAR EXCEPCIONES
+    await DatabaseMigrator.MigrateAsync(
+        app.Services,
+        app.Logger
+    );
 
-        Console.WriteLine("✅ Migraciones EF Core aplicadas exitosamente");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"⚠️ Advertencia: Fallaron las migraciones EF Core en Development: {ex.Message}");
-        Console.WriteLine("Continuando sin aplicar migraciones (parche temporal de desarrollo).");
-        // En Development no hacemos FAIL-FAST para facilitar depuración local (temporal)
-    }
+    Console.WriteLine("✅ Migraciones EF Core completadas.");
 }
 else
 {
@@ -380,32 +394,16 @@ else
 }
 
 // ========== DATABASE POST-MIGRATION BOOTSTRAP ==========
-try
-{
-    Console.WriteLine("🚀 Ejecutando bootstrap post-migración...");
+// ESTO DEBE FALLAR SI HAY ERRORES - NO CAPTURAR EXCEPCIONES
+Console.WriteLine("🚀 Ejecutando bootstrap post-migración...");
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var bootstrapService = scope.ServiceProvider.GetRequiredService<DatabasePostMigrationService>();
-        await bootstrapService.ExecutePostMigrationSetupAsync();
-    }
-
-    Console.WriteLine("✅ Bootstrap post-migración completado exitosamente");
-}
-catch (Exception ex)
+using (var scope = app.Services.CreateScope())
 {
-    Console.WriteLine($"❌ Error crítico durante el bootstrap post-migración: {ex.Message}");
-    if (app.Environment.IsDevelopment())
-    {
-        Console.WriteLine("Continuando sin bootstrap post-migración en Development (parche temporal).");
-        // No re-lanzamos la excepción en Development para permitir arranque y diagnóstico
-    }
-    else
-    {
-        Console.WriteLine("La aplicación no puede iniciar sin bootstrap funcional.");
-        throw; // FAIL-FAST en entornos no-development
-    }
+    var bootstrapService = scope.ServiceProvider.GetRequiredService<DatabasePostMigrationService>();
+    await bootstrapService.ExecutePostMigrationSetupAsync();
 }
+
+Console.WriteLine("✅ Bootstrap post-migración completado exitosamente");
 
 // ========== IDEMPOTENT DATA SEEDING ==========
 using (var scope = app.Services.CreateScope())
@@ -493,6 +491,14 @@ Console.WriteLine("Application configured successfully, starting...");
 
 // ========== HEALTH CHECK ENDPOINT ==========
 app.MapHealthChecks("/health/live");
+
+// ========== PREVENIR FALLBACK A HTML ==========
+// Asegurar que cualquier ruta no manejada por API devuelva 404 en lugar de HTML
+app.MapFallback(context => 
+{
+    context.Response.StatusCode = 404;
+    return context.Response.WriteAsJsonAsync(new { error = "Endpoint not found" });
+});
 
 // ========== INICIO DE LA APLICACIÓN ==========
 try

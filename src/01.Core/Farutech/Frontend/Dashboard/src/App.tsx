@@ -35,12 +35,15 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/settings/ProfilePage";
 import OrganizationsManagementPage from "./pages/OrganizationsManagementPage";
+import OrganizationDetailPage from "./pages/OrganizationDetailPage";
+import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 
 // Orchestrator Pages
 import OrchestratorLayout from "./pages/orchestrator/OrchestratorLayout";
 import CatalogPage from "./pages/orchestrator/CatalogPage";
 import CustomersPage from "./pages/orchestrator/CustomersPage";
 import ProvisioningPage from "./pages/orchestrator/ProvisioningPage";
+import ProvisionAppPage from "./pages/ProvisionAppPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +85,9 @@ const App = () => (
                   <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/organizations" element={<OrganizationsManagementPage />} />
+                    <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
+                    <Route path="/organizations/:id/provision" element={<ProvisionAppPage />} />
+                    <Route path="/organizations/:orgId/apps/:appId" element={<ApplicationDetailPage />} />
                   </Route>
                   {/* AppHome route removed */}
                   <Route

@@ -98,7 +98,7 @@ public class Invoice : BaseEntity
     public string? ExternalReference { get; set; }
 
     // Navigation properties
-    public Customer Customer { get; set; } = null!;
+    public Customer? Customer { get; set; }
     public ICollection<InvoiceItem> Items { get; set; } = [];
     public ICollection<Payment> Payments { get; set; } = [];
 

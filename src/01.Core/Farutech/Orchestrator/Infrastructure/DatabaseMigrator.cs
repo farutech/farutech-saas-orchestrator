@@ -13,54 +13,43 @@ namespace Farutech.Orchestrator.Infrastructure;
 public static class DatabaseMigrator
 {
     private const string EfProductVersion = "9.0.1";
-    private const int RetryDelaySeconds = 5;
+    private const int MaxRetries = 60;
+    private const int RetryDelaySeconds = 1;
 
     public static async Task MigrateAsync(IServiceProvider services,
-                                          ILogger logger,
-                                          int maxRetries = 10)
+                                          ILogger logger)
     {
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maxRetries; attempt++)
+        for (var attempt = 1; attempt <= MaxRetries; attempt++)
         {
             try
             {
-                logger.LogInformation("🔄 Database initialization attempt {Attempt}/{MaxRetries}",
-                                      attempt,
-                                      maxRetries);
-
                 using var scope = services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
 
-                await EnsureDatabaseReadyAsync(db, logger);
-
-                logger.LogInformation("✅ Database is ready");
-                return;
-            }
-            catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
-            {
-                // Relation already exists (schema partially created or manually provisioned)
-                logger.LogWarning(pgEx,
-                                  "⚠️ Detected existing database objects (Postgres 42P07). Attempting to reconcile migrations.");
-
-                if (await TryMarkPendingMigrationsAsAppliedAsync(services, logger))
+                // 1. Simple connectivity check
+                if (!await db.Database.CanConnectAsync())
                 {
-                    logger.LogInformation("✅ Database ready after resolving existing schema");
-                    return;
+                     throw new Exception("Database not accessible yet.");
                 }
 
-                lastException = pgEx;
+                // 2. Run migrations
+                await EnsureDatabaseReadyAsync(db, logger);
+
+                logger.LogInformation("✅ Database is ready and migrations are applied.");
+                return;
             }
             catch (Exception ex)
             {
                 lastException = ex;
 
-                if (attempt < maxRetries)
+                if (attempt < MaxRetries)
                 {
-                    logger.LogInformation("⏳ Database not available yet. Retrying in {Delay}s... ({Attempt}/{MaxRetries})",
-                                          RetryDelaySeconds,
+                    logger.LogInformation("ℹ️ [INFO] Database not available yet. Retry {Attempt}/{MaxRetries}. ({Message})",
                                           attempt,
-                                          maxRetries);
+                                          MaxRetries,
+                                          ex.Message);
 
                     await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                 }
@@ -69,10 +58,76 @@ public static class DatabaseMigrator
 
         logger.LogCritical(lastException,
                            "❌ Database did not become available after {MaxRetries} attempts",
-                           maxRetries);
+                           MaxRetries);
 
-        throw new InvalidOperationException($"Database initialization failed after {maxRetries} attempts.",
+        throw new InvalidOperationException($"Database initialization failed after {MaxRetries} attempts.",
                                             lastException);
+    }
+
+    private static async Task<bool> IsDatabaseInBrokenStateAsync(OrchestratorDbContext db, ILogger logger)
+    {
+        try 
+        {
+             // Check if we are in Postgres
+             if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite") return false;
+
+             var usersExist = await IdentityTablesExistAsync(db);
+             
+             // Check if Customers exists (tenants schema)
+             var customersExist = (await db.Database.ExecuteSqlRawAsync("""
+                SELECT 1 FROM information_schema.tables 
+                WHERE table_schema = 'tenants' AND table_name = 'Customers'
+                LIMIT 1
+             """)) > 0;
+
+             // NEW CHECK: If Customers exists, check if IsDeleted is an INTEGER (SQLite artifact) instead of BOOLEAN
+             if (customersExist) 
+             {
+                 var isDeletedIsInteger = (await db.Database.ExecuteSqlRawAsync("""
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_schema = 'tenants' AND table_name = 'Customers' 
+                    AND column_name = 'IsDeleted' AND data_type = 'integer'
+                    LIMIT 1
+                 """)) > 0;
+
+                 if (isDeletedIsInteger)
+                 {
+                     logger.LogWarning("⚠️ Detected SQLite-style integers for boolean columns in Postgres. Resetting schema...");
+                     return true; // Broken state!
+                 }
+             }
+
+             // If Customers exists but Users (Identity) missing, we have a partial broken migration
+             if (customersExist && !usersExist)
+             {
+                 return true;
+             }
+             return false;
+        }
+        catch 
+        {
+            return false;
+        }
+    }
+
+    private static async Task ResetDatabaseSchemasAsync(OrchestratorDbContext db, ILogger logger)
+    {
+        try
+        {
+            // DROP SCHEMAS CASCADE
+            await db.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS identity CASCADE;");
+            await db.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS tenants CASCADE;");
+            await db.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS catalog CASCADE;");
+            // Also clean migration history
+            await db.Database.ExecuteSqlRawAsync("DELETE FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" LIKE '%InitialCreate%';");
+            
+            logger.LogInformation("🧹 Database schemas dropped successfully.");
+        }
+        catch (Exception ex)
+        {
+             logger.LogError(ex, "Failed to reset database schemas.");
+             throw;
+        }
     }
 
     private static async Task EnsureDatabaseReadyAsync(OrchestratorDbContext db,
@@ -110,29 +165,69 @@ public static class DatabaseMigrator
 
     private static async Task<bool> IdentityTablesExistAsync(OrchestratorDbContext db)
     {
-        var result = await db.Database.ExecuteSqlRawAsync("""
-            SELECT 1
-            FROM information_schema.tables
-            WHERE table_schema = 'identity'
-              AND table_name = 'Roles'
-            LIMIT 1
-        """);
-
-        return result > 0;
+        try
+        {
+            // Check if we're using SQLite
+            if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                // For SQLite, check if the Roles table exists using SQLite syntax
+                var result = await db.Database.ExecuteSqlRawAsync("""
+                    SELECT 1
+                    FROM sqlite_master
+                    WHERE type = 'table'
+                      AND name = 'Users'
+                    LIMIT 1
+                """);
+                return result > 0;
+            }
+            else
+            {
+                // For PostgreSQL, use information_schema
+                // CRITICAL: Check for Users, not Roles, as Roles might have schema issues
+                var result = await db.Database.ExecuteSqlRawAsync("""
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'identity'
+                      AND table_name = 'Users'
+                    LIMIT 1
+                """);
+                return result > 0;
+            }
+        }
+        catch
+        {
+            // If query fails, assume tables don't exist
+            return false;
+        }
     }
 
     private static async Task MarkMigrationsAsAppliedAsync(OrchestratorDbContext db,
                                                            IEnumerable<string> migrations,
                                                            ILogger logger)
     {
+        var isSqlite = db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite";
+
         foreach (var migrationId in migrations)
         {
-            await db.Database.ExecuteSqlRawAsync("""
-                INSERT INTO "__EFMigrationsHistory"
-                    ("MigrationId", "ProductVersion")
-                VALUES ({0}, {1})
-                ON CONFLICT DO NOTHING
-            """, migrationId, EfProductVersion);
+            if (isSqlite)
+            {
+                // SQLite syntax
+                await db.Database.ExecuteSqlRawAsync("""
+                    INSERT OR IGNORE INTO "__EFMigrationsHistory"
+                        ("MigrationId", "ProductVersion")
+                    VALUES ({0}, {1})
+                """, migrationId, EfProductVersion);
+            }
+            else
+            {
+                // PostgreSQL syntax
+                await db.Database.ExecuteSqlRawAsync("""
+                    INSERT INTO "__EFMigrationsHistory"
+                        ("MigrationId", "ProductVersion")
+                    VALUES ({0}, {1})
+                    ON CONFLICT DO NOTHING
+                """, migrationId, EfProductVersion);
+            }
         }
 
         logger.LogInformation(

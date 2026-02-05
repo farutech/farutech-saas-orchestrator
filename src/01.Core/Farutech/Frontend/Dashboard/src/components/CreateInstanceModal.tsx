@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProducts, useProductManifest, useProvisionTenant, queryKeys } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,8 +13,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Server, ChevronRight, Check, Loader2, Package, CreditCard } from 'lucide-react';
+import { 
+  Server, 
+  ChevronRight, 
+  Check, 
+  Loader2, 
+  Package, 
+  CreditCard,
+  Sparkles,
+  Shield,
+  Rocket,
+  Zap,
+  Globe,
+  Cpu
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { ProvisionTenantRequest, Customer, SubscriptionPlanDto } from '@/types/api';
 
 interface CreateInstanceModalProps {
@@ -142,18 +158,48 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
 
         {/* Step 1: Product Selection */}
         {step === 1 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <Label className="text-sm font-medium">Seleccione la Aplicación</Label>
-              <div className="relative mt-1">
+              <Label className="text-sm font-semibold text-slate-900 mb-3 block">Seleccione la Aplicación</Label>
+              
+              {/* Featured Products Grid */}
+              {!productFilter && products && products.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  {products.slice(0, 3).map((product) => (
+                    <Card 
+                      key={product.id}
+                      className={cn(
+                        "cursor-pointer transition-all hover:border-primary/50 hover:shadow-sm",
+                        formData.productId === product.id ? "ring-2 ring-primary border-primary bg-primary/5" : "border-slate-200"
+                      )}
+                      onClick={() => {
+                        setFormData({ ...formData, productId: product.id, subscriptionPlanId: '' });
+                        setProductFilter(product.name || '');
+                      }}
+                    >
+                      <CardHeader className="p-4 flex flex-row items-center gap-3 space-y-0">
+                        <div className="p-2 rounded-lg bg-violet-100 text-violet-600">
+                          <Package className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <CardTitle className="text-sm font-bold truncate">{product.name}</CardTitle>
+                          <CardDescription className="text-[10px] truncate">{product.description || 'App de Farutech'}</CardDescription>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              <div className="relative">
                 <Input
-                  placeholder="Buscar aplicación..."
+                  placeholder="O busque otra aplicación específica..."
                   value={productFilter}
                   onChange={(e) =>setProductFilter(e.target.value)}
                   onFocus={() =>setShowProductDropdown(true)}
                   onBlur={() =>setTimeout(() =>setShowProductDropdown(false), 200)}
                   disabled={productsLoading}
-                  className="mb-2"
+                  className="mb-2 h-11"
                 />
                 {showProductDropdown && filteredProducts && filteredProducts.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -165,68 +211,65 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
                           setProductFilter(product.name || '');
                           setShowProductDropdown(false);
                         }}
-                        className="w-full px-4 py-2 text-left hover:bg-slate-100 focus:bg-slate-100 focus:outline-none border-b border-slate-100 last:border-b-0"
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none border-b border-slate-100 last:border-b-0 flex items-center gap-3"
                       >
-                        <div className="font-medium truncate">{product.name}</div>
-                        {product.description && (
-                          <div className="text-xs text-slate-500 truncate">{product.description}</div>
-                        )}
+                        <Package className="h-4 w-4 text-slate-400" />
+                        <div>
+                          <div className="font-medium text-sm">{product.name}</div>
+                          {product.description && (
+                            <div className="text-[10px] text-slate-500 truncate">{product.description}</div>
+                          )}
+                        </div>
                       </button>
                     ))}
-                    {!productFilter && products && products.length > 10 && (
-                      <div className="px-4 py-2 text-xs text-slate-500 bg-slate-50 text-center">
-                        Mostrando 10 de {products.length} aplicaciones. Escribe para buscar más.
-                      </div>
-                    )}
-                  </div>
-                )}
-                {formData.productId && selectedProduct && (
-                  <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1 mr-4">
-                        <div className="font-medium text-sm truncate">{selectedProduct.name}</div>
-                        {selectedProduct.description && (
-                          <div className="text-xs text-slate-600 mt-0.5 truncate">{selectedProduct.description}</div>
-                        )}
-                      </div>
-                      <Badge variant="highlight">Seleccionado</Badge>
-                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Tipo de Infraestructura</Label>
-              <p className="text-xs text-slate-500 mt-1 mb-2">
-                Seleccione la infraestructura según sus necesidades de rendimiento y presupuesto
+            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+              <Label className="text-sm font-semibold text-slate-900 mb-2 block">Tipo de Infraestructura</Label>
+              <p className="text-xs text-slate-500 mb-4">
+                El despliegue dedicado ofrece aislamiento total y recursos garantizados.
               </p>
-              <Select
-                value={formData.deploymentType}
-                onValueChange={(v) =>setFormData({ ...formData, deploymentType: v })}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="start">
-                  <SelectItem value="Shared">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">🌐 Compartido (Shared)</span>
-                      <span className="text-xs text-slate-500">
-                        Recursos compartidos • Más económico • Ideal para iniciar
-                      </span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="Dedicated">
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">⚡ Dedicado (Dedicated)</span>
-                      <span className="text-xs text-slate-500">
-                        Recursos dedicados • Máximo rendimiento • Sin límites
-                      </span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, deploymentType: 'Shared' })}
+                  className={cn(
+                    "flex flex-col items-start p-4 rounded-lg border-2 text-left transition-all",
+                    formData.deploymentType === 'Shared' 
+                      ? "border-primary bg-white shadow-md" 
+                      : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Globe className={cn("h-5 w-5", formData.deploymentType === 'Shared' ? "text-primary" : "text-slate-400")} />
+                    <span className="font-bold text-sm">Compartido</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 leading-relaxed text-wrap">
+                    Ideal para PyMEs. Costo eficiente y alta disponibilidad garantizada.
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, deploymentType: 'Dedicated' })}
+                  className={cn(
+                    "flex flex-col items-start p-4 rounded-lg border-2 text-left transition-all",
+                    formData.deploymentType === 'Dedicated' 
+                      ? "border-amber-500 bg-white shadow-md" 
+                      : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Cpu className={cn("h-5 w-5", formData.deploymentType === 'Dedicated' ? "text-amber-500" : "text-slate-400")} />
+                    <span className="font-bold text-sm">Dedicado</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 leading-relaxed text-wrap">
+                    Para operaciones críticas. Recursos de cómputo y red exclusivos.
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -277,72 +320,126 @@ export function CreateInstanceModal({ isOpen, onClose, organization }: CreateIns
 
         {/* Step 3: Subscription Plan Selection */}
         {step === 3 && selectedProduct && (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium">Seleccione su Plan de Suscripción</Label>
-              <p className="text-sm text-slate-600 mt-1 mb-3">
-                Elija el plan que mejor se adapte a las necesidades de su negocio
+          <div className="space-y-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-slate-900">Planes de Suscripción</h3>
+              <p className="text-sm text-slate-500">
+                Seleccione el nivel de servicio más adecuado para su organización
               </p>
-              {manifestLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : productManifest?.subscriptionPlans && productManifest.subscriptionPlans.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-                  {productManifest.subscriptionPlans.map((plan) =>(
-                    <button
+            </div>
+
+            {manifestLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : productManifest?.subscriptionPlans && productManifest.subscriptionPlans.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+                {productManifest.subscriptionPlans.map((plan, idx) => {
+                  const isSelected = formData.subscriptionPlanId === plan.id;
+                  const PlanIcon = idx === 0 ? Zap : idx === 1 ? Sparkles : Shield;
+                  
+                  return (
+                    <Card
                       key={plan.id}
-                      onClick={() =>setFormData({ ...formData, subscriptionPlanId: plan.id })}
-                      className={`w-full max-w-[320px] mx-auto p-4 border-2 rounded-lg text-left transition-all hover:border-primary hover:shadow-md ${
-                        formData.subscriptionPlanId === plan.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-slate-200'
-                      } ${plan.isRecommended ? 'ring-2 ring-primary/20' : ''}`}
+                      className={cn(
+                        "relative flex flex-col transition-all cursor-pointer border-2 overflow-hidden",
+                        isSelected 
+                          ? "border-primary ring-2 ring-primary/20 scale-[1.02] z-10 shadow-xl" 
+                          : "border-slate-200 hover:border-slate-300 opacity-90 hover:opacity-100 hover:shadow-lg hover:scale-[1.01]",
+                        plan.isRecommended && !isSelected && "border-slate-300 shadow-md"
+                      )}
+                      onClick={() => setFormData({ ...formData, subscriptionPlanId: plan.id })}
                     >
                       {plan.isRecommended && (
-                        <Badge className="mb-2" variant="default">Recomendado</Badge>
+                        <div className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest py-1.5 text-center w-full">
+                          MÁS POPULAR
+                        </div>
                       )}
-                      <div className="font-semibold text-lg mb-1">{plan.name}</div>
-                      <div className="text-2xl font-bold text-primary mb-1">
-                        {formatPrice(plan.monthlyPrice)}
-                        <span className="text-sm font-normal text-slate-600">/mes</span>
+                      
+                      <CardHeader className="pt-6 pb-2 text-center">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4",
+                          idx === 0 ? "bg-blue-50 text-blue-600" : 
+                          idx === 1 ? "bg-violet-50 text-violet-600" : 
+                          "bg-amber-50 text-amber-600"
+                        )}>
+                          <PlanIcon className="h-6 w-6" />
+                        </div>
+                        <CardTitle className="text-lg font-bold">{plan.name}</CardTitle>
+                        <CardDescription className="text-[11px] leading-relaxed line-clamp-2 mt-1">
+                          {plan.description}
+                        </CardDescription>
+                      </CardHeader>
+
+                      <CardContent className="flex-1 pb-6 text-center">
+                        <div className="mb-4">
+                          <span className="text-3xl font-black text-slate-900 leading-none">
+                            {formatPrice(plan.monthlyPrice).split(',')[0]}
+                          </span>
+                          <span className="text-sm text-slate-500 font-medium">/mes</span>
+                          {plan.annualPrice && (
+                            <div className="text-[10px] text-emerald-600 font-bold mt-1">
+                              Pago anual: {formatPrice(plan.annualPrice)} /año
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-3 pt-6 border-t border-slate-100 text-left">
+                          {plan.limits && (
+                            <>
+                              <div className="flex items-center gap-2.5">
+                                <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span className="text-xs text-slate-600 font-medium">
+                                  {plan.limits.maxUsers === -1 ? 'Usuarios ilimitados' : `${plan.limits.maxUsers} Usuarios`}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2.5">
+                                <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span className="text-xs text-slate-600 font-medium">
+                                  {plan.limits.storageGB === -1 ? 'Almacenamiento ilimitado' : `${plan.limits.storageGB} GB Storage`}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2.5">
+                                <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                <span className="text-xs text-slate-600 font-medium">
+                                  Soporte {plan.limits.supportLevel}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {plan.features?.slice(0, 2).map((feature) => (
+                            <div key={feature.id} className="flex items-center gap-2.5">
+                              <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                              <span className="text-xs text-slate-600 font-medium">{feature.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                      
+                      <div className={cn(
+                        "p-4 border-t",
+                        isSelected ? "bg-primary/5 border-primary/20" : "bg-slate-50 border-slate-100"
+                      )}>
+                        <Button 
+                          className={cn("w-full transition-all", isSelected ? "bg-primary" : "bg-slate-700 hover:bg-slate-800")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData({ ...formData, subscriptionPlanId: plan.id });
+                          }}
+                        >
+                          {isSelected ? 'Seleccionado' : 'Elegir Plan'}
+                        </Button>
                       </div>
-                      {plan.annualPrice && (
-                        <div className="text-xs text-slate-600 mb-3">
-                          {formatPrice(plan.annualPrice)}/año (ahorra {formatPrice((plan.monthlyPrice * 12) - plan.annualPrice)})
-                        </div>
-                      )}
-                      <div className="text-xs text-slate-600 mb-3">{plan.description}</div>
-                      
-                      {plan.limits && (
-                        <div className="space-y-1 text-xs mt-3 pt-3 border-t border-slate-200">
-                          <div className="flex items-center">
-                            <Check className="h-3 w-3 text-green-600 mr-1" />
-                            {plan.limits.maxUsers === -1 ? 'Usuarios ilimitados' : `Hasta ${plan.limits.maxUsers} usuarios`}
-                          </div>
-                          <div className="flex items-center">
-                            <Check className="h-3 w-3 text-green-600 mr-1" />
-                            {plan.limits.storageGB === -1 ? 'Almacenamiento ilimitado' : `${plan.limits.storageGB} GB almacenamiento`}
-                          </div>
-                          <div className="flex items-center">
-                            <Check className="h-3 w-3 text-green-600 mr-1" />
-                            Soporte {plan.limits.supportLevel}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {plan.isFullAccess && (
-                        <Badge className="mt-2" variant="secondary">Acceso Completo</Badge>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-slate-500 py-8 text-center bg-slate-50 rounded-md">
-                  No hay planes de suscripción disponibles para esta aplicación.
-                </div>
-              )}
-            </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                <Package className="h-10 w-10 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 italic">No hay planes disponibles para esta selección.</p>
+              </div>
+            )}
           </div>
         )}
 

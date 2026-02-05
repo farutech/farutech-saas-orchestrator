@@ -13,15 +13,15 @@ public class WorkerMonitoringService(OrchestratorDbContext context) : IWorkerMon
 {
     private readonly OrchestratorDbContext _context = context;
 
-    public async Task<QueueStatusDto?> GetQueueStatusAsync(Guid appId)
+    public Task<QueueStatusDto?> GetQueueStatusAsync(Guid appId)
     {
-        var instance = await _context.TenantInstances.FindAsync(appId);
-        if (instance == null) return null;
+        var instance = _context.TenantInstances.Find(appId);
+        if (instance == null) return Task.FromResult<QueueStatusDto?>(null);
 
         // TODO: Implementar integración con NATS para obtener estado real de colas
         // Por ahora, devolver datos mock
 
-        return new QueueStatusDto(
+        return Task.FromResult<QueueStatusDto?>(new QueueStatusDto(
             appId,
             instance.Name,
             5, // Pending
@@ -32,24 +32,24 @@ public class WorkerMonitoringService(OrchestratorDbContext context) : IWorkerMon
             {
                 new FailedTaskDto("task-123", "provision", "Database timeout", DateTime.UtcNow.AddMinutes(-5), 2)
             }
-        );
+        ));
     }
 
-    public async Task<ServiceResult> RetryFailedTaskAsync(Guid appId, string taskId)
+    public Task<ServiceResult> RetryFailedTaskAsync(Guid appId, string taskId)
     {
         // TODO: Implementar reintento vía NATS
-        return ServiceResult.Ok("Tarea reenviada");
+        return Task.FromResult(ServiceResult.Ok("Tarea reenviada"));
     }
 
-    public async Task<WorkerMetricsDto> GetWorkerMetricsAsync()
+    public Task<WorkerMetricsDto> GetWorkerMetricsAsync()
     {
         // TODO: Implementar métricas reales
-        return new WorkerMetricsDto(
+        return Task.FromResult(new WorkerMetricsDto(
             3, // Total workers
             2, // Active
             1500, // Total processed
             2.5, // Average time
             DateTime.UtcNow
-        );
+        ));
     }
 }

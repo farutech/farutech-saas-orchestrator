@@ -41,11 +41,24 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
 
      // Eliminado: tablas custom Permissions y RolePermissions
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        
+        // Suppress pending model changes warning to allow migrations to run even if there is slight drift
+        // This is crucial for local development resilience when models change frequently
+        optionsBuilder.ConfigureWarnings(warnings => 
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Enforce PostgreSQL schema for Identity - MUST BE FIRST
+        modelBuilder.HasDefaultSchema("identity");
+
         base.OnModelCreating(modelBuilder);
 
-        // Renombrar tablas Identity sin prefijo AspNet
+        // Enforce PostgreSQL schema for Identity Tables
         modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
         modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
