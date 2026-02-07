@@ -92,7 +92,7 @@ export default function ProvisionAppPage() {
       await refreshAvailableTenants();
       
       toast.success('Aplicación creada exitosamente');
-      navigate(`/organizations/${orgId}`);
+      navigate(`/dashboard/${orgId}`);
     } catch (error) {
       toast.error('Error al crear la aplicación');
     }
@@ -116,7 +116,7 @@ export default function ProvisionAppPage() {
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <Package className="h-12 w-12 text-slate-300 mb-4" />
           <h2 className="text-xl font-bold">Organización no encontrada</h2>
-          <Button onClick={() => navigate('/organizations')} className="mt-4">
+          <Button onClick={() => navigate('/dashboard')} className="mt-4">
             Volver a Organizaciones
           </Button>
         </div>
@@ -134,7 +134,7 @@ export default function ProvisionAppPage() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate(`/organizations/${orgId}`)}
+            onClick={() => navigate(`/dashboard/${orgId}`)}
             className="h-8 px-2 hover:bg-slate-200"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />

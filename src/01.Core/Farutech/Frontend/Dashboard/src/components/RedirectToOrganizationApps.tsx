@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 /**
  * @deprecated Component to handle redirect from old route structure
  * Redirects: /organizations/:orgId/apps/:appId → /organizations/:orgId?tab=applications&app=:appId
+ * Redirects: /dashboard/:orgId/apps/:appId → /dashboard/:orgId?tab=applications&app=:appId
  */
 export function RedirectToOrganizationApps() {
   const { orgId, appId } = useParams<{ orgId: string; appId: string }>();
@@ -16,7 +17,7 @@ export function RedirectToOrganizationApps() {
   useEffect(() => {
     if (orgId) {
       // Build the new URL with query params
-      const newPath = `/organizations/${orgId}?tab=applications${appId ? `&app=${appId}` : ''}`;
+      const newPath = `/dashboard/${orgId}?tab=applications${appId ? `&app=${appId}` : ''}`;
       navigate(newPath, { replace: true });
     }
   }, [orgId, appId, navigate]);

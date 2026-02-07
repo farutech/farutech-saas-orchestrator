@@ -70,15 +70,15 @@ export default function OrganizationsManagementPage() {
 
   const handleLaunchInstance = (orgId: string, instanceId: string) => {
     // This could redirect to the internal dashboard view or open in new tab
-    navigate(`/organizations/${orgId}/apps/${instanceId}`);
+    navigate(`/dashboard/${orgId}/apps/${instanceId}`);
   };
 
   const handleCreateInstance = (orgId: string) => {
-    navigate(`/organizations/${orgId}?modal=new-instance`);
+    navigate(`/dashboard/${orgId}?modal=new-instance`);
   };
 
   const handleViewAll = (orgId: string) => {
-    navigate(`/organizations/${orgId}`);
+    navigate(`/dashboard/${orgId}`);
   };
 
   const filteredOrgs = orgs.filter(org => 
@@ -163,7 +163,7 @@ export default function OrganizationsManagementPage() {
                   setCreateEditDialogOpen(true);
                 }}
                 onToggleStatus={() => handleToggleStatus(org.id, org.isActive)}
-                onSelectOrganization={() => navigate(`/organizations/${org.id}`)}
+                onSelectOrganization={() => navigate(`/dashboard/${org.id}`)}
               />
             );
           })}

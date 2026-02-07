@@ -84,15 +84,20 @@ const App = () => (
 
                   {/* Protected Routes */}
                   <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-                    <Route path="/home" element={<HomePage />} />
-                    <Route path="/organizations" element={<OrganizationsManagementPage />} />
-                    <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
-                    <Route path="/organizations/:id/provision" element={<ProvisionAppPage />} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/dashboard" element={<OrganizationsManagementPage />} />
+                    <Route path="/dashboard/:id" element={<OrganizationDetailPage />} />
+                    <Route path="/dashboard/:id/provision" element={<ProvisionAppPage />} />
                     {/* @deprecated: Redirect old app detail route to organization with applications tab */}
                     <Route 
-                      path="/organizations/:orgId/apps/:appId" 
+                      path="/dashboard/:orgId/apps/:appId" 
                       element={<RedirectToOrganizationApps />} 
                     />
+                    {/* Legacy redirects */}
+                    <Route path="/organizations" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/organizations/:id" element={<Navigate to="/dashboard/:id" replace />} />
+                    <Route path="/organizations/:id/provision" element={<Navigate to="/dashboard/:id/provision" replace />} />
                   </Route>
                   {/* AppHome route removed */}
                   <Route
@@ -155,7 +160,7 @@ const App = () => (
                   </Route>
 
                   {/* Default & 404 */}
-                  <Route path="/" element={<Navigate to="/home" replace />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster />

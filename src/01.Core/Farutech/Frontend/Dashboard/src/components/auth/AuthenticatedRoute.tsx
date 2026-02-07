@@ -15,7 +15,7 @@ interface AuthenticatedRouteProps {
  * AuthenticatedRoute - Para páginas que solo requieren autenticación básica
  * 
  * Casos de uso:
- * - Gestión de organizaciones (/organizations)
+ * - Gestión de organizaciones (/organizations, /dashboard)
  * - Perfil de usuario (/profile)
  * - Configuración (/settings)
  * 

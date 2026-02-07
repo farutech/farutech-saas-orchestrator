@@ -68,6 +68,15 @@ const getStatusColor = (status: string) => {
 // ============================================================================
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
+  // Auto-redirect to dashboard (main page)
+  useEffect(() => {
+    navigate('/dashboard', { replace: true });
+  }, [navigate]);
+
+  // The rest of the component will not render due to the redirect
+  return null;
   const { selectContext, availableTenants, requiresContextSelection, user } = useAuth();
   const { data: customersData, isLoading: customersLoading } = useCustomers({
     enabled: !requiresContextSelection 
@@ -207,7 +216,7 @@ export default function HomePage() {
 
   // Handle Create Instance - Navigate to new page
   const handleCreateInstance = (organizationId: string) => {
-    navigate(`/organizations/${organizationId}/provision`);
+    navigate(`/dashboard/${organizationId}/provision`);
   };
 
   // Handle Edit Organization

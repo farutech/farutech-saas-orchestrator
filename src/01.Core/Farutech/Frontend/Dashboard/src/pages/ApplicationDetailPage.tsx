@@ -50,6 +50,7 @@ const getAppIcon = (type: string) => {
 /**
  * @deprecated This component is deprecated. Use OrganizationDetailPage with query params instead.
  * Redirects to: /organizations/:orgId?tab=applications&app=:appId
+ * Redirects to: /dashboard/:orgId?tab=applications&app=:appId
  */
 export default function ApplicationDetailPage() {
   const { orgId, appId } = useParams<{ orgId: string; appId: string }>();
@@ -59,7 +60,7 @@ export default function ApplicationDetailPage() {
   // Auto-redirect to new structure
   useEffect(() => {
     if (orgId && appId) {
-      navigate(`/organizations/${orgId}?tab=applications&app=${appId}`, { replace: true });
+      navigate(`/dashboard/${orgId}?tab=applications&app=${appId}`, { replace: true });
     }
   }, [orgId, appId, navigate]);
   
@@ -124,7 +125,7 @@ export default function ApplicationDetailPage() {
           <div className="text-center space-y-4">
             <Package className="h-16 w-16 text-slate-300 mx-auto" />
             <h2 className="text-xl font-semibold text-slate-900">Aplicación no encontrada</h2>
-            <Button onClick={() => navigate(`/organizations/${orgId}`)}>Volver a la Organización</Button>
+            <Button onClick={() => navigate(`/dashboard/${orgId}`)}>Volver a la Organización</Button>
           </div>
         </main>
       </div>
@@ -142,7 +143,7 @@ export default function ApplicationDetailPage() {
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
           <span className="text-blue-600 font-bold text-lg">Farutech</span>
           <span className="text-slate-300 text-lg">|</span>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => navigate(`/organizations/${orgId}`)}>
+          <div className="flex items-center gap-1 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => navigate(`/dashboard/${orgId}`)}>
             <span className="text-lg font-medium text-slate-500">{customer.companyName}</span>
             <ChevronRight className="h-4 w-4 text-slate-300" />
           </div>
@@ -218,7 +219,7 @@ export default function ApplicationDetailPage() {
                                  <Button variant="ghost" size="sm" className="h-8 text-slate-400 hover:text-blue-600 font-bold" onClick={() => handleOpenApp(otherApp)}>
                                    Abrir
                                  </Button>
-                                 <Button size="sm" className="h-8 bg-blue-600 hover:bg-blue-700 font-bold shadow-sm" onClick={() => navigate(`/organizations/${orgId}/apps/${otherApp.id}`)}>
+                                 <Button size="sm" className="h-8 bg-blue-600 hover:bg-blue-700 font-bold shadow-sm" onClick={() => navigate(`/dashboard/${orgId}/apps/${otherApp.id}`)}>
                                    Gestionar
                                  </Button>
                                </>
@@ -232,7 +233,7 @@ export default function ApplicationDetailPage() {
                       ))}
                     </div>
                     <div className="p-4 border-t border-slate-100">
-                      <Button variant="ghost" size="sm" className="w-full text-slate-400 border border-dashed border-slate-200 hover:bg-slate-50 hover:text-blue-600 font-bold py-6 transition-all" onClick={() => navigate(`/organizations/${orgId}/provision`)}>
+                      <Button variant="ghost" size="sm" className="w-full text-slate-400 border border-dashed border-slate-200 hover:bg-slate-50 hover:text-blue-600 font-bold py-6 transition-all" onClick={() => navigate(`/dashboard/${orgId}/provision`)}>
                         + Añadir nueva App
                       </Button>
                     </div>
@@ -351,7 +352,7 @@ export default function ApplicationDetailPage() {
                     const url = applicationsService.getDashboardUrl(a);
                     window.open(url, '_blank');
                   }}
-                  onManage={(a) => navigate(`/organizations/${orgId}/apps/${a.id}`)}
+                  onManage={(a) => navigate(`/dashboard/${orgId}/apps/${a.id}`)}
                   onReactivate={(a) => {
                     if (orgId) {
                       reactivateMutation.mutate({ orgId, appId: a.id });
