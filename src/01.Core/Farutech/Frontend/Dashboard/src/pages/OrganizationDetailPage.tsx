@@ -654,11 +654,19 @@ export default function OrganizationDetailPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-400 uppercase">Versión</label>
+                                        <label className="text-xs font-bold text-slate-400 uppercase">Suscripción</label>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <Package className="h-4 w-4 text-slate-400" />
-                                            <span className="text-sm font-medium text-slate-700">v2.4.1</span>
+                                            <CreditCard className="h-4 w-4 text-slate-400" />
+                                            <span className="text-sm font-medium text-slate-700">{selectedApp.subscription || 'Standard'}</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Versión</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Package className="h-4 w-4 text-slate-400" />
+                                        <span className="text-sm font-medium text-slate-700">v2.4.1</span>
                                     </div>
                                 </div>
                             </CardContent>

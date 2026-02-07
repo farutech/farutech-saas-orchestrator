@@ -14,6 +14,7 @@ export interface ApplicationSummary {
   status: 'Active' | 'Inactive' | 'Provisioning';
   url?: string;
   environment?: string;
+  subscription?: string; // Plan de suscripción activo
 }
 
 export interface OrganizationSummary {
@@ -45,6 +46,7 @@ export const applicationsService = {
       status: mapInstanceStatus(instance.status),
       url: instance.apiBaseUrl,
       environment: instance.environment,
+      subscription: getSubscriptionPlan(instance), // Plan de suscripción
     }));
   },
 
@@ -150,4 +152,24 @@ function mapInstanceStatus(status?: string): 'Active' | 'Inactive' | 'Provisioni
   if (normalized === 'active') return 'Active';
   if (normalized === 'provisioning') return 'Provisioning';
   return 'Inactive';
+}
+
+/**
+ * Get subscription plan for an instance
+ * TODO: This should be fetched from the API based on actual subscription data
+ */
+function getSubscriptionPlan(instance: TenantInstance): string {
+  // Mock logic: determine subscription based on instance properties
+  // In a real implementation, this would query the subscription API
+  const type = (instance.environment || '').toLowerCase();
+  
+  if (type.includes('premium') || type.includes('enterprise')) {
+    return 'Enterprise Plus';
+  } else if (type.includes('professional') || type.includes('pro')) {
+    return 'Professional';
+  } else if (type.includes('basic') || type.includes('starter')) {
+    return 'Basic';
+  } else {
+    return 'Standard'; // Default plan
+  }
 }
