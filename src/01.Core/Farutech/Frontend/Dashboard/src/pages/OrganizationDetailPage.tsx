@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { useState, useMemo, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Building2, 
   Settings, 
@@ -60,10 +60,20 @@ const getAppIcon = (type: string) => {
 export default function OrganizationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   // Role-based permissions
   // For now, allow management for everyone as requested
   const canManage = true;
-  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Query params for deep linking
+  const tabParam = searchParams.get('tab');
+  const appParam = searchParams.get('app');
+  
+  // State
+  const [activeTab, setActiveTab] = useState(tabParam || 'dashboard');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(appParam || null);
   
   // Data hooks
   const { availableTenants } = useAuth();
@@ -117,6 +127,30 @@ export default function OrganizationDetailPage() {
 
   const isLoading = customerLoading || (canManage && summaryLoading);
 
+  // Computed values for master-detail view
+  const filteredApps = useMemo(() => {
+    if (!apps) return [];
+    if (!searchTerm) return apps;
+    const term = searchTerm.toLowerCase();
+    return apps.filter(app => 
+      app.name.toLowerCase().includes(term) ||
+      app.code.toLowerCase().includes(term) ||
+      app.type.toLowerCase().includes(term)
+    );
+  }, [apps, searchTerm]);
+
+  const selectedApp = useMemo(() => {
+    if (!selectedAppId || !apps) return null;
+    return apps.find(app => app.id === selectedAppId) || null;
+  }, [selectedAppId, apps]);
+
+  // Effect to handle query params for app preselection
+  useEffect(() => {
+    if (appParam && apps && apps.length > 0) {
+      setSelectedAppId(appParam);
+    }
+  }, [appParam, apps]);
+
   // Handlers
   const handleOpenApp = async (app: ApplicationSummary) => {
     // Try to use navigateToInstance for proper session handling
@@ -141,7 +175,13 @@ export default function OrganizationDetailPage() {
   };
 
   const handleManageApp = (app: ApplicationSummary) => {
-    navigate(`/organizations/${id}/apps/${app.id}`);
+    // Instead of navigating to separate route, switch to applications tab and select app
+    setActiveTab('applications');
+    setSelectedAppId(app.id);
+    setSearchParams({ tab: 'applications', app: app.id });
+    
+    // Scroll to top to show the selected app in the detail panel
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleReactivateApp = (app: ApplicationSummary) => {

@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -46,10 +47,21 @@ const getAppIcon = (type: string) => {
   return '📦';
 };
 
+/**
+ * @deprecated This component is deprecated. Use OrganizationDetailPage with query params instead.
+ * Redirects to: /organizations/:orgId?tab=applications&app=:appId
+ */
 export default function ApplicationDetailPage() {
   const { orgId, appId } = useParams<{ orgId: string; appId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Auto-redirect to new structure
+  useEffect(() => {
+    if (orgId && appId) {
+      navigate(`/organizations/${orgId}?tab=applications&app=${appId}`, { replace: true });
+    }
+  }, [orgId, appId, navigate]);
   
   const { data: customer, isLoading: customerLoading } = useCustomer(orgId || '');
   const { data: apps, isLoading: appsLoading } = useOrganizationApplications(orgId || '');

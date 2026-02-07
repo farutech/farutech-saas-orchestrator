@@ -10,6 +10,7 @@ import { SessionBridgeProvider } from "@/contexts/SessionBridgeContext";
 import { FarutechProvider } from "@/contexts/FarutechContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AuthenticatedRoute } from "@/components/auth/AuthenticatedRoute";
+import { RedirectToOrganizationApps } from "@/components/RedirectToOrganizationApps";
 
 // Auth Pages
 import Login from "./pages/auth/Login";
@@ -87,7 +88,11 @@ const App = () => (
                     <Route path="/organizations" element={<OrganizationsManagementPage />} />
                     <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
                     <Route path="/organizations/:id/provision" element={<ProvisionAppPage />} />
-                    <Route path="/organizations/:orgId/apps/:appId" element={<ApplicationDetailPage />} />
+                    {/* @deprecated: Redirect old app detail route to organization with applications tab */}
+                    <Route 
+                      path="/organizations/:orgId/apps/:appId" 
+                      element={<RedirectToOrganizationApps />} 
+                    />
                   </Route>
                   {/* AppHome route removed */}
                   <Route
