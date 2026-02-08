@@ -57,13 +57,6 @@ export default function OrganizationsManagementPage() {
 
   const orgs = customersData?.organizations || [];
 
-  const handleToggleExpand = (id: string) => {
-    setExpandedOrgs(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
   const handleToggleStatus = (id: string, currentStatus: boolean) => {
     updateMutation.mutate({ id, data: { isActive: !currentStatus, companyName: '', email: '' } });
   };
