@@ -77,10 +77,6 @@ export default function OrganizationsManagementPage() {
     navigate(`/organizations/${orgId}?modal=new-instance`);
   };
 
-  const handleViewAll = (orgId: string) => {
-    navigate(`/organizations/${orgId}`);
-  };
-
   const filteredOrgs = orgs.filter(org => 
     org.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     org.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
