@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/farutech/orchestrator-workers/internal/api"
 	"github.com/farutech/orchestrator-workers/internal/config"
 	"github.com/farutech/orchestrator-workers/internal/handlers"
 	"github.com/farutech/orchestrator-workers/internal/nats"
@@ -23,7 +24,24 @@ func main() {
 	log.Printf("NATS URL:     %s", cfg.NatsURL)
 	log.Printf("Max Retries:  %d", cfg.MaxRetries)
 	log.Printf("Retry Backoff: %ds", cfg.RetryBackoff)
+	log.Printf("API URL:      %s", cfg.APIURL)
+	log.Printf("API Token:    %s", maskToken(cfg.APIToken))
 	log.Printf("")
+	
+	// Initialize API client with service ID
+	apiClient := api.NewClient(cfg.APIURL, cfg.WorkerID)
+	
+	// Authenticate service with the orchestrator
+	log.Println("🔐 Authenticating service with orchestrator...")
+	err = apiClient.AuthenticateService("provisioning-worker", []string{
+		"tasks:read",
+		"tasks:write", 
+		"provisioning:execute",
+	})
+	if err != nil {
+		log.Fatalf("❌ Failed to authenticate service: %v", err)
+	}
+	log.Println("✅ Service authenticated successfully")
 	
 	// Initialize NATS connection
 	nc, err := nats.Connect(cfg.NatsURL)
@@ -35,7 +53,7 @@ func main() {
 	log.Println("✅ Connected to NATS JetStream")
 	
 	// Create provisioner handler
-	provisioner := handlers.NewProvisioner(cfg.MaxRetries, cfg.RetryBackoff)
+	provisioner := handlers.NewProvisioner(cfg.MaxRetries, cfg.RetryBackoff, apiClient)
 	
 	// Create worker
 	worker, err := nats.NewWorker(nc, provisioner, cfg.WorkerID)
@@ -68,4 +86,15 @@ func main() {
 	cancel()
 	
 	log.Println("✅ Worker stopped gracefully")
+}
+
+// maskToken masks the API token for logging
+func maskToken(token string) string {
+	if token == "" {
+		return "not set"
+	}
+	if len(token) <= 8 {
+		return "****"
+	}
+	return token[:4] + "****" + token[len(token)-4:]
 }

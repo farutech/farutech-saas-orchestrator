@@ -117,7 +117,7 @@ public class BillingService : IBillingService
         return new InvoiceDetailsDto(
             Id: invoice.Id,
             InvoiceNumber: invoice.InvoiceNumber,
-            CustomerId: invoice.CustomerId,
+            CustomerId: invoice.CustomerId ?? Guid.Empty,
             CustomerName: invoice.Customer?.CompanyName ?? "Unknown",
             IssueDate: invoice.IssueDate,
             DueDate: invoice.DueDate,
@@ -288,6 +288,7 @@ public class BillingService : IBillingService
         // Esto requeriría acceso a información de suscripciones activas
 
         _logger.LogWarning("GenerateSubscriptionInvoicesAsync not implemented yet");
+        await Task.CompletedTask; // Make method truly async
         return 0;
     }
 
@@ -346,6 +347,7 @@ public class BillingService : IBillingService
         // Generar referencia de pago única
         var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
         var random = new Random().Next(1000, 9999);
+        await Task.CompletedTask; // Make method truly async
         return $"PAY-{timestamp}-{random}";
     }
 
@@ -378,7 +380,7 @@ public class BillingService : IBillingService
 
     private static double CalculateAveragePaymentTime(IEnumerable<Invoice> invoices)
     {
-        var paidInvoices = invoices.Where(i => i.Status == InvoiceStatus.Paid && i.Payments.Any());
+        var paidInvoices = invoices.Where(i => i.Status == InvoiceStatus.Paid && i.InvoicePayments.Any());
         if (!paidInvoices.Any())
         {
             return 0;
@@ -386,7 +388,7 @@ public class BillingService : IBillingService
 
         var paymentTimes = paidInvoices.Select(i =>
         {
-            var firstPayment = i.Payments.Min(p => p.CreatedAt);
+            var firstPayment = i.InvoicePayments.Min(ip => ip.CreatedAt);
             return (firstPayment - i.IssueDate).TotalDays;
         });
 

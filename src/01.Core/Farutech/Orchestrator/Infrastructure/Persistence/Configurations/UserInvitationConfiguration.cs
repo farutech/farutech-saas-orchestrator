@@ -11,7 +11,7 @@ public class UserInvitationConfiguration : IEntityTypeConfiguration<UserInvitati
 {
     public void Configure(EntityTypeBuilder<UserInvitation> builder)
     {
-        builder.ToTable("UserInvitations", "identity");
+        builder.ToTable("UserInvitations");
 
         builder.HasKey(i => i.Id);
 

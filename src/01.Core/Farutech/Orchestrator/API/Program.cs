@@ -14,11 +14,13 @@ using Farutech.Orchestrator.Infrastructure.Repositories;
 using Farutech.Orchestrator.Infrastructure.Services;
 using Farutech.Orchestrator.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NATS.Client.Core;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,15 +52,37 @@ if (string.IsNullOrEmpty(connectionString))
 
 var postgresPassword = builder.Configuration["postgres-password"] ?? string.Empty;
 // ========== HEALTH CHECKS ==========
-builder.Services.AddHealthChecks()
-    .AddNpgSql(connectionString, name: "postgresql");
+if (connectionString.Contains("Data Source=") || connectionString.Contains(".db"))
+{
+    // SQLite - no specific health check available, using generic
+    builder.Services.AddHealthChecks();
+}
+else
+{
+    // PostgreSQL health check
+    builder.Services.AddHealthChecks()
+        .AddNpgSql(connectionString, name: "postgresql");
+}
 var safeConnectionString = postgresPassword.Length > 0
     ? connectionString.Replace(postgresPassword, "***")
     : connectionString;
 Console.WriteLine($"✅ Connection string recibida de Aspire: {safeConnectionString}");
 
 builder.Services.AddDbContext<OrchestratorDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    if (connectionString.Contains("Data Source=") || connectionString.Contains(".db"))
+    {
+        // SQLite connection
+        options.UseSqlite(connectionString);
+        Console.WriteLine("🔄 Usando SQLite como base de datos");
+    }
+    else
+    {
+        // PostgreSQL connection
+        options.UseNpgsql(connectionString);
+        Console.WriteLine("🔄 Usando PostgreSQL como base de datos");
+    }
+});
 
 // ========== SEEDING ==========
 // using (var scope = builder.Services.BuildServiceProvider().CreateScope())
@@ -131,7 +155,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ServiceToken", policy =>
+        policy.Requirements.Add(new ServiceTokenRequirement()));
+});
 
 // ========== NATS ==========
 var natsEnabled = builder.Configuration.GetValue<bool>("Nats:Enabled", true);
@@ -174,6 +202,9 @@ builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<IMessageBus, NatsMessageBus>();
 builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
+builder.Services.AddScoped<ITaskTrackerService, TaskTrackerService>();
+builder.Services.AddScoped<IAsyncOrchestrator, AsyncOrchestratorService>();
+builder.Services.AddScoped<IServiceTokenGenerator, ServiceTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
@@ -184,6 +215,12 @@ builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
 builder.Services.AddScoped<IResolveService, ResolveService>();
+
+// Metrics service
+builder.Services.AddSingleton<IMetricsService, MetricsService>();
+
+// Authorization handlers
+builder.Services.AddScoped<IAuthorizationHandler, ServiceTokenAuthorizationHandler>();
 
 // Generic repositories for billing entities
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
@@ -202,7 +239,8 @@ builder.Services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFact
 builder.Services.AddMemoryCache(); // Required for PermissionService caching
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 
-// ========== DATABASE POST-MIGRATION SERVICE ==========
+// ========== DATABASE SERVICES ==========
+builder.Services.AddScoped<DatabaseBootstrapService>();
 builder.Services.AddScoped<DatabasePostMigrationService>();
 
 // ========== SECURITY SERVICES (Intermediate Token Pattern) ==========
@@ -353,6 +391,26 @@ var app = builder.Build();
 
 Console.WriteLine("Starting application build...");
 
+// ========== DATABASE BOOTSTRAP (PRE-MIGRATION) ==========
+if (app.Environment.IsDevelopment())
+{
+    try
+    {
+        Console.WriteLine("🏗️ Ejecutando bootstrap de base de datos (pre-migración)...");
+
+        using var scope = app.Services.CreateScope();
+        var bootstrapService = scope.ServiceProvider.GetRequiredService<DatabaseBootstrapService>();
+        await bootstrapService.BootstrapDatabaseAsync();
+
+        Console.WriteLine("✅ Bootstrap de base de datos completado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ Advertencia: Falló el bootstrap de base de datos: {ex.Message}");
+        Console.WriteLine("Continuando con las migraciones...");
+    }
+}
+
 // ========== EF CORE MIGRATIONS (CON RETRY PARA RESILIENCIA) ==========
 if (app.Environment.IsDevelopment())
 {
@@ -473,6 +531,14 @@ catch (Exception ex)
     Console.WriteLine($"Error configuring authentication: {ex.Message}");
     Console.WriteLine($"Stack trace: {ex.StackTrace}");
 }
+
+// Configure Prometheus metrics
+Console.WriteLine("Setting up Prometheus metrics...");
+app.UseMetricServer();
+app.UseHttpMetrics();
+
+// Custom metrics middleware
+app.UseMiddleware<MetricsMiddleware>();
 
 // ========== ENDPOINTS ==========
 Console.WriteLine("Mapping endpoints...");

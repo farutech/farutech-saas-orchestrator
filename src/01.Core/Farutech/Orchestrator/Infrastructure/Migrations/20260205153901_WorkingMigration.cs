@@ -7,23 +7,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ConsolidatedSetup : Migration
+    public partial class WorkingMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
-                name: "tenants");
-
-            migrationBuilder.EnsureSchema(
-                name: "catalog");
+                name: "billing");
 
             migrationBuilder.EnsureSchema(
                 name: "identity");
 
             migrationBuilder.CreateTable(
                 name: "Customers",
-                schema: "tenants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -47,7 +43,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "PasswordResetTokens",
-                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -69,7 +64,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Products",
-                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -105,7 +99,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "UserInvitations",
-                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -131,7 +124,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Users",
-                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -161,8 +153,80 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invoices",
+                schema: "billing",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    InvoiceNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IssueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Draft"),
+                    Currency = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false, defaultValue: "USD"),
+                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Terms = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    PaymentMethod = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ExternalReference = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                schema: "billing",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PaymentReference = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Currency = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false, defaultValue: "USD"),
+                    Method = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    GatewayTransactionId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    ExternalReference = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Metadata = table.Column<string>(type: "jsonb", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payments_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Subscriptions",
-                schema: "tenants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -189,7 +253,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Subscriptions_Customers_CustomerId",
                         column: x => x.CustomerId,
-                        principalSchema: "tenants",
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -197,7 +260,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "TenantInstances",
-                schema: "tenants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -228,7 +290,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_TenantInstances_Customers_CustomerId",
                         column: x => x.CustomerId,
-                        principalSchema: "tenants",
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -236,7 +297,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Modules",
-                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -261,7 +321,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Modules_Products_ProductId",
                         column: x => x.ProductId,
-                        principalSchema: "catalog",
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -269,7 +328,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionPlans",
-                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -296,7 +354,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_SubscriptionPlans_Products_ProductId",
                         column: x => x.ProductId,
-                        principalSchema: "catalog",
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -342,7 +399,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserClaims_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -350,7 +406,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "UserCompanyMemberships",
-                schema: "identity",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -372,14 +427,12 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserCompanyMemberships_Customers_CustomerId",
                         column: x => x.CustomerId,
-                        principalSchema: "tenants",
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserCompanyMemberships_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -401,7 +454,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserLogins_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -428,7 +480,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserRoles_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -450,15 +501,125 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserTokens_Users_UserId",
                         column: x => x.UserId,
-                        principalSchema: "identity",
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvoiceItems",
+                schema: "billing",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ItemType = table.Column<int>(type: "integer", nullable: false),
+                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductCode = table.Column<string>(type: "text", nullable: true),
+                    Quantity = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    Discount = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    BillingPeriod = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalSchema: "billing",
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoicePayments",
+                schema: "billing",
+                columns: table => new
+                {
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    AppliedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoicePayments", x => new { x.InvoiceId, x.PaymentId });
+                    table.ForeignKey(
+                        name: "FK_InvoicePayments_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalSchema: "billing",
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoicePayments_Payments_PaymentId",
+                        column: x => x.PaymentId,
+                        principalSchema: "billing",
+                        principalTable: "Payments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProvisionTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaskId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    TenantInstanceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaskType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Queued"),
+                    Progress = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CurrentStep = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    StepsCompletedJson = table.Column<string>(type: "jsonb", nullable: true, defaultValue: "[]"),
+                    ErrorMessage = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    MaxRetries = table.Column<int>(type: "integer", nullable: false, defaultValue: 3),
+                    StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EstimatedCompletion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    InitiatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    WorkerId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CorrelationId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProvisionTasks", x => x.Id);
+                    table.CheckConstraint("CK_ProvisionTask_Progress", "\"Progress\" >= 0 AND \"Progress\" <= 100");
+                    table.CheckConstraint("CK_ProvisionTask_Status", "\"Status\" IN ('Queued', 'Processing', 'Completed', 'Failed', 'Cancelled')");
+                    table.CheckConstraint("CK_ProvisionTask_TaskType", "\"TaskType\" IN ('TenantProvision', 'TenantDeprovision', 'FeatureUpdate', 'InvoiceGeneration')");
+                    table.ForeignKey(
+                        name: "FK_ProvisionTasks_TenantInstances_TenantInstanceId",
+                        column: x => x.TenantInstanceId,
+                        principalTable: "TenantInstances",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Features",
-                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -481,7 +642,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Features_Modules_ModuleId",
                         column: x => x.ModuleId,
-                        principalSchema: "catalog",
                         principalTable: "Modules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -489,7 +649,6 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionPlanFeatures",
-                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -508,14 +667,12 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_SubscriptionPlanFeatures_Features_FeatureId",
                         column: x => x.FeatureId,
-                        principalSchema: "catalog",
                         principalTable: "Features",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SubscriptionPlanFeatures_SubscriptionPlans_SubscriptionId",
                         column: x => x.SubscriptionId,
-                        principalSchema: "catalog",
                         principalTable: "SubscriptionPlans",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -523,87 +680,182 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_Code",
-                schema: "tenants",
                 table: "Customers",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_IsActive",
-                schema: "tenants",
                 table: "Customers",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_TaxId",
-                schema: "tenants",
                 table: "Customers",
                 column: "TaxId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Features_IsActive",
-                schema: "catalog",
                 table: "Features",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Features_ModuleId_Code",
-                schema: "catalog",
                 table: "Features",
                 columns: new[] { "ModuleId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItems_InvoiceId",
+                schema: "billing",
+                table: "InvoiceItems",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItems_ProductCode",
+                schema: "billing",
+                table: "InvoiceItems",
+                column: "ProductCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceItems_ReferenceId",
+                schema: "billing",
+                table: "InvoiceItems",
+                column: "ReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_AppliedAt",
+                schema: "billing",
+                table: "InvoicePayments",
+                column: "AppliedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_InvoiceId_PaymentId",
+                schema: "billing",
+                table: "InvoicePayments",
+                columns: new[] { "InvoiceId", "PaymentId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoicePayments_PaymentId",
+                schema: "billing",
+                table: "InvoicePayments",
+                column: "PaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CustomerId",
+                schema: "billing",
+                table: "Invoices",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_DueDate",
+                schema: "billing",
+                table: "Invoices",
+                column: "DueDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_InvoiceNumber",
+                schema: "billing",
+                table: "Invoices",
+                column: "InvoiceNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_IssueDate",
+                schema: "billing",
+                table: "Invoices",
+                column: "IssueDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_Status",
+                schema: "billing",
+                table: "Invoices",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Modules_IsActive",
-                schema: "catalog",
                 table: "Modules",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Modules_ProductId_Code",
-                schema: "catalog",
                 table: "Modules",
                 columns: new[] { "ProductId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_Email",
-                schema: "identity",
                 table: "PasswordResetTokens",
                 column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_ExpirationDate",
-                schema: "identity",
                 table: "PasswordResetTokens",
                 column: "ExpirationDate");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_IsUsed",
-                schema: "identity",
                 table: "PasswordResetTokens",
                 column: "IsUsed");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResetTokens_Token",
-                schema: "identity",
                 table: "PasswordResetTokens",
                 column: "Token",
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Payments_CustomerId",
+                schema: "billing",
+                table: "Payments",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_PaymentReference",
+                schema: "billing",
+                table: "Payments",
+                column: "PaymentReference",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_ProcessedAt",
+                schema: "billing",
+                table: "Payments",
+                column: "ProcessedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_Status",
+                schema: "billing",
+                table: "Payments",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_Code",
-                schema: "catalog",
                 table: "Products",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_IsActive",
-                schema: "catalog",
                 table: "Products",
                 column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProvisionTasks_Status_CreatedAt",
+                table: "ProvisionTasks",
+                columns: new[] { "Status", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProvisionTasks_TaskId",
+                table: "ProvisionTasks",
+                column: "TaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProvisionTasks_TenantInstanceId",
+                table: "ProvisionTasks",
+                column: "TenantInstanceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -620,63 +872,53 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlanFeatures_FeatureId",
-                schema: "catalog",
                 table: "SubscriptionPlanFeatures",
                 column: "FeatureId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlanFeatures_SubscriptionId_FeatureId",
-                schema: "catalog",
                 table: "SubscriptionPlanFeatures",
                 columns: new[] { "SubscriptionId", "FeatureId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlans_IsActive",
-                schema: "catalog",
                 table: "SubscriptionPlans",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlans_ProductId",
-                schema: "catalog",
                 table: "SubscriptionPlans",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionPlans_ProductId_Code",
-                schema: "catalog",
                 table: "SubscriptionPlans",
                 columns: new[] { "ProductId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_CustomerId_ProductId",
-                schema: "tenants",
                 table: "Subscriptions",
                 columns: new[] { "CustomerId", "ProductId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_NextBillingDate",
-                schema: "tenants",
                 table: "Subscriptions",
                 column: "NextBillingDate");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_StartDate",
-                schema: "tenants",
                 table: "Subscriptions",
                 column: "StartDate");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_Status",
-                schema: "tenants",
                 table: "Subscriptions",
                 column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_CustomerId_Code",
-                schema: "tenants",
                 table: "TenantInstances",
                 columns: new[] { "CustomerId", "Code" },
                 unique: true,
@@ -684,19 +926,16 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_CustomerId_DeploymentType",
-                schema: "tenants",
                 table: "TenantInstances",
                 columns: new[] { "CustomerId", "DeploymentType" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_Status",
-                schema: "tenants",
                 table: "TenantInstances",
                 column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TenantInstances_TenantCode",
-                schema: "tenants",
                 table: "TenantInstances",
                 column: "TenantCode",
                 unique: true);
@@ -709,38 +948,32 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCompanyMemberships_CustomerId",
-                schema: "identity",
                 table: "UserCompanyMemberships",
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCompanyMemberships_IsActive",
-                schema: "identity",
                 table: "UserCompanyMemberships",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCompanyMemberships_User_Customer",
-                schema: "identity",
                 table: "UserCompanyMemberships",
                 columns: new[] { "UserId", "CustomerId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInvitations_Email",
-                schema: "identity",
                 table: "UserInvitations",
                 column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInvitations_Email_Status",
-                schema: "identity",
                 table: "UserInvitations",
                 columns: new[] { "Email", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInvitations_Token",
-                schema: "identity",
                 table: "UserInvitations",
                 column: "Token",
                 unique: true);
@@ -759,146 +992,63 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                schema: "identity",
                 table: "Users",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
-                schema: "identity",
                 table: "Users",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_IsActive",
-                schema: "identity",
                 table: "Users",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
-                schema: "identity",
                 table: "Users",
                 column: "NormalizedUserName",
                 unique: true);
-
-            // Seed data for Products and Modules
-            migrationBuilder.Sql(@"
-                -- Insert Product: FaruPOS
-                INSERT INTO ""catalog"".""Products"" (""Id"", ""Code"", ""Name"", ""Description"", ""IsActive"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '00000000-0000-0000-0000-000000000001',
-                    'FARUPOS',
-                    'FaruPOS - Point of Sale',
-                    'Sistema de punto de venta completo con gestión de inventario, ventas, clientes y reportes. Ideal para retail, farmacias, restaurantes y más.',
-                    true,
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- Insert Modules for FaruPOS
-                -- POS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000001',
-                    '00000000-0000-0000-0000-000000000001',
-                    'POS_BASIC_SHARED',
-                    'POS Básico (Compartido)',
-                    'Ventas, cobros y cierre de caja básico en servidor compartido. Límite de 50 ventas/día.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- INVENTORY BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000002',
-                    '00000000-0000-0000-0000-000000000001',
-                    'INV_BASIC_SHARED',
-                    'Inventario Básico (Compartido)',
-                    'Consulta de stock y movimientos básicos en servidor compartido. Hasta 500 productos.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- REPORTS STANDARD (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000003',
-                    '00000000-0000-0000-0000-000000000001',
-                    'RPT_STANDARD_SHARED',
-                    'Reportes Estándar (Compartido)',
-                    'Reportes predefinidos de ventas e inventario en servidor compartido.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-
-                -- CUSTOMERS BASIC (Shared)
-                INSERT INTO ""catalog"".""Modules"" (""Id"", ""ProductId"", ""Code"", ""Name"", ""Description"", ""IsRequired"", ""IsActive"", ""DeploymentType"", ""CreatedAt"", ""CreatedBy"", ""IsDeleted"")
-                VALUES (
-                    '10000000-0000-0000-0000-000000000004',
-                    '00000000-0000-0000-0000-000000000001',
-                    'CUS_BASIC_SHARED',
-                    'Clientes Básico (Compartido)',
-                    'Gestión básica de clientes en servidor compartido. Hasta 1000 clientes.',
-                    false,
-                    true,
-                    'Shared',
-                    NOW(),
-                    'System',
-                    false
-                );
-            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "PasswordResetTokens",
-                schema: "identity");
+                name: "InvoiceItems",
+                schema: "billing");
+
+            migrationBuilder.DropTable(
+                name: "InvoicePayments",
+                schema: "billing");
+
+            migrationBuilder.DropTable(
+                name: "PasswordResetTokens");
+
+            migrationBuilder.DropTable(
+                name: "ProvisionTasks");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionPlanFeatures",
-                schema: "catalog");
+                name: "SubscriptionPlanFeatures");
 
             migrationBuilder.DropTable(
-                name: "Subscriptions",
-                schema: "tenants");
-
-            migrationBuilder.DropTable(
-                name: "TenantInstances",
-                schema: "tenants");
+                name: "Subscriptions");
 
             migrationBuilder.DropTable(
                 name: "UserClaims",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "UserCompanyMemberships",
-                schema: "identity");
+                name: "UserCompanyMemberships");
 
             migrationBuilder.DropTable(
-                name: "UserInvitations",
-                schema: "identity");
+                name: "UserInvitations");
 
             migrationBuilder.DropTable(
                 name: "UserLogins",
@@ -913,32 +1063,37 @@ namespace Farutech.Orchestrator.Infrastructure.Migrations
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "Features",
-                schema: "catalog");
+                name: "Invoices",
+                schema: "billing");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionPlans",
-                schema: "catalog");
+                name: "Payments",
+                schema: "billing");
 
             migrationBuilder.DropTable(
-                name: "Customers",
-                schema: "tenants");
+                name: "TenantInstances");
+
+            migrationBuilder.DropTable(
+                name: "Features");
+
+            migrationBuilder.DropTable(
+                name: "SubscriptionPlans");
 
             migrationBuilder.DropTable(
                 name: "Roles",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "Users",
-                schema: "identity");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Modules",
-                schema: "catalog");
+                name: "Customers");
 
             migrationBuilder.DropTable(
-                name: "Products",
-                schema: "catalog");
+                name: "Modules");
+
+            migrationBuilder.DropTable(
+                name: "Products");
         }
     }
 }

@@ -23,7 +23,7 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
     private readonly ILogger<DatabaseBootstrapService> _logger = logger;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly IConfiguration _configuration = configuration;
-    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "core"];
+    private static readonly string[] stringArray = ["identity", "tenants", "catalog", "tasks", "core"];
 
     private string CommonDatabaseName => _configuration["Database:CommonName"] ?? "farutech_db_custs";
     private string DedicatedDatabasePrefix => _configuration["Database:DedicatedPrefix"] ?? "farutech_db_cust_";
@@ -85,76 +85,67 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
     }
 
     /// <summary>
+    /// Verifica que la base de datos esté disponible y accesible antes de proceder con operaciones.
+    /// </summary>
+    private async Task EnsureDatabaseConnectivityAsync()
+    {
+        _logger.LogInformation("🔍 Verificando conectividad de base de datos...");
+
+        await ExecuteWithRetryAsync(async () =>
+        {
+            using var connection = _context.Database.GetDbConnection();
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1";
+            await command.ExecuteScalarAsync();
+
+            _logger.LogInformation("✅ Base de datos conectada y operativa");
+            return true;
+        }, "verificar conectividad de base de datos", maxRetries: 10, initialDelayMs: 1000);
+    }
+
+    /// <summary>
     /// PASO 1: Crear los esquemas físicos base antes de cualquier operación EF Core.
     /// </summary>
     private async Task CreateDatabaseFoundationsAsync()
     {
         _logger.LogInformation("🏗️ Creando cimientos de base de datos (esquemas físicos)...");
 
+        // PRIMERO: Verificar que la base de datos esté disponible antes de intentar operaciones
+        await EnsureDatabaseConnectivityAsync();
+
         await ExecuteWithRetryAsync(async () =>
         {
-            var connection = _context.Database.GetDbConnection();
-            await connection.OpenAsync();
+#pragma warning disable EF1002 // Suppress SQL injection warning for constant strings
+            // Create a separate service scope and context for schema operations to avoid connection conflicts
+            using var scope = _serviceProvider.CreateScope();
+            var schemaContext = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
 
-            try
+            var schemas = stringArray;
+
+            foreach (var schema in schemas)
             {
-                var schemas = stringArray;
-
-                foreach (var schema in schemas)
-                {
-                    var createSchemaQuery = $"CREATE SCHEMA IF NOT EXISTS \"{schema}\";";
-                    using var command = connection.CreateCommand();
-                    command.CommandText = createSchemaQuery;
-                    await command.ExecuteNonQueryAsync();
-                    _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
-                }
-
-                // Asegurar que exista la base de datos para customers (configurable)
-                try
-                {
-                    var connStringBuilder = new NpgsqlConnectionStringBuilder(connection.ConnectionString)
-                    {
-                        Database = "postgres"
-                    };
-
-                    await using var adminConn = new NpgsqlConnection(connStringBuilder.ConnectionString);
-                    await adminConn.OpenAsync();
-
-                    try
-                    {
-                        await using var checkCmd = adminConn.CreateCommand();
-                        checkCmd.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{CommonDatabaseName}'";
-                        var exists = await checkCmd.ExecuteScalarAsync();
-                        if (exists == null)
-                        {
-                            await using var createCmd = adminConn.CreateCommand();
-                            createCmd.CommandText = $"CREATE DATABASE \"{CommonDatabaseName}\"";
-                            await createCmd.ExecuteNonQueryAsync();
-                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' creada");
-                        }
-                        else
-                        {
-                            _logger.LogInformation($"✅ Database '{CommonDatabaseName}' ya existe");
-                        }
-                    }
-                    finally
-                    {
-                        await adminConn.CloseAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"No se pudo crear/verificar la base '{CommonDatabaseName}' -- continuando");
-                }
-
-                _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
-                return true; // Retornar algo para que el método funcione
+                await schemaContext.Database.ExecuteSqlRawAsync($"CREATE SCHEMA IF NOT EXISTS \"{schema}\";");
+                _logger.LogInformation($"✅ Esquema '{schema}' creado/verificado");
             }
-            finally
+
+            // Crear extensiones necesarias para PostgreSQL
+            var extensions = new[] { "uuid-ossp", "btree_gin" };
+            foreach (var extension in extensions)
             {
-                await connection.CloseAsync();
+                await schemaContext.Database.ExecuteSqlRawAsync($"CREATE EXTENSION IF NOT EXISTS \"{extension}\";");
+                _logger.LogInformation($"✅ Extensión '{extension}' creada/verificada");
             }
-        }, "crear esquemas de base de datos", maxRetries: 15, initialDelayMs: 2000);
+#pragma warning restore EF1002
+
+            // Nota: Creación de base de datos adicional deshabilitada por ahora
+            // La base de datos principal ya está configurada y desplegada
+            _logger.LogInformation("ℹ️ Omitiendo creación de base de datos adicional (ya desplegada)");
+
+            _logger.LogInformation("✅ Todos los esquemas base creados exitosamente");
+            return true; // Retornar algo para que el método funcione
+        }, "crear esquemas de base de datos", maxRetries: 5, initialDelayMs: 2000); // Reducido a 5 intentos
     }
 
     /// <summary>
@@ -166,8 +157,12 @@ public class DatabaseBootstrapService(OrchestratorDbContext context,
 
         await ExecuteWithRetryAsync(async () =>
         {
+            // Use a separate scope and context for migrations to avoid connection conflicts
+            using var scope = _serviceProvider.CreateScope();
+            var migrationContext = scope.ServiceProvider.GetRequiredService<OrchestratorDbContext>();
+
             // Aplicar todas las migraciones pendientes
-            await _context.Database.MigrateAsync();
+            await migrationContext.Database.MigrateAsync();
             return true;
         }, "aplicar migraciones EF Core", maxRetries: 10, initialDelayMs: 1000);
 

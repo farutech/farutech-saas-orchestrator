@@ -5,6 +5,7 @@ using Farutech.Orchestrator.Domain.Entities.Catalog;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Domain.Entities.Billing;
+using Farutech.Orchestrator.Domain.Entities.Tasks;
 using Catalog = Farutech.Orchestrator.Domain.Entities.Catalog;
 using Tenants = Farutech.Orchestrator.Domain.Entities.Tenants;
 
@@ -28,6 +29,9 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     public DbSet<TenantInstance> TenantInstances => Set<TenantInstance>();
     public DbSet<Tenants.Subscription> TenantSubscriptions => Set<Tenants.Subscription>();
 
+    // Tasks Schema (Async processing)
+    public DbSet<ProvisionTask> ProvisionTasks => Set<ProvisionTask>();
+
     // Billing Schema (Multi-tenant)
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
@@ -45,15 +49,32 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     {
         base.OnModelCreating(modelBuilder);
 
+        // Detect if we're using SQLite (which doesn't support schemas)
+        var isSqlite = Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite";
+
         // Renombrar tablas Identity sin prefijo AspNet
-        modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
-        modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
-        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
-        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
-        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
-        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
-        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
-        modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens", "identity");
+        if (!isSqlite)
+        {
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles", "identity");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "identity");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "identity");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "identity");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens", "identity");
+        }
+        else
+        {
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+            modelBuilder.Entity<PasswordResetToken>().ToTable("PasswordResetTokens");
+        }
 
         // Apply all configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);
@@ -75,6 +96,7 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
         modelBuilder.Entity<Customer>().HasQueryFilter(c => !c.IsDeleted);
         modelBuilder.Entity<TenantInstance>().HasQueryFilter(t => !t.IsDeleted);
         modelBuilder.Entity<Tenants.Subscription>().HasQueryFilter(s => !s.IsDeleted);
+        modelBuilder.Entity<ProvisionTask>().HasQueryFilter(t => !t.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

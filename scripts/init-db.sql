@@ -10,6 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "btree_gin";
 -- Crear schema para multi-tenancy
 CREATE SCHEMA IF NOT EXISTS catalog;
 CREATE SCHEMA IF NOT EXISTS tenants;
+CREATE SCHEMA IF NOT EXISTS tasks;
 
 -- Confirmar creación
 SELECT 'Database initialized successfully' AS status;

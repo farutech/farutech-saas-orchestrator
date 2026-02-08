@@ -10,6 +10,10 @@ type Config struct {
 	WorkerID     string
 	MaxRetries   int
 	RetryBackoff int // seconds
+	
+	// API configuration for callbacks
+	APIURL     string
+	APIToken   string
 }
 
 // Load returns configuration from environment variables with defaults
@@ -19,6 +23,10 @@ func Load() *Config {
 		WorkerID:     getEnv("WORKER_ID", "worker-001"),
 		MaxRetries:   5,
 		RetryBackoff: 10,
+		
+		// API configuration
+		APIURL:   getEnv("API_URL", "http://localhost:5000"),
+		APIToken: getEnv("API_TOKEN", ""),
 	}
 }
 

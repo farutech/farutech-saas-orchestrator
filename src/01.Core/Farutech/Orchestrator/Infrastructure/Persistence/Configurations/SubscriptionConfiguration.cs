@@ -8,7 +8,7 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 {
     public void Configure(EntityTypeBuilder<Subscription> builder)
     {
-        builder.ToTable("Subscriptions", "tenants");
+        builder.ToTable("Subscriptions");
 
         builder.HasKey(s => s.Id);
 

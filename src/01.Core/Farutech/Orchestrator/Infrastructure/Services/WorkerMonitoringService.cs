@@ -38,12 +38,14 @@ public class WorkerMonitoringService(OrchestratorDbContext context) : IWorkerMon
     public async Task<ServiceResult> RetryFailedTaskAsync(Guid appId, string taskId)
     {
         // TODO: Implementar reintento vía NATS
+        await Task.CompletedTask; // Make method truly async
         return ServiceResult.Ok("Tarea reenviada");
     }
 
     public async Task<WorkerMetricsDto> GetWorkerMetricsAsync()
     {
         // TODO: Implementar métricas reales
+        await Task.CompletedTask; // Make method truly async
         return new WorkerMetricsDto(
             3, // Total workers
             2, // Active

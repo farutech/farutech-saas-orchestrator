@@ -65,7 +65,7 @@ public class InvoiceItem : BaseEntity
     public string? Notes { get; set; }
 
     // Navigation properties
-    public Invoice Invoice { get; set; } = null!;
+    // Invoice navigation removed to avoid EF Core shadow property conflict
 
     // Helper methods
     /// <summary>

@@ -11,7 +11,7 @@ public class SubscriptionPlanConfiguration : IEntityTypeConfiguration<Subscripti
 {
     public void Configure(EntityTypeBuilder<Subscription> builder)
     {
-        builder.ToTable("SubscriptionPlans", "catalog");
+        builder.ToTable("SubscriptionPlans");
         
         builder.HasKey(s => s.Id);
         
@@ -53,7 +53,7 @@ public class SubscriptionFeatureConfiguration : IEntityTypeConfiguration<Subscri
 {
     public void Configure(EntityTypeBuilder<SubscriptionFeature> builder)
     {
-        builder.ToTable("SubscriptionPlanFeatures", "catalog");
+        builder.ToTable("SubscriptionPlanFeatures");
         
         builder.HasKey(sf => sf.Id);
         

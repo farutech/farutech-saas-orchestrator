@@ -8,7 +8,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 {
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
-        builder.ToTable("Users", "identity");
+        builder.ToTable("Users");
 
         builder.Property(u => u.FirstName)
             .IsRequired()
