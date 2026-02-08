@@ -13,7 +13,7 @@ export default function SelectContext() {
 
   // Redirect to home since context selection is now integrated there
   useEffect(() => {
-    navigate('/home');
+    navigate('/');
   }, [navigate]);
 
   return (

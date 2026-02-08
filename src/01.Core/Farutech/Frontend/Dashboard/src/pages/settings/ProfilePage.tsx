@@ -248,7 +248,7 @@ export default function ProfilePage() {
           </div>
           <Button
             variant="outline"
-            onClick={() =>navigate('/home')}
+            onClick={() =>navigate('/')}
             className="gap-2 w-full md:w-auto"
           >
             <ArrowLeft className="h-4 w-4" />

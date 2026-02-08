@@ -108,7 +108,7 @@ export default function OrganizationAppsPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
             <h2 className="text-2xl font-bold text-slate-900">Organización no encontrada</h2>
-            <Button onClick={() => navigate('/home')}>Volver al Inicio</Button>
+            <Button onClick={() => navigate('/')}>Volver al Inicio</Button>
         </div>
     );
   }
@@ -119,7 +119,7 @@ export default function OrganizationAppsPage() {
         
         {/* Header Navigation */}
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/home')} className="text-slate-500 hover:text-slate-900">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-slate-500 hover:text-slate-900">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
             </Button>

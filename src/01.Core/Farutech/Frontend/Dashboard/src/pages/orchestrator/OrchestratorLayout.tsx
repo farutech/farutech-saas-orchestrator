@@ -51,7 +51,7 @@ export default function OrchestratorLayout() {
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-white/10">
             <FarutechLogo className="h-8" />
-            <Link to="/home">
+            <Link to="/">
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <Home className="h-4 w-4" />
               </Button>
@@ -103,7 +103,7 @@ export default function OrchestratorLayout() {
                 <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/home">
+                  <Link to="/">
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Volver al Home
                   </Link>

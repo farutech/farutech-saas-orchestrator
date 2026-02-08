@@ -153,7 +153,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         sessionStorage.setItem('farutech_available_tenants', JSON.stringify(tenants));
         setRequiresContextSelection(true);
         
-        navigate('/home'); // Corrected from /home
+        navigate('/'); // Corrected from /home
         toast.info('Por favor, selecciona tu organización');
         return;
     } 
@@ -183,7 +183,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
 
         toast.success(`¡Bienvenido${response.companyName ? ' a ' + response.companyName : ''}!`);
-        navigate('/home');
+        navigate('/');
     }
   };
 

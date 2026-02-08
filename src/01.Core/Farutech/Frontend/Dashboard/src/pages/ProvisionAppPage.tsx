@@ -116,7 +116,7 @@ export default function ProvisionAppPage() {
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <Package className="h-12 w-12 text-slate-300 mb-4" />
           <h2 className="text-xl font-bold">Organización no encontrada</h2>
-          <Button onClick={() => navigate('/dashboard')} className="mt-4">
+          <Button onClick={() => navigate('/')} className="mt-4">
             Volver a Organizaciones
           </Button>
         </div>

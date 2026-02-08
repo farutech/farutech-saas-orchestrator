@@ -93,7 +93,7 @@ export function DashboardSidebar() {
     // Navigate to home. 
     // Ideally we might want to clear the 'current context' in state if needed, 
     // but navigating to /home usually resets the view.
-    navigate('/home');
+    navigate('/');
   };
 
   return (

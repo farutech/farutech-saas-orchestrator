@@ -1,0 +1,429 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   🎨 DESIGN SYSTEM TOKENS
+   ============================================ */
+
+:root {
+  /* 🌈 Semantic Colors - Base */
+  --color-primary: #1E88E5;
+  --color-primary-hover: #1565C0;
+  --color-primary-light: #E3F2FD;
+  --color-secondary: #1565C0;
+  --color-background: #F5F6FA;
+  --color-surface: #FFFFFF;
+  --color-border: #E0E0E0;
+  --color-text-primary: #212121;
+  --color-text-secondary: #616161;
+  --color-text-tertiary: #9E9E9E;
+  
+  /* ⚠️ Status Colors */
+  --color-success: #2E7D32;
+  --color-success-light: #E8F5E9;
+  --color-info: #0288D1;
+  --color-info-light: #E1F5FE;
+  --color-warning: #F9A825;
+  --color-warning-light: #FFF9C4;
+  --color-error: #D32F2F;
+  --color-error-light: #FFEBEE;
+  --color-neutral: #9E9E9E;
+  --color-neutral-light: #F5F5F5;
+  
+  /* 📏 Spacing (múltiplos de 8px) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  
+  /* 📝 Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* 🔲 Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* 🌑 Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  
+  /* 🎭 Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* 🌙 Dark Mode Tokens */
+.dark {
+  --color-primary: #42A5F5;
+  --color-primary-hover: #1E88E5;
+  --color-primary-light: #0D47A1;
+  --color-secondary: #42A5F5;
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-border: #334155;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-tertiary: #64748B;
+  
+  --color-success: #4CAF50;
+  --color-success-light: #1B5E20;
+  --color-info: #29B6F6;
+  --color-info-light: #01579B;
+  --color-warning: #FFC107;
+  --color-warning-light: #F57F17;
+  --color-error: #EF5350;
+  --color-error-light: #B71C1C;
+  --color-neutral: #78909C;
+  --color-neutral-light: #263238;
+  
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+    font-size: 14px;
+    font-family: var(--font-family);
+  }
+  
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+  }
+  
+  @media (min-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+  
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+  }
+  
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+  
+  .btn-success {
+    @apply btn bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden;
+  }
+  
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+  }
+
+  /* Desactivar el icono nativo de mostrar contraseña de Edge/Chrome */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear,
+  input[type="password"]::-webkit-credentials-auto-fill-button,
+  input[type="password"]::-webkit-contacts-auto-fill-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    right: 0 !important;
+  }
+  
+  input[type="text"]::-ms-reveal,
+  input[type="text"]::-ms-clear {
+    display: none !important;
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175 / 0.5) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175 / 0.5);
+    border-radius: 9999px;
+    transition: background-color 0.2s;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128 / 0.7);
+  }
+  
+  .dark .custom-scrollbar {
+    scrollbar-color: rgb(75 85 99 / 0.5) transparent;
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(75 85 99 / 0.5);
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128 / 0.7);
+  }
+}
+
+@layer utilities {
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+  
+  .animate-in {
+    animation-name: slideIn, fadeIn;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+  
+  .slide-in-from-top-2 {
+    animation-name: slideInFromTop;
+  }
+  
+  .slide-in-from-left-2 {
+    animation-name: slideInFromLeft;
+  }
+  
+  .slide-in-from-left-3 {
+    animation-name: slideInFromLeftFar;
+  }
+  
+  .slide-in-from-bottom-2 {
+    animation-name: slideInFromBottom;
+  }
+  
+  .slide-in-from-bottom-4 {
+    animation-name: slideInFromBottomFar;
+  }
+  
+  @keyframes slideInFromTop {
+    from {
+      transform: translateY(-8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInFromLeftFar {
+    from {
+      transform: translateX(-12px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInFromBottomFar {
+    from {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* LogoSpinner animations with color inversion */
+  @keyframes spin-with-invert {
+    0% {
+      transform: rotate(0deg);
+      filter: invert(0);
+    }
+    45% {
+      filter: invert(0);
+    }
+    50% {
+      transform: rotate(180deg);
+      filter: invert(1);
+    }
+    95% {
+      filter: invert(1);
+    }
+    100% {
+      transform: rotate(360deg);
+      filter: invert(0);
+    }
+  }
+
+  @keyframes flip-3d-with-invert {
+    0% {
+      transform: rotateY(0deg);
+      filter: invert(0);
+    }
+    45% {
+      filter: invert(0);
+    }
+    50% {
+      transform: rotateY(180deg);
+      filter: invert(1);
+    }
+    95% {
+      filter: invert(1);
+    }
+    100% {
+      transform: rotateY(360deg);
+      filter: invert(0);
+    }
+  }
+
+  @keyframes flip-horizontal-with-invert {
+    0% {
+      transform: rotateX(0deg);
+      filter: invert(0);
+    }
+    45% {
+      filter: invert(0);
+    }
+    50% {
+      transform: rotateX(180deg);
+      filter: invert(1);
+    }
+    95% {
+      filter: invert(1);
+    }
+    100% {
+      transform: rotateX(360deg);
+      filter: invert(0);
+    }
+  }
+
+  /* LogoSpinner animations WITHOUT color inversion */
+  @keyframes flip-3d {
+    0% {
+      transform: rotateY(0deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+
+  @keyframes flip-horizontal {
+    0% {
+      transform: rotateX(0deg);
+    }
+    100% {
+      transform: rotateX(360deg);
+    }
+  }
+
+  .animate-spin-invert {
+    animation: spin-with-invert infinite linear;
+  }
+
+  .animate-flip-3d-invert {
+    animation: flip-3d-with-invert infinite linear;
+  }
+
+  .animate-flip-horizontal-invert {
+    animation: flip-horizontal-with-invert infinite linear;
+  }
+
+  .animate-flip-3d {
+    animation: flip-3d infinite linear;
+  }
+
+  .animate-flip-horizontal {
+    animation: flip-horizontal infinite linear;
+  }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}

@@ -241,7 +241,7 @@ export default function OrganizationDetailPage() {
           <div className="text-center space-y-4">
             <Building2 className="h-16 w-16 text-slate-300 mx-auto" />
             <h2 className="text-xl font-semibold text-slate-900">Organización no encontrada</h2>
-            <Button onClick={() => navigate('/dashboard')}>Volver a Organizaciones</Button>
+            <Button onClick={() => navigate('/')}>Volver a Organizaciones</Button>
           </div>
         </main>
       </div>
@@ -267,7 +267,7 @@ export default function OrganizationDetailPage() {
         <div className="flex items-center gap-2 text-sm text-slate-500">
            <span className="text-blue-600 font-bold text-lg">Farutech</span>
            <span className="text-slate-300 text-lg">|</span>
-           <div className="flex items-center gap-1 cursor-pointer hover:text-slate-900" onClick={() => navigate('/dashboard')}>
+           <div className="flex items-center gap-1 cursor-pointer hover:text-slate-900" onClick={() => navigate('/')}>
              <span className="text-lg font-medium text-slate-900">{customer.companyName}</span>
              <ChevronDown className="h-4 w-4 text-slate-400" />
            </div>

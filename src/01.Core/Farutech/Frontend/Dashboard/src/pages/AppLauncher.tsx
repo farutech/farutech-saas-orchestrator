@@ -31,7 +31,7 @@ export default function AppHome() {
   const handleModuleSelect = (module: ModuleType) => {
     setCurrentModule(module);
     setTimeout(() => {
-      navigate('/dashboard');
+      navigate('/');
     }, 500);
   };
 

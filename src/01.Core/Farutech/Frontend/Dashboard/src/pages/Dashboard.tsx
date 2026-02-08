@@ -56,7 +56,7 @@ export default function Dashboard() {
   // Redirect to home if no module selected
   useEffect(() => {
     if (!currentModule) {
-      navigate('/home'); // Redirect to /home instead of /
+      navigate('/'); // Redirect to / instead of /home
     }
   }, [currentModule, navigate]);
 

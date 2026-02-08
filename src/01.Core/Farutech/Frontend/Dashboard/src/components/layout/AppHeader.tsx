@@ -28,7 +28,7 @@ export function AppHeader({ title = "Universal Home", showBackToHome = false }: 
 
   const handleLogoClick = () => {
     if (user) {
-      navigate('/home');
+      navigate('/');
     } else {
       navigate('/login');
     }
@@ -73,7 +73,7 @@ export function AppHeader({ title = "Universal Home", showBackToHome = false }: 
               
               {showBackToHome && (
                 <>
-                  <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate('/')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4 text-slate-500" />
                     <span>Volver al home</span>
                   </DropdownMenuItem>

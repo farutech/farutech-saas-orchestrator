@@ -22,7 +22,6 @@ import ConfirmEmail from "./pages/auth/ConfirmEmail";
 
 // Main Pages
 import { MainLayout } from "@/components/layout/MainLayout";
-import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
 import SelectInstance from "./pages/SelectInstance";
 import OrganizationAppsPage from "./pages/OrganizationAppsPage";
@@ -84,9 +83,9 @@ const App = () => (
 
                   {/* Protected Routes */}
                   <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/home" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<OrganizationsManagementPage />} />
+                    <Route path="/" element={<OrganizationsManagementPage />} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="/dashboard" element={<Navigate to="/" replace />} />
                     <Route path="/dashboard/:id" element={<OrganizationDetailPage />} />
                     <Route path="/dashboard/:id/provision" element={<ProvisionAppPage />} />
                     {/* @deprecated: Redirect old app detail route to organization with applications tab */}
@@ -95,7 +94,7 @@ const App = () => (
                       element={<RedirectToOrganizationApps />} 
                     />
                     {/* Legacy redirects */}
-                    <Route path="/organizations" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/organizations" element={<Navigate to="/" replace />} />
                     <Route path="/organizations/:id" element={<Navigate to="/dashboard/:id" replace />} />
                     <Route path="/organizations/:id/provision" element={<Navigate to="/dashboard/:id/provision" replace />} />
                   </Route>

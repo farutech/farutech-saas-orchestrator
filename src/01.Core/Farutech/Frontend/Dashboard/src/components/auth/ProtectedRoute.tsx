@@ -52,16 +52,16 @@ export function ProtectedRoute({ children, requiresOrchestrator = false }: Prote
   // If user needs to select context (has intermediate token) but is trying to access protected routes other than home/management
   if (requiresContextSelection && !isManagementPage) {
     // Allow access to home to complete context selection
-    if (location.pathname !== '/home') {
+    if (location.pathname !== '/') {
       console.warn('[ProtectedRoute] User needs to select context, redirecting to home');
-      return <Navigate to="/home" state={{ from: location }} replace />;
+      return <Navigate to="/" state={{ from: location }} replace />;
     }
   }
 
   if (requiresOrchestrator && !isOrchestrator()) {
     // Redirect to home if user doesn't have orchestrator access
     console.log('[ProtectedRoute] User does not have orchestrator access');
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/" replace />;
   }
 
   console.log('[ProtectedRoute] Access granted to:', location.pathname);
