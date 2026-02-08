@@ -42,7 +42,7 @@ export default function ProvisionAppPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: customer, isLoading: customerLoading } = useCustomer(orgId || '');
-  const { data: products, isLoading: productsLoading } = useProducts();
+  const { data: products } = useProducts();
   const provisionMutation = useProvisionTenant();
   const { refreshAvailableTenants } = useAuth();
 
