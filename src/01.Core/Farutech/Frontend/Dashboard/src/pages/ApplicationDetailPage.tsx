@@ -296,6 +296,7 @@ export default function ApplicationDetailPage() {
                         <Package className="h-4 w-4 text-slate-400" />
                         <div>
                            <span className="text-slate-900 font-bold mr-2">Versión -</span>
+                           {/* TODO: Replace hardcoded version with real application version data when available */}
                            <span className="text-slate-500">2.4.1</span>
                         </div>
                       </div>
