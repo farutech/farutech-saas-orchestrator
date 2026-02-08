@@ -188,15 +188,6 @@ export default function OrganizationDetailPage() {
     );
   }
 
-  // Format date for display
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col">
