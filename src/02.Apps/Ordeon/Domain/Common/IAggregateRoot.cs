@@ -1,0 +1,9 @@
+namespace Farutech.Apps.Ordeon.Domain.Common;
+
+/// <summary>
+/// Interfaz marcadora para agregados raíz.
+/// </summary>
+public interface IAggregateRoot
+{
+}
+

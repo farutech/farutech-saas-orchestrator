@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   🎨 FARUTECH DESIGN SYSTEM - BASE STYLES
+   ============================================ */
+
+:root {
+  /* CSS Variables will be injected by ThemeProvider */
+  --color-primary: 215 90% 52%;
+  --color-secondary: 222 47% 11%;
+  --color-accent: 170 80% 45%;
+  --color-background: 220 20% 97%;
+  --color-foreground: 222 47% 11%;
+  --color-surface: 0 0% 100%;
+  --color-border: 220 13% 91%;
+  
+  /* Spacing base */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Border radius */
+  --radius: 0.5rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    @apply antialiased;
+    font-size: 14px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+  
+  @media (min-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+}
+
+@layer components {
+  /* Card base styles */
+  .card {
+    @apply rounded-lg border shadow-sm;
+    background-color: hsl(var(--color-surface));
+    border-color: hsl(var(--color-border));
+  }
+  
+  /* Button base styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+  
+  /* Input base styles */
+  .input {
+    @apply flex h-10 w-full rounded-md border px-3 py-2 text-sm;
+    @apply ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    background-color: hsl(var(--color-background));
+    border-color: hsl(var(--color-border));
+  }
+}
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Animation utilities */
+  .animate-in {
+    animation-duration: 300ms;
+    animation-timing-function: ease-out;
+  }
+  
+  .animate-out {
+    animation-duration: 200ms;
+    animation-timing-function: ease-in;
+  }
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-background: 222 47% 6%;
+  --color-foreground: 220 14% 96%;
+  --color-surface: 222 47% 11%;
+  --color-border: 222 30% 18%;
+}

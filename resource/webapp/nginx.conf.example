@@ -1,0 +1,99 @@
+# Configuración de Nginx para React SPA
+# Ubicación: /etc/nginx/sites-available/dashboard
+
+server {
+    listen 80;
+    server_name dashboard.demo.farutech.com;
+    
+    # Redirigir HTTP a HTTPS (descomentar en producción)
+    # return 301 https://$server_name$request_uri;
+}
+
+server {
+    # Descomentar para HTTPS
+    # listen 443 ssl http2;
+    listen 80;
+    server_name dashboard.demo.farutech.com;
+    
+    # Certificados SSL (descomentar y configurar en producción)
+    # ssl_certificate /etc/letsencrypt/live/dashboard.demo.farutech.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/dashboard.demo.farutech.com/privkey.pem;
+    # ssl_protocols TLSv1.2 TLSv1.3;
+    # ssl_ciphers HIGH:!aNULL:!MD5;
+    
+    # Directorio raíz (donde está el build de Vite)
+    root /var/www/dashboard/dist;
+    index index.html;
+    
+    # Logs
+    access_log /var/log/nginx/dashboard_access.log;
+    error_log /var/log/nginx/dashboard_error.log;
+    
+    # Compresión GZIP
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/x-javascript
+        application/xml
+        application/xml+rss
+        image/svg+xml;
+    
+    # Headers de seguridad
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    
+    # Servir archivos estáticos con caché
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+    
+    # No cachear index.html
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
+    }
+    
+    # API Proxy (si tienes un backend en el mismo servidor)
+    # location /api/ {
+    #     proxy_pass http://localhost:3000/;
+    #     proxy_http_version 1.1;
+    #     proxy_set_header Upgrade $http_upgrade;
+    #     proxy_set_header Connection 'upgrade';
+    #     proxy_set_header Host $host;
+    #     proxy_set_header X-Real-IP $remote_addr;
+    #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    #     proxy_set_header X-Forwarded-Proto $scheme;
+    #     proxy_cache_bypass $http_upgrade;
+    # }
+    
+    # Manejo de rutas SPA - CRÍTICO
+    # Todas las rutas no encontradas deben servir index.html
+    # Esto permite que React Router maneje el enrutamiento del lado del cliente
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # Proteger archivos sensibles
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    # Aumentar tamaño máximo de upload (si es necesario)
+    client_max_body_size 10M;
+}

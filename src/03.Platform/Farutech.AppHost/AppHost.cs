@@ -1,51 +1,77 @@
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+using DotNetEnv;
+
+Env.Load("../../../.env");
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-// ========== POSTGRES DATABASE ==========
-// Password fijo para desarrollo (en producción usar Azure KeyVault o user-secrets)
-var postgresPassword = builder.AddParameter("postgres-password", secret: false);
-builder.Configuration["Parameters:postgres-password"] = "SuperSecurePassword123";
+// ===================== ENTORNO =====================
+var environment = builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production";
+var isDev = environment == "Development";
+var isProd = environment == "Production";
 
-var postgres = builder.AddPostgres("postgres", password: postgresPassword)
-    .WithPgAdmin()
-    .WithDataVolume() // Persistencia de datos
-    .WithEnvironment("POSTGRES_DB", "farutec_db");
+// ===================== PARÁMETROS DESDE .ENV =====================
+var postgresPassword = builder.Configuration["POSTGRES_PASSWORD"];
+var jwtSecret = builder.Configuration["JWT_SECRET"];
+var commonDatabaseName = builder.Configuration["DATABASE_COMMON_NAME"];
+var dedicatedDatabasePrefix = builder.Configuration["DATABASE_DEDICATED_PREFIX"];
+var postgresConnString = builder.Configuration["POSTGRES_CONN_STRING"];
+var natsUrl = builder.Configuration["NATS_URL"];
+var natsHost = builder.Configuration["NATS_HOST"];
+var natsPort = builder.Configuration["NATS_PORT"];
+var natsUser = builder.Configuration["NATS_USER"];
+var natsPassword = builder.Configuration["NATS_PASSWORD"];
 
-// IMPORTANTE: El nombre aquí debe coincidir con GetConnectionString("DefaultConnection") en Program.cs
-var farutecDb = postgres.AddDatabase("DefaultConnection", "farutec_db");
-
-// ========== NATS MESSAGING ==========
-var nats = builder.AddNats("nats")
-    .WithDataVolume() // Persistencia de streams JetStream
-    .WithEnvironment("NATS_JETSTREAM", "enabled");
-
-// ========== ORCHESTRATOR API ==========
-// API usa HTTPS por seguridad (usa perfil 'https' de launchSettings.json)
-var orchestratorApi = builder.AddProject<Projects.Farutech_Orchestrator_API>("orchestrator-api", launchProfileName: "https")
-    .WithReference(farutecDb)
-    .WithReference(nats)
+// ====================================================
+// API (NÚCLEO DEL SISTEMA)
+// ====================================================
+var api = builder
+    .AddProject<Projects.Farutech_Orchestrator_API>(
+        "orchestrator-api",
+        launchProfileName: "https")
+    .WithEnvironment("Jwt__SecretKey", jwtSecret)
+    .WithEnvironment("Database__CommonName", commonDatabaseName)
+    .WithEnvironment("Database__DedicatedPrefix", dedicatedDatabasePrefix)
+    .WithEnvironment("Nats__Host", natsHost)
+    .WithEnvironment("Nats__Port", natsPort)
+    .WithEnvironment("Nats__User", natsUser)
+    .WithEnvironment("Nats__Password", natsPassword)
+    .WithEnvironment("ConnectionStrings__DefaultConnection", postgresConnString)
     .WithEnvironment("Nats__Enabled", "true")
-    .WithEnvironment("Nats__Url", nats.GetEndpoint("tcp"));
-    // Aspire inyecta ConnectionStrings__DefaultConnection automáticamente
+    .WithEnvironment("Nats__Url", natsUrl)
+    .WithHttpHealthCheck("/health/live");
 
-// ========== FRONTEND REACT (VITE) ==========
-// El frontend recibe la URL de la API como variable de entorno
-// Usa HTTPS para seguridad en el endpoint primario
-// Ruta relativa desde src/03.Platform/Farutech.AppHost
-var frontend = builder.AddNpmApp("frontend", "../../02.Apps/Farutech.Frontend", "dev")
-    .WithReference(orchestratorApi)
-    .WithEnvironment("VITE_API_URL", orchestratorApi.GetEndpoint("https")) // Usar HTTPS
-    .WithHttpEndpoint(env: "PORT") // Dejar que Aspire asigne puerto dinámico
-    .WithExternalHttpEndpoints() // Permitir acceso externo
-    .PublishAsDockerFile(); // Genera Dockerfile para producción
+// ====================================================
+// ORDEON (APLICACIÓN DE NEGOCIO)
+// ====================================================
+var ordeonApi = builder
+    .AddProject<Projects.Farutech_Apps_Ordeon_API>("ordeon-api", launchProfileName: "http")
+    .WithReference(api) // Dependencia de Orchestrator para registro de capacidades
+    .WithEnvironment("Orchestrator__BaseUrl", api.GetEndpoint("https"))
+    .WithEnvironment("ConnectionStrings__CustomerDatabase", postgresConnString);
 
-// ========== GO WORKER (Opcional - Solo si está compilado) ==========
-// Para integrar el Worker Go:
-// 1. Compilar el worker: cd src/04.Workers/workers-go && go build -o bin/worker.exe cmd/worker/main.go
-// 2. Descomentar las siguientes líneas:
-//
-// var goWorker = builder.AddExecutable("go-worker", "../04.Workers/workers-go/bin/worker", "../04.Workers/workers-go")
-//     .WithEnvironment("NATS_URL", nats.GetEndpoint("tcp"))
-//     .WithEnvironment("DB_CONNECTION_STRING", $"Host={postgres.GetEndpoint("tcp").Host};Port={postgres.GetEndpoint("tcp").Port};Database=farutec_db;Username=farutec_admin;Password=SuperSecurePassword123");
+// If AppHost is running in development, ensure Ordeon runs in Development so it applies migrations/seeds
+if (isDev)
+{
+    ordeonApi = ordeonApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development");
+}
+// Ensure Aspire requests Ordeon to run migrations/seeds on startup so catalogs are created
+ordeonApi = ordeonApi.WithEnvironment("Ordeon__RunMigrationsOnStartup", "true");
 
+// ====================================================
+// FRONTEND (CONSUMIDOR FINAL)
+// ====================================================
+builder
+    .AddNpmApp(
+        "frontend",
+        "../../01.Core/Farutech/Frontend/Dashboard",
+        "dev")
+    .WithReference(api)
+    .WithEnvironment("VITE_API_URL", api.GetEndpoint("https"))
+    .WithEnvironment("HOST", "0.0.0.0") // Forzar Vite a escuchar en todas las interfaces
+    .WithHttpEndpoint(env: "PORT")
+    .WithExternalHttpEndpoints();
+
+// ====================================================
 builder.Build().Run();
-

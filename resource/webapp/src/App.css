@@ -1,0 +1,20 @@
+/* Estilos personalizados de la aplicación */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Animaciones y transiciones adicionales */
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}

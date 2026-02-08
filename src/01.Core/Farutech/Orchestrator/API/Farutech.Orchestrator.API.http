@@ -1,0 +1,151 @@
+@host = http://localhost:5098
+@email = webmaster@farutech.com
+# Use an env var or change the value below; avoid embedding greetings in passwords
+@password = Holamundo1*
+@admin_token = ...
+# Variables que se llenarán automáticamente
+@accessToken = 
+@customerId = 
+@customerCode = 
+@productId = 
+@tenantInstanceId = 
+
+### ==========================================
+### 1. REGISTRO DE USUARIO
+### ==========================================
+# Creamos un usuario nuevo en Identity. 
+# Inicialmente no tiene tenants ni empresas asignadas.
+POST {{host}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "firstName": "Juan",
+  "lastName": "Demo",
+  "createDefaultOrganization": false
+}
+
+### ==========================================
+### 2. LOGIN (ONBOARDING)
+### ==========================================
+# Al no tener tenants, el sistema devuelve un token limitado (onboarding)
+# Este token NO tiene clamp 'tenant_id'.
+# Debe usarse EXCLUSIVAMENTE para crear la primera empresa.
+# @name loginRequest
+POST {{host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+###
+
+@accessToken = {{loginRequest.response.body.accessToken}}
+
+### ==========================================
+### 3. CREAR EMPRESA (CUSTOMER)
+### ==========================================
+# Usamos el token de onboarding.
+# El sistema crea la empresa y ASIGNA AUTOMÁTICAMENTE al usuario actual como OWNER.
+# Response devuelve el 'code' y el 'customerId'.
+# @name createCustomer
+POST {{host}}/api/Customers
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "companyName": "Tech Demo Solutions Corp",
+  "email": "contacto@techdemo.com",
+  "taxId": "XX-12345678-Y",
+  "address": "Av. Innovación 101",
+  "phone": "+52 555 123 4567"
+}
+###
+
+@customerId = {{createCustomer.response.body.customerId}}
+@customerCode = {{createCustomer.response.body.code}}
+
+### ==========================================
+### 4. CONSULTAR CATÁLOGO (PREREQUISITO)
+### ==========================================
+# Necesitamos el ID de un producto para provisionar.
+# Cualquier usuario autenticado puede listar los productos.
+# @name getProducts
+GET {{host}}/api/Catalog/products
+Authorization: Bearer {{accessToken}}
+###
+
+# Tomamos el primer producto de la lista (asegúrate de haber creado uno como Admin antes)
+# Si no hay productos, crea uno con el endpoint de admin (ver abajo sección Admin)
+@productId = {{getProducts.response.body.$[0].id}}
+
+### ==========================================
+### 5. VINCULAR EMPRESA (Opcional - Verificación)
+### ==========================================
+# La vinculación ya fue hecha automáticamente en el paso 3.
+# Verificamos obteniendo los detalles de la empresa recién creada.
+GET {{host}}/api/Customers/{{customerId}}
+Authorization: Bearer {{accessToken}}
+
+### ==========================================
+### 6. PROVISIONAR INSTANCIA (TENANT)
+### ==========================================
+# Crea la base de datos y recursos para la empresa.
+# Requiere los IDs obtenidos previamente.
+# @name provisionInstance
+POST {{host}}/api/Provisioning/provision
+# Authorization: Bearer {{accessToken}} 
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "productId": "{{productId}}",
+  "environment": "Development",
+  "moduleIds": [],
+  "customFeatures": {}
+}
+
+@tenantInstanceId = {{provisionInstance.response.body.tenantInstanceId}}
+
+### ==========================================
+### 7. LOGIN (FULL ACCESS)
+### ==========================================
+# Ahora el usuario ya tiene tenant. El login devolverá 'requiresContextSelection'
+# o el token final si solo tiene una empresa.
+# @name loginFull
+POST {{host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+@intermediateToken = {{loginFull.response.body.intermediateToken}}
+
+### ==========================================
+### 8. SELECCIONAR CONTEXTO (Si aplica)
+### ==========================================
+# Si el usuario tiene múltiples empresas, intercambia el token intermedio
+# por el token de acceso final para una empresa específica.
+POST {{host}}/api/Auth/select-context
+Content-Type: application/json
+
+{
+  "intermediateToken": "{{intermediateToken}}",
+  "tenantId": "{{loginFull.response.body.availableTenants[0].tenantId}}"
+}
+
+
+### ==========================================
+### SECCIÓN ADMIN (Helpers)
+### ==========================================
+### Crear Producto (Solo SuperAdmin)
+# POST {{host}}/api/Catalog/products
+# Content-Type: application/json
+# {
+#   "name": "Farutech ERP",
+#   "description": "Sistema base Enterprise"
+# }
