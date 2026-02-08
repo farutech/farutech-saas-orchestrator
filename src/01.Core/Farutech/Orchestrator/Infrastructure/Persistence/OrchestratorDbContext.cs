@@ -45,10 +45,11 @@ public class OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> optio
     {
         base.OnConfiguring(optionsBuilder);
         
-        // Suppress pending model changes warning to allow migrations to run even if there is slight drift
-        // This is crucial for local development resilience when models change frequently
-        optionsBuilder.ConfigureWarnings(warnings => 
-            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        // Note: If you see PendingModelChangesWarning, it means the database schema doesn't match
+        // the current model. Create a new migration using:
+        // dotnet ef migrations add <MigrationName> --project src/01.Core/Farutech/Orchestrator/Infrastructure
+        // Then apply it with:
+        // dotnet ef database update --project src/01.Core/Farutech/Orchestrator/Infrastructure
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
