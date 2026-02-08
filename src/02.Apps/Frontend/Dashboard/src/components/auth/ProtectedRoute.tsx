@@ -1,57 +1,98 @@
 // ============================================================================
-// PROTECTED ROUTE - Guard component for authenticated routes
+// PROTECTED ROUTE - Route Guard for Authentication (OPTIMIZED)
 // ============================================================================
+// ✅ Optimizado con React.memo para evitar re-renders innecesarios
+// ✅ Usa selectores granulares de Zustand
+// ✅ Sin logs en producción (Zustand DevTools es mejor)
+// ✅ LoadingScreen memoizado
+// ✅ Early return pattern
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { GlobalLoader } from '@/components/farutech/GlobalLoader';
+import { memo } from 'react';
+import {
+  useIsAuthenticated,
+  useIsInitialized,
+  useRequiresContextSelection,
+  useAuthStore,
+} from '@/store/authStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiresOrchestrator?: boolean;
 }
 
-export function ProtectedRoute({ children, requiresOrchestrator = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, isOrchestrator, requiresContextSelection } = useAuth();
+// ============================================================================
+// Loading Screen (Memoizado para evitar re-creación)
+// ============================================================================
+
+const LoadingScreen = memo(() => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
+    <GlobalLoader fullScreen={false} />
+  </div>
+));
+
+LoadingScreen.displayName = 'LoadingScreen';
+
+// ============================================================================
+// ProtectedRoute Component (Memoizado)
+// ============================================================================
+
+export const ProtectedRoute = memo(({ children, requiresOrchestrator = false }: ProtectedRouteProps) => {
+  // ✅ Selectores granulares - solo re-render si cambian
+  const isAuthenticated = useIsAuthenticated();
+  const isInitialized = useIsInitialized();
+  const requiresContextSelection = useRequiresContextSelection();
+  const isOrchestrator = useAuthStore(state => state.isOrchestrator);
   const location = useLocation();
 
-  console.log('[ProtectedRoute] Checking access to:', location.pathname);
-  console.log('[ProtectedRoute] isAuthenticated:', isAuthenticated);
-  console.log('[ProtectedRoute] requiresContextSelection:', requiresContextSelection);
-  console.log('[ProtectedRoute] isLoading:', isLoading);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
-        <GlobalLoader fullScreen={false} />
-      </div>
-    );
+  // ============================================================================
+  // Early return: No inicializado
+  // ============================================================================
+  
+  if (!isInitialized) {
+    return <LoadingScreen />;
   }
 
+  // ============================================================================
+  // Early return: No autenticado
+  // ============================================================================
+  
   if (!isAuthenticated) {
-    // Redirect to login and save the intended destination
-    console.log('[ProtectedRoute] User not authenticated, redirecting to login');
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Allow access to profile page even with just intermediate token (user info doesn't require tenant context)
-  const isProfileOrSettingsPage = location.pathname === '/profile' || location.pathname === '/settings';
+  // ============================================================================
+  // Rutas exentas de selección de contexto
+  // ============================================================================
   
-  // If user needs to select context (has intermediate token) but is trying to access protected routes other than launcher/profile
-  if (requiresContextSelection && !isProfileOrSettingsPage) {
-    // Allow access to launcher to complete context selection
-    if (location.pathname !== '/launcher') {
-      console.warn('[ProtectedRoute] User needs to select context, redirecting to launcher');
-      return <Navigate to="/launcher" state={{ from: location }} replace />;
-    }
+  const isExemptRoute =
+    location.pathname === '/profile' ||
+    location.pathname === '/settings' ||
+    location.pathname === '/launcher' ||
+    location.pathname === '/';
+
+  // ============================================================================
+  // Redirección por selección de contexto
+  // ============================================================================
+  
+  if (requiresContextSelection && !isExemptRoute) {
+    return <Navigate to="/launcher" state={{ from: location }} replace />;
   }
 
+  // ============================================================================
+  // Validación de rol de orquestador
+  // ============================================================================
+  
   if (requiresOrchestrator && !isOrchestrator()) {
-    // Redirect to launcher if user doesn't have orchestrator access
-    console.log('[ProtectedRoute] User does not have orchestrator access');
     return <Navigate to="/launcher" replace />;
   }
 
-  console.log('[ProtectedRoute] Access granted to:', location.pathname);
+  // ============================================================================
+  // Render children
+  // ============================================================================
+  
   return <>{children}</>;
-}
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';

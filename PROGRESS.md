@@ -1,5 +1,5 @@
 # FARUTECH SAAS ORCHESTRATOR - CONTROL DE PROYECTO
-> Ruta Raíz: D:\farutech_2025
+> Ruta Raíz: c:\Users\farid\farutech-saas-orchestrator
 > Estado: EN DESARROLLO
 
 ## 📋 BACKLOG DE TAREAS
@@ -45,9 +45,19 @@
 - [x] 8.2 Implementar Cliente HTTP con Refit HttpClientFactory
 - [x] 8.3 Caché de Configuración (MemoryCache para no saturar el Core)
 
+### FASE 9: FRONTEND - DESIGN SYSTEM & AUTH (✅ COMPLETADO)
+- [x] 9.1 AuthStore con Zustand (reemplaza AuthContext, sincronización inmediata)
+- [x] 9.2 ProtectedRoute optimizado (React.memo, selectores granulares)
+- [x] 9.3 Componentes Auth en Design System (AuthLayout, LoginForm, ForgotPasswordForm, ResetPasswordForm, RegisterForm)
+- [x] 9.4 AppHeader Component (Breadcrumbs, Search, Theme Toggle, Notifications, User Menu)
+- [x] 9.5 Build Design System v1.1.0 (337 kB, gzip: 75 kB)
+- [x] 9.6 Integración en Dashboard (Auth pages + AppHeader)
+- [x] 9.7 Build Dashboard exitoso (1,047 kB, gzip: 297 kB)
+
 ## 📝 BITÁCORA
 - 2026-01-24 12:26: Proyecto inicializado. Carpetas creadas.
 - 2026-01-24 12:30: ✅ Tarea 1.1 completada. Solución .NET 9 creada con arquitectura limpia (Domain, Application, Infrastructure, API). Build exitoso.
+- 2026-01-26 16:45: ✅ FASE 9 completada. Design System v1.1.0 con Auth components y AppHeader. Dashboard integrado con componentes enterprise-grade.
 - 2026-01-24 12:35: ✅ Tarea 1.2 completada. Módulo Go inicializado con estructura completa (cmd, internal, handlers, NATS client).
 - 2026-01-24 12:40: ✅ Tarea 1.3 completada. Docker Compose configurado (PostgreSQL 16, NATS JetStream 2.10, pgAdmin).
 - 2026-01-24 12:45: ✅ FASE 2 completada. Entidades de dominio implementadas (Catálogo: Product/Module/Feature, Tenants: Customer/TenantInstance/Subscription) con soporte JSONB para overrides.

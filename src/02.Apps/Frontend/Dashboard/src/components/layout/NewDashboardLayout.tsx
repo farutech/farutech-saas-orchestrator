@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { DashboardHeader } from './NewDashboardHeader';
+import { DashboardAppHeader } from './DashboardAppHeader';
 import { ModuleSidebar } from './ModuleSidebar';
 
 interface NewDashboardLayoutProps {
@@ -10,9 +10,9 @@ interface NewDashboardLayoutProps {
 export function NewDashboardLayout({ children }: NewDashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <DashboardAppHeader />
       
-      <div className="flex">
+      <div className="flex pt-14">{/* pt-14 for header height */}
         <ModuleSidebar />
         
         <motion.main

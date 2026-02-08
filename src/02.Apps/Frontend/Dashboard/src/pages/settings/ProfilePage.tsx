@@ -5,11 +5,17 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/api-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  Input,
+  Label,
+  Button,
+  Separator
+} from '@farutech/design-system';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Phone, Lock, Save, Edit, X, ArrowLeft } from 'lucide-react';
 import { UserProfileDto, UpdateProfileRequest, UpdateProfileResponse } from '@/types/api';

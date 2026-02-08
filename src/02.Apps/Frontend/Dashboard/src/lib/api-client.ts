@@ -81,15 +81,21 @@ const createApiClient = (): AxiosInstance => {
       // For user profile endpoints, allow intermediate token if no access token
       if (!token && (config.url?.includes('/api/Auth/me') || config.url?.includes('/api/Auth/profile'))) {
         token = TokenManager.getIntermediateToken();
-        console.log('[API-Client] Using intermediate token for profile endpoint');
+        if (import.meta.env.DEV) {
+          console.log('[API-Client] Using intermediate token for profile endpoint');
+        }
       }
       
-      console.log('[API-Client] Request to:', config.url);
-      console.log('[API-Client] Token from storage:', token ? `${token.substring(0, 20)}...` : 'null');
+      if (import.meta.env.DEV) {
+        console.log('[API-Client] Request to:', config.url);
+        console.log('[API-Client] Token from storage:', token ? `${token.substring(0, 20)}...` : 'null');
+      }
 
       if (token && token.trim().length > 0) {
         config.headers.Authorization = `Bearer ${token.trim()}`;
-        console.log('[API-Client] Authorization header set successfully');
+        if (import.meta.env.DEV) {
+          console.log('[API-Client] Authorization header set successfully');
+        }
       } else {
         console.warn('[API-Client] No valid token found for request to:', config.url);
       }
@@ -98,7 +104,9 @@ const createApiClient = (): AxiosInstance => {
       const tenantContext = TokenManager.getTenantContext();
       if (tenantContext?.tenantId && config.headers) {
         config.headers['X-Tenant-Id'] = tenantContext.tenantId;
-        console.log('[API-Client] Tenant context added:', tenantContext.tenantId);
+        if (import.meta.env.DEV) {
+          console.log('[API-Client] Tenant context added:', tenantContext.tenantId);
+        }
       }
 
       return config;
@@ -113,7 +121,9 @@ const createApiClient = (): AxiosInstance => {
   // ============================================================================
   client.interceptors.response.use(
     (response) => {
-      console.log('[API-Client] Response received:', response.config.url, response.status);
+      if (import.meta.env.DEV) {
+        console.log('[API-Client] Response received:', response.config.url, response.status);
+      }
       return response;
     },
     (error: AxiosError<ProblemDetails>) => {

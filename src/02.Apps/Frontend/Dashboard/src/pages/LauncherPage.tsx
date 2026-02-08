@@ -21,11 +21,16 @@ import apiClient from '@/lib/api-client';
 import { UserContextResponse, OrganizationContextDto } from '@/types/api';
 
 // UI Components
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { 
+  Button,
+  Input,
+  Badge,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  Separator
+} from '@farutech/design-system';
 import { AppHeader } from '@/components/layout/AppHeader';
 import {
   DropdownMenu,
@@ -37,7 +42,6 @@ import {
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
 const getInstanceConfig = (type: string) => {
   const t = (type || '').toLowerCase();
   if (t.includes('vet')) return { color: 'bg-orange-100 text-orange-600 border-orange-200', label: 'Veterinaria' };

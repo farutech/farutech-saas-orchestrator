@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8081,
+    allowedHosts: ['.app.localhost'],
     hmr: {
       overlay: false,
     },
@@ -16,6 +17,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@dashboard": path.resolve(__dirname, "./src"),
     },
   },
   build: {
@@ -30,8 +32,13 @@ export default defineConfig(({ mode }) => ({
           'query-vendor': ['@tanstack/react-query'],
         },
       },
+      // Tratar MPs como externos durante el bundle para cargarlos dinámicamente
+      external: [],
     },
     chunkSizeWarningLimit: 1000, // Aumentar límite a 1000 kB
+    commonjsOptions: {
+      include: [/node_modules/],
+    },
   },
 }));
 

@@ -1,6 +1,6 @@
 {
   "name": "@farutech/design-system",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "Farutech Enterprise Design System - Unified UI component library for multi-tenant SaaS applications",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./styles": "./dist/style.css",
+    "./styles": "./dist/design-system.css",
     "./tokens": {
       "types": "./dist/tokens/index.d.ts",
       "import": "./dist/tokens/index.mjs",

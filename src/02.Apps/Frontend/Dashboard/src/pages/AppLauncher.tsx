@@ -4,7 +4,7 @@ import { useFarutech } from '@/contexts/FarutechContext';
 import { FarutechLogo } from '@/components/farutech/FarutechLogo';
 import { ModuleCard } from '@/components/farutech/ModuleCard';
 import { GlobalLoader } from '@/components/farutech/GlobalLoader';
-import { Button } from '@/components/ui/button';
+import { Button } from '@farutech/design-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,

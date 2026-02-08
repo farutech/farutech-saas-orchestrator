@@ -9,6 +9,7 @@ export * from './Forms/Checkbox'
 export * from './Forms/Textarea'
 export * from './Forms/Switch'
 export * from './Forms/RadioGroup'
+export * from './Forms/Label'
 export * from './Button'
 
 // DataDisplay
@@ -35,6 +36,9 @@ export * from './Navigation/Stepper'
 export * from './Layout/Container'
 export * from './Layout/Stack'
 export * from './Layout/Grid'
+export * from './Layout/Separator'
+export { AppHeader } from './Layout/AppHeader'
+export type { AppHeaderProps, Notification, UserInfo } from './Layout/AppHeader'
 
 // Overlay
 export * from './Overlay/Drawer'
@@ -44,3 +48,6 @@ export * from './Overlay/Dropdown'
 // Patterns
 export * from './Patterns/FormLayout'
 export * from './Patterns/PageLayout'
+
+// Auth
+export * from './Auth'
