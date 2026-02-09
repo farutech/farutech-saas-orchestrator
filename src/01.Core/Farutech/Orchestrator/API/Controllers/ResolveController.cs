@@ -35,6 +35,32 @@ public class ResolveController(IResolveService resolveService) : ControllerBase
         }
         return Ok(result);
     }
+
+    /// <summary>
+    /// Resuelve una instancia por hostname completo (usado por dashboard cuando accede por URL directa)
+    /// </summary>
+    /// <param name="hostname">Hostname completo (ej: 8b571b69.FARU6128.app.farutech.com)</param>
+    /// <returns>Información de la instancia resuelta</returns>
+    /// <response code="200">Instancia resuelta exitosamente</response>
+    /// <response code="404">Instancia no encontrada</response>
+    [HttpGet("by-hostname")]
+    [ProducesResponseType(typeof(ResolveResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ResolveResponseDto>> ResolveByHostname([FromQuery] string hostname)
+    {
+        if (string.IsNullOrWhiteSpace(hostname))
+        {
+            return BadRequest(new { message = "Hostname es requerido" });
+        }
+
+        var result = await _resolveService.ResolveByHostnameAsync(hostname);
+        if (result == null)
+        {
+            return NotFound(new { message = "Instancia no encontrada para el hostname especificado" });
+        }
+        
+        return Ok(result);
+    }
 }
 
 /// <summary>

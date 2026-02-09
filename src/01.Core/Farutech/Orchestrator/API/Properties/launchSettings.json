@@ -5,7 +5,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5098",
+      "applicationUrl": "http://farutech.local:80;http://localhost:5098",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -14,7 +14,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "https://localhost:7225;http://localhost:5098",
+      "applicationUrl": "https://farutech.local:443;https://localhost:7225;http://farutech.local:80;http://localhost:5098",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

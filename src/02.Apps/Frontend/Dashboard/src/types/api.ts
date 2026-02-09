@@ -11,6 +11,8 @@ export interface LoginRequest {
   email?: string;
   password?: string;
   rememberMe?: boolean;
+  instanceCode?: string; // Código de instancia para acceso directo
+  organizationCode?: string; // Código de organización para acceso directo
 }
 
 export interface SecureLoginResponse {

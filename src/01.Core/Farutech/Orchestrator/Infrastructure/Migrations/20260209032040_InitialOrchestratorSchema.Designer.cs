@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farutech.Orchestrator.Infrastructure.Migrations
 {
     [DbContext(typeof(OrchestratorDbContext))]
-    [Migration("20260205153901_WorkingMigration")]
-    partial class WorkingMigration
+    [Migration("20260209032040_InitialOrchestratorSchema")]
+    partial class InitialOrchestratorSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

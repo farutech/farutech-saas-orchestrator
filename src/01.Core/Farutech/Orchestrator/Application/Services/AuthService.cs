@@ -27,6 +27,19 @@ public class AuthService(
     /// </summary>
     public async Task<SecureLoginResponse?> LoginAsync(string email, string password, bool rememberMe = false)
     {
+        return await LoginAsync(email, password, rememberMe, null, null);
+    }
+
+    /// <summary>
+    /// Autentica al usuario con acceso directo a una instancia específica (cuando viene desde URL con subdominios).
+    /// </summary>
+    public async Task<SecureLoginResponse?> LoginAsync(
+        string email, 
+        string password, 
+        bool rememberMe = false, 
+        string? instanceCode = null, 
+        string? organizationCode = null)
+    {
         Console.WriteLine($"[AuthService] LoginAsync called for email: {email}");
         
         // Buscar usuario por email
@@ -55,8 +68,6 @@ public class AuthService(
         
         Console.WriteLine($"[AuthService] Password validated for {email}");
 
-        Console.WriteLine($"[AuthService] Password validated for {email}");
-
         // Actualizar último login
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -66,6 +77,51 @@ public class AuthService(
         var memberships = await _authRepository.GetUserMembershipsAsync(user.Id);
         Console.WriteLine($"[AuthService] Found {memberships.Count()} memberships for user {user.Id}");
         var activeMemberships = await GetAvailableTenantsForUserAsync(user.Id);
+
+        // CASO 0: Acceso directo con instanceCode y organizationCode (desde URL directa)
+        if (!string.IsNullOrWhiteSpace(instanceCode) && !string.IsNullOrWhiteSpace(organizationCode))
+        {
+            Console.WriteLine($"[AuthService] Direct access requested for instance: {instanceCode}, organization: {organizationCode}");
+            
+            // Buscar la instancia específica en los tenants disponibles
+            var targetTenant = activeMemberships
+                .Where(t => t.CompanyCode.Equals(organizationCode, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(t => t.Instances)
+                .FirstOrDefault(i => i.Code.Equals(instanceCode, StringComparison.OrdinalIgnoreCase));
+            
+            if (targetTenant == null)
+            {
+                Console.WriteLine($"[AuthService] User {email} does not have access to instance {instanceCode} in organization {organizationCode}");
+                return null; // Usuario no tiene acceso a esta instancia
+            }
+            
+            // Obtener el tenant owner de esta instancia
+            var ownerTenant = activeMemberships
+                .First(t => t.Instances.Any(i => i.InstanceId == targetTenant.InstanceId));
+            
+            // Generar token de acceso directo
+            var accessToken = _tokenService.GenerateAccessToken(
+                user,
+                ownerTenant.TenantId,
+                ownerTenant.CompanyName,
+                ownerTenant.Role,
+                rememberMe
+            );
+            
+            Console.WriteLine($"[AuthService] Direct access token generated for {email} on instance {instanceCode}");
+            
+            return new SecureLoginResponse(
+                RequiresContextSelection: false,
+                IntermediateToken: null,
+                AccessToken: accessToken,
+                TokenType: "Bearer",
+                ExpiresIn: rememberMe ? 2592000 : 3600, // 30 días o 1 hora
+                AvailableTenants: null,
+                SelectedTenantId: ownerTenant.TenantId,
+                CompanyName: ownerTenant.CompanyName,
+                Role: ownerTenant.Role
+            );
+        }
 
         // CASO 1: Usuario SIN tenants → Retornar token limpio para ONBOARDING
         if (activeMemberships.Count == 0)

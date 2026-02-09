@@ -6,7 +6,9 @@ namespace Farutech.Orchestrator.Application.DTOs.Auth;
 public record LoginRequest(
     string Email,
     string Password,
-    bool RememberMe = false
+    bool RememberMe = false,
+    string? InstanceCode = null, // Opcional: código de instancia para acceso directo
+    string? OrganizationCode = null // Opcional: código de organización para acceso directo
 );
 
 /// <summary>

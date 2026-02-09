@@ -16,6 +16,7 @@ import type {
 } from '@/types/api';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
+import { resolveTenantFromHostname, callResolveApi } from '@/utils/tenantResolver';
 
 // ============================================================================
 // Types
@@ -92,6 +93,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const initializeAuth = async () => {
     try {
       console.log('[AuthContext] === INITIALIZING AUTH ===');
+      
+      // PASO 1: Resolver tenant desde URL
+      const tenantResolution = resolveTenantFromHostname();
+      console.log('[AuthContext] Tenant resolution:', tenantResolution);
+      
+      if (tenantResolution.isValid) {
+        // Validar que el tenant existe llamando al API
+        const tenantInfo = await callResolveApi(window.location.hostname);
+        if (!tenantInfo) {
+          console.warn('[AuthContext] Tenant not found for hostname:', window.location.hostname);
+          toast.error('Instancia no encontrada');
+          navigate('/error/tenant-not-found');
+          setIsLoading(false);
+          return;
+        }
+        console.log('[AuthContext] Tenant validated:', tenantInfo);
+        
+        // Guardar información del tenant en sessionStorage para usarla en login
+        sessionStorage.setItem('farutech_resolved_tenant', JSON.stringify(tenantResolution));
+      }
+      
+      // PASO 2: Verificar tokens existentes
       const token = TokenManager.getAccessToken();
       const intermediateToken = TokenManager.getIntermediateToken();
       const tenantContext = TokenManager.getTenantContext();
@@ -144,6 +167,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('[AuthContext] Failed to initialize auth:', error);
       TokenManager.clearAllTokens();
       sessionStorage.removeItem('farutech_available_tenants');
+      sessionStorage.removeItem('farutech_resolved_tenant');
       setRequiresContextSelection(false);
       setAvailableTenants([]);
     } finally {
@@ -159,7 +183,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {
-      const response = await authService.login(credentials);
+      // Obtener tenant resuelto desde sessionStorage si existe
+      const resolvedTenantStr = sessionStorage.getItem('farutech_resolved_tenant');
+      let enhancedCredentials = { ...credentials };
+      
+      if (resolvedTenantStr) {
+        const resolvedTenant = JSON.parse(resolvedTenantStr);
+        console.log('[AuthContext] Using resolved tenant for login:', resolvedTenant);
+        enhancedCredentials = {
+          ...credentials,
+          instanceCode: resolvedTenant.instanceCode,
+          organizationCode: resolvedTenant.organizationCode
+        };
+      }
+      
+      const response = await authService.login(enhancedCredentials);
 
       // Caso 1: Usuario tiene múltiples organizaciones (requiresContextSelection = true)
       if (response.requiresContextSelection) {

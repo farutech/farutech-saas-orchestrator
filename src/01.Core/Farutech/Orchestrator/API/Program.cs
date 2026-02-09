@@ -253,13 +253,36 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // En desarrollo, permitir cualquier puerto de localhost (HTTP y HTTPS)
+        // En desarrollo, permitir localhost y dominios .farutech.local con cualquier puerto
         policy.SetIsOriginAllowed(origin =>
         {
             if (string.IsNullOrWhiteSpace(origin)) return false;
-            var uri = new Uri(origin);
-            // Permitir localhost en cualquier protocolo (http o https)
-            return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+            
+            try
+            {
+                var uri = new Uri(origin);
+                
+                // Permitir localhost en cualquier puerto (http o https)
+                if (uri.Host == "localhost" || uri.Host == "127.0.0.1")
+                    return true;
+                
+                // Permitir dominios .farutech.local (desarrollo)
+                // Ejemplos: farutech.local, app.farutech.local, 8b571b69.faru6128.app.farutech.local
+                if (uri.Host.EndsWith(".farutech.local", StringComparison.OrdinalIgnoreCase) ||
+                    uri.Host.Equals("farutech.local", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                
+                // Permitir dominios .farutech.com (producción)
+                if (uri.Host.EndsWith(".farutech.com", StringComparison.OrdinalIgnoreCase) ||
+                    uri.Host.Equals("farutech.com", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         })
         .AllowAnyMethod()
         .AllowAnyHeader()

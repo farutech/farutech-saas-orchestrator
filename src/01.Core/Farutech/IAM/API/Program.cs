@@ -8,6 +8,7 @@ using Farutech.IAM.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -83,6 +84,9 @@ builder.Services.AddAuthorization();
 // Add controllers
 builder.Services.AddControllers();
 
+// Add Swagger/OpenAPI
+builder.Services.AddOpenApi();
+
 // Add CORS
 builder.Services.AddCors(options =>
 {
@@ -106,6 +110,12 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+
 app.UseHttpsRedirection();
 
 app.UseCors();

@@ -6,8 +6,14 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8081,
+    host: process.env.HOST || "0.0.0.0", // Permite que Aspire controle el host
+    port: parseInt(process.env.PORT || "8081"), // Usa PORT de Aspire o 8081 por defecto
+    allowedHosts: [
+      "farutech.local",
+      ".farutech.local",
+      ".app.farutech.local",
+      "localhost",
+    ],
     hmr: {
       overlay: false,
     },

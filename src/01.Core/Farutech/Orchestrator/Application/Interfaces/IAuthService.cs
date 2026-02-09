@@ -14,6 +14,11 @@ public interface IAuthService
     Task<SecureLoginResponse?> LoginAsync(string email, string password, bool rememberMe = false);
 
     /// <summary>
+    /// Autentica usuario con acceso directo a instancia específica (desde URL con subdominios).
+    /// </summary>
+    Task<SecureLoginResponse?> LoginAsync(string email, string password, bool rememberMe, string? instanceCode, string? organizationCode);
+
+    /// <summary>
     /// Intercambia un token intermedio por un token de acceso con el tenant seleccionado.
     /// </summary>
     Task<SelectContextResponse?> SelectContextAsync(string intermediateToken, Guid tenantId);

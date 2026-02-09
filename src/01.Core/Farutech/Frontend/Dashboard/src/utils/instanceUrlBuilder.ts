@@ -39,8 +39,8 @@ export class InstanceUrlBuilder {
       return `http://localhost:${port}/session-receive?instance=${instanceSegment}&org=${orgCode}`;
     }
 
-    // Fallback to a predictable local hostname for reverse-proxy setups
-    return `http://${instanceSegment}.${orgCode}.app.localhost`;
+    // Use local domain for development
+    return `http://${instanceSegment}.${orgCode}.app.farutech.local`;
   }
 }
 

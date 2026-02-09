@@ -293,7 +293,7 @@ public static class IamDbContextSeed
             UserId = adminUser.Id,
             TenantId = farutechTenant.Id,
             RoleId = ownerRole.Id,
-            CustomAttributes = null!,
+            CustomAttributes = "{}",
             IsActive = true,
             GrantedAt = DateTime.UtcNow,
             GrantedBy = adminUser.Id, // Auto-granted

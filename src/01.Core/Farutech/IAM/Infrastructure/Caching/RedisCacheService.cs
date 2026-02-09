@@ -65,7 +65,7 @@ public class RedisCacheService : IRedisCacheService
             }
 
             _logger.LogDebug("Cache hit for key: {Key}", key);
-            return JsonSerializer.Deserialize<T>(value!);
+            return JsonSerializer.Deserialize<T>((string)value!);
         }
         catch (Exception ex)
         {

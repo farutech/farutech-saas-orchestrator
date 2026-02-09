@@ -72,11 +72,14 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
 
         // ===== PROVISIONING PHASE =====
         
-        // Generate tenant code
-        var tenantCode = $"{customer.Code}-{request.DeploymentType}-{Guid.NewGuid().ToString("N")[..8]}";
+        // Generate short instance code for URL subdomain (this will be used in Code field)
+        var instanceCode = Guid.NewGuid().ToString("N")[..8];
+        
+        // Generate tenant code with deployment type for database schema separation
+        var tenantCode = $"{customer.Code}-{request.DeploymentType}-{instanceCode}";
 
         // Generate ApiBaseUrl based on environment configuration
-        var apiBaseUrl = GenerateApiBaseUrl(tenantCode, product.Code);
+        var apiBaseUrl = GenerateApiBaseUrl(instanceCode, customer.Code, product.Code);
 
         // Create tenant instance with PENDING status
         var tenantInstance = new TenantInstance
@@ -84,7 +87,7 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
             Id = Guid.NewGuid(),
             CustomerId = request.CustomerId,
             TenantCode = tenantCode,
-            Code = request.Code?.Trim().ToUpperInvariant(), // User-defined code
+            Code = instanceCode, // ALWAYS use instanceCode to match URL subdomain
             Name = request.Name?.Trim() ?? product.Name ?? "Instance",
             Environment = "production", // production, staging, development
             ApplicationType = product.Code ?? "Generic",
@@ -244,14 +247,15 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
     /// <summary>
     /// Generates the API Base URL for a tenant instance based on environment configuration
     /// </summary>
-    /// <param name="tenantCode">Unique tenant code</param>
+    /// <param name="instanceCode">Instance code (8 chars)</param>
+    /// <param name="organizationCode">Organization code</param>
     /// <param name="productCode">Product code (e.g., FARUPOS, FARUINV)</param>
     /// <returns>Complete API base URL for the instance</returns>
-    private string GenerateApiBaseUrl(string tenantCode, string? productCode)
+    private string GenerateApiBaseUrl(string instanceCode, string organizationCode, string? productCode)
     {
         // Read configuration using indexer syntax
         var useLocalUrls = bool.TryParse(_configuration["Provisioning:UseLocalUrls"], out var localUrls) && localUrls;
-        var productionDomain = _configuration["Provisioning:ProductionDomain"] ?? "farutech.app";
+        var productionDomain = _configuration["Provisioning:ProductionDomain"] ?? "app.farutech.com";
         var basePort = int.TryParse(_configuration["Provisioning:LocalhostBasePort"], out var port) ? port : 5100;
 
         if (useLocalUrls)
@@ -270,8 +274,9 @@ public partial class ProvisioningService(IRepository repository, IMessageBus mes
         }
         else
         {
-            // Production mode: Use subdomain pattern
-            return $"https://{tenantCode}.{productionDomain}";
+            // Production mode: Use two-level subdomain pattern
+            // Format: https://{instanceCode}.{organizationCode}.app.farutech.com
+            return $"https://{instanceCode}.{organizationCode}.{productionDomain}";
         }
     }
 

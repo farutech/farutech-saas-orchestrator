@@ -29,11 +29,16 @@ public class AuthController(IAuthService authService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var result = await _authService.LoginAsync(request.Email, request.Password, request.RememberMe);
+        var result = await _authService.LoginAsync(
+            request.Email, 
+            request.Password, 
+            request.RememberMe, 
+            request.InstanceCode, 
+            request.OrganizationCode);
         
         if (result == null)
         {
-            return Unauthorized(new { message = "Credenciales inválidas o usuario sin tenants asignados" });
+            return Unauthorized(new { message = "Credenciales inválidas o usuario sin acceso a la instancia especificada" });
         }
 
         return Ok(result);
