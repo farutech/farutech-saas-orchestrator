@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\01.Core\Farutech\Frontend\Dashboard\Farutech.Frontend.Dashboard.esproj" />
     <ProjectReference Include="..\..\01.Core\Farutech\Orchestrator\API\Farutech.Orchestrator.API.csproj" />
+    <ProjectReference Include="..\..\01.Core\Farutech\IAM\API\Farutech.IAM.API.csproj" />
     <ProjectReference Include="..\..\02.Apps\Ordeon\Api\Farutech.Apps.Ordeon.API.csproj" />
     <ProjectReference Include="..\Farutech.ServiceDefaults\Farutech.ServiceDefaults.csproj" IsAspireProjectResource="false" />
   </ItemGroup>

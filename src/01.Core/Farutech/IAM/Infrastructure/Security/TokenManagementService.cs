@@ -33,34 +33,53 @@ public class TokenManagementService : ITokenManagementService
         _signingCredentials = new SigningCredentials(_securityKey, SecurityAlgorithms.RsaSha256);
     }
 
-    public async Task<string> GenerateAccessTokenAsync(User user, Tenant tenant, TenantMembership membership)
+    public async Task<string> GenerateAccessTokenAsync(User user, Tenant tenant, TenantMembership membership, Session? session = null, string? deviceId = null)
     {
         var claims = new List<Claim>
         {
             // Standard JWT claims
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 
             // Custom claims for user
-            new Claim("user_id", user.Id.ToString()),
-            new Claim("email", user.Email),
-            new Claim("full_name", $"{user.FirstName} {user.LastName}".Trim()),
-            new Claim("first_name", user.FirstName),
-            new Claim("last_name", user.LastName),
+            new("user_id", user.Id.ToString()),
+            new("email", user.Email),
+            new("full_name", $"{user.FirstName} {user.LastName}".Trim()),
+            new("first_name", user.FirstName),
+            new("last_name", user.LastName),
 
             // Tenant context claims
-            new Claim("tenant_id", tenant.Id.ToString()),
-            new Claim("tenant_code", tenant.Code),
-            new Claim("tenant_name", tenant.Name),
+            new("tenant_id", tenant.Id.ToString()),
+            new("tenant_code", tenant.Code),
+            new("tenant_name", tenant.Name),
 
             // Membership and role claims
-            new Claim("membership_id", membership.Id.ToString()),
-            new Claim("role_id", membership.Role?.Id.ToString() ?? string.Empty),
-            new Claim("role_name", membership.Role?.Name ?? string.Empty),
-            new Claim(ClaimTypes.Role, membership.Role?.Name ?? string.Empty)
+            new("membership_id", membership.Id.ToString()),
+            new("role_id", membership.Role?.Id.ToString() ?? string.Empty),
+            new("role_name", membership.Role?.Name ?? string.Empty),
+            new(ClaimTypes.Role, membership.Role?.Name ?? string.Empty),
+
+            // 🔐 PHASE 1: Enhanced security claims
+            new("ver", "1"), // Token version for future v2 migration
+            new("email_verified", user.EmailConfirmed.ToString().ToLower()),
+            new("phone_verified", user.PhoneNumberConfirmed.ToString().ToLower()),
+            new("mfa_enabled", user.TwoFactorEnabled.ToString().ToLower()),
+            new("mfa_verified", "false") // Will be set to true after 2FA verification
         };
+
+        // Add session ID if available
+        if (session != null)
+        {
+            claims.Add(new Claim("session_id", session.Id.ToString()));
+        }
+
+        // Add device ID if available
+        if (!string.IsNullOrEmpty(deviceId))
+        {
+            claims.Add(new Claim("device_id", deviceId));
+        }
 
         // Add permission claims
         if (membership.Role?.RolePermissions?.Any() == true)

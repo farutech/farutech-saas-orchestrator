@@ -23,6 +23,12 @@ public class IamDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    // 🔐 PHASE 3-6: New security entities
+    public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<TwoFactorBackupCode> TwoFactorBackupCodes { get; set; }
+    public DbSet<TenantSettings> TenantSettings { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

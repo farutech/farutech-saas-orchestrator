@@ -42,8 +42,7 @@ public static class IamDbContextSeed
     {
         var roles = new[]
         {
-            new Role
-            {
+            new Role {
                 Id = Guid.NewGuid(),
                 Name = "Owner",
                 NormalizedName = "OWNER",
@@ -51,8 +50,7 @@ public static class IamDbContextSeed
                 IsSystemRole = true,
                 CreatedAt = DateTime.UtcNow
             },
-            new Role
-            {
+            new Role {
                 Id = Guid.NewGuid(),
                 Name = "Admin",
                 NormalizedName = "ADMIN",
@@ -60,8 +58,7 @@ public static class IamDbContextSeed
                 IsSystemRole = true,
                 CreatedAt = DateTime.UtcNow
             },
-            new Role
-            {
+            new Role {
                 Id = Guid.NewGuid(),
                 Name = "User",
                 NormalizedName = "USER",
@@ -69,8 +66,7 @@ public static class IamDbContextSeed
                 IsSystemRole = true,
                 CreatedAt = DateTime.UtcNow
             },
-            new Role
-            {
+            new Role {
                 Id = Guid.NewGuid(),
                 Name = "Guest",
                 NormalizedName = "GUEST",
@@ -93,59 +89,54 @@ public static class IamDbContextSeed
         var now = DateTime.UtcNow;
         
         // Catálogo (5 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange([
             new Permission { Id = Guid.NewGuid(), Code = "catalog.products.view", Name = "Ver Productos", Description = "Permite visualizar productos del catálogo", Category = "Catálogo", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "catalog.products.create", Name = "Crear Productos", Description = "Permite crear nuevos productos", Category = "Catálogo", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "catalog.products.edit", Name = "Editar Productos", Description = "Permite modificar productos existentes", Category = "Catálogo", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "catalog.products.delete", Name = "Eliminar Productos", Description = "Permite eliminar productos", Category = "Catálogo", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "catalog.categories.manage", Name = "Gestionar Categorías", Description = "Permite administrar categorías de productos", Category = "Catálogo", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         // Ventas (5 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange([
             new Permission { Id = Guid.NewGuid(), Code = "sales.orders.view", Name = "Ver Pedidos", Description = "Permite visualizar pedidos de venta", Category = "Ventas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "sales.orders.create", Name = "Crear Pedidos", Description = "Permite crear nuevos pedidos", Category = "Ventas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "sales.orders.edit", Name = "Editar Pedidos", Description = "Permite modificar pedidos", Category = "Ventas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "sales.orders.cancel", Name = "Cancelar Pedidos", Description = "Permite cancelar pedidos", Category = "Ventas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "sales.invoices.generate", Name = "Generar Facturas", Description = "Permite generar facturas de venta", Category = "Ventas", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         // Finanzas (5 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange([
             new Permission { Id = Guid.NewGuid(), Code = "finance.payments.view", Name = "Ver Pagos", Description = "Permite visualizar pagos", Category = "Finanzas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "finance.payments.process", Name = "Procesar Pagos", Description = "Permite procesar pagos", Category = "Finanzas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "finance.expenses.view", Name = "Ver Gastos", Description = "Permite visualizar gastos", Category = "Finanzas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "finance.expenses.create", Name = "Crear Gastos", Description = "Permite registrar gastos", Category = "Finanzas", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "finance.reconciliation", Name = "Conciliación Bancaria", Description = "Permite realizar conciliación bancaria", Category = "Finanzas", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         // Inventario (3 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange([
             new Permission { Id = Guid.NewGuid(), Code = "inventory.view", Name = "Ver Inventario", Description = "Permite visualizar inventario", Category = "Inventario", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "inventory.adjust", Name = "Ajustar Inventario", Description = "Permite ajustar stock de inventario", Category = "Inventario", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "inventory.transfer", Name = "Transferir Inventario", Description = "Permite transferir inventario entre almacenes", Category = "Inventario", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         // Reportes (3 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange(
+        [
             new Permission { Id = Guid.NewGuid(), Code = "reports.sales.view", Name = "Ver Reportes de Ventas", Description = "Permite visualizar reportes de ventas", Category = "Reportes", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "reports.inventory.view", Name = "Ver Reportes de Inventario", Description = "Permite visualizar reportes de inventario", Category = "Reportes", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "reports.financial.view", Name = "Ver Reportes Financieros", Description = "Permite visualizar reportes financieros", Category = "Reportes", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         // Administración (4 permisos)
-        permissions.AddRange(new[]
-        {
+        permissions.AddRange([
             new Permission { Id = Guid.NewGuid(), Code = "admin.users.manage", Name = "Gestionar Usuarios", Description = "Permite administrar usuarios del sistema", Category = "Administración", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "admin.roles.manage", Name = "Gestionar Roles", Description = "Permite administrar roles y permisos", Category = "Administración", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "admin.settings.manage", Name = "Gestionar Configuración", Description = "Permite modificar configuración del sistema", Category = "Administración", ApplicationId = null, CreatedAt = now },
             new Permission { Id = Guid.NewGuid(), Code = "admin.audit.view", Name = "Ver Auditoría", Description = "Permite visualizar logs de auditoría", Category = "Administración", ApplicationId = null, CreatedAt = now }
-        });
+        ]);
         
         await context.Permissions.AddRangeAsync(permissions);
         await context.SaveChangesAsync();
@@ -264,7 +255,7 @@ public static class IamDbContextSeed
             FirstName = "Admin",
             LastName = "Farutech",
             ProfilePictureUrl = null,
-            Locale = "es-PE",
+            Locale = "es-CO",
             Timezone = "America/Lima",
             IsActive = true,
             CreatedAt = DateTime.UtcNow,

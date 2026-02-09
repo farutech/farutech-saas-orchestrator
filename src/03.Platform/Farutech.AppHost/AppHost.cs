@@ -53,6 +53,23 @@ var api = builder
     .WithHttpHealthCheck("/health/live");
 
 // ====================================================
+// IAM API (Gestión de Identidad y Acceso)
+// ====================================================
+var iamApi = builder
+    .AddProject<Projects.Farutech_IAM_API>("iam-api", launchProfileName: "https")
+    .WithEnvironment("ConnectionStrings__DefaultConnection", postgresConnectionString)
+    .WithEnvironment("TokenOptions__Issuer", "https://localhost:7001")
+    .WithEnvironment("TokenOptions__Audience", "farutech-api")
+    .WithEnvironment("RedisOptions__ConnectionString", "localhost:6379")
+    .WithEnvironment("RedisOptions__Enabled", "true")
+    .WithEnvironment("NatsOptions__Url", "nats://localhost:4222")
+    .WithEnvironment("NatsOptions__Enabled", "true")
+    .WithEnvironment("EmailOptions__Enabled", "true")
+    .WithEnvironment("EmailOptions__Transport", "Api")
+    .WithHttpHealthCheck("/health")
+    .WithHttpEndpoint(port: 7001, name: "iam-https");
+
+// ====================================================
 // ORDEON (APLICACIÓN DE NEGOCIO)
 // ====================================================
 var ordeonApi = builder

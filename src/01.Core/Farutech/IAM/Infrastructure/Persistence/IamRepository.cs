@@ -29,6 +29,11 @@ public class IamRepository : IIamRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
+    public async Task AddUserAsync(User user)
+    {
+        await _context.Users.AddAsync(user);
+    }
+
     public Task UpdateUserAsync(User user)
     {
         _context.Users.Update(user);
@@ -36,6 +41,12 @@ public class IamRepository : IIamRepository
     }
 
     // Tenants
+    public async Task<Tenant?> GetTenantByCodeAsync(string code)
+    {
+        return await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Code.ToLower() == code.ToLower() && t.IsActive);
+    }
+
     public async Task<TenantMembership?> GetMembershipAsync(Guid userId, Guid tenantId)
     {
         return await _context.TenantMemberships
@@ -57,6 +68,18 @@ public class IamRepository : IIamRepository
             .Include(tm => tm.Role)
             .Where(tm => tm.UserId == userId)
             .ToListAsync();
+    }
+
+    public async Task AddMembershipAsync(TenantMembership membership)
+    {
+        await _context.TenantMemberships.AddAsync(membership);
+    }
+
+    // Roles
+    public async Task<Role?> GetRoleByNameAsync(string name)
+    {
+        return await _context.Roles
+            .FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower() && r.IsActive);
     }
 
     // Sessions
@@ -106,6 +129,117 @@ public class IamRepository : IIamRepository
     public async Task AddAuditLogAsync(AuditLog auditLog)
     {
         await _context.AuditLogs.AddAsync(auditLog);
+    }
+
+    // 🔐 PHASE 3-6: New security method implementations
+    // Email Verification
+    public async Task AddEmailVerificationTokenAsync(EmailVerificationToken token)
+    {
+        await _context.EmailVerificationTokens.AddAsync(token);
+    }
+
+    public Task UpdateEmailVerificationTokenAsync(EmailVerificationToken token)
+    {
+        _context.EmailVerificationTokens.Update(token);
+        return Task.CompletedTask;
+    }
+
+    public async Task<EmailVerificationToken?> GetEmailVerificationTokenByTokenAsync(string token)
+    {
+        return await _context.EmailVerificationTokens
+            .Include(e => e.User)
+            .FirstOrDefaultAsync(e => e.Token == token);
+    }
+
+    // Password Reset
+    public async Task AddPasswordResetTokenAsync(PasswordResetToken token)
+    {
+        await _context.PasswordResetTokens.AddAsync(token);
+    }
+
+    public Task UpdatePasswordResetTokenAsync(PasswordResetToken token)
+    {
+        _context.PasswordResetTokens.Update(token);
+        return Task.CompletedTask;
+    }
+
+    public async Task<PasswordResetToken?> GetPasswordResetTokenByTokenAsync(string token)
+    {
+        return await _context.PasswordResetTokens
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Token == token);
+    }
+
+    public async Task RevokeAllUserSessionsAsync(Guid userId)
+    {
+        var sessions = await _context.Sessions
+            .Where(s => s.UserId == userId && s.RevokedAt == null)
+            .ToListAsync();
+
+        foreach (var session in sessions)
+        {
+            session.RevokedAt = DateTime.UtcNow;
+        }
+
+        _context.Sessions.UpdateRange(sessions);
+    }
+
+    public async Task RevokeAllUserRefreshTokensAsync(Guid userId)
+    {
+        var refreshTokens = await _context.RefreshTokens
+            .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
+            .ToListAsync();
+
+        foreach (var token in refreshTokens)
+        {
+            token.RevokedAt = DateTime.UtcNow;
+        }
+
+        _context.RefreshTokens.UpdateRange(refreshTokens);
+    }
+
+    // Two-Factor Authentication
+    public async Task AddTwoFactorBackupCodesAsync(List<TwoFactorBackupCode> codes)
+    {
+        await _context.TwoFactorBackupCodes.AddRangeAsync(codes);
+    }
+
+    public async Task<List<TwoFactorBackupCode>> GetUserBackupCodesAsync(Guid userId)
+    {
+        return await _context.TwoFactorBackupCodes
+            .Where(c => c.UserId == userId && c.UsedAt == null)
+            .ToListAsync();
+    }
+
+    public async Task<TwoFactorBackupCode?> GetBackupCodeAsync(Guid userId, string codeHash)
+    {
+        return await _context.TwoFactorBackupCodes
+            .FirstOrDefaultAsync(c => c.UserId == userId && c.CodeHash == codeHash);
+    }
+
+    public Task UpdateTwoFactorBackupCodeAsync(TwoFactorBackupCode code)
+    {
+        _context.TwoFactorBackupCodes.Update(code);
+        return Task.CompletedTask;
+    }
+
+    // Tenant Settings
+    public async Task<TenantSettings?> GetTenantSettingsAsync(Guid tenantId)
+    {
+        return await _context.TenantSettings
+            .Include(ts => ts.Tenant)
+            .FirstOrDefaultAsync(ts => ts.TenantId == tenantId);
+    }
+
+    public async Task AddTenantSettingsAsync(TenantSettings settings)
+    {
+        await _context.TenantSettings.AddAsync(settings);
+    }
+
+    public Task UpdateTenantSettingsAsync(TenantSettings settings)
+    {
+        _context.TenantSettings.Update(settings);
+        return Task.CompletedTask;
     }
 
     // Save changes
