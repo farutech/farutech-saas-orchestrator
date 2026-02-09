@@ -11,6 +11,8 @@ Servicio de Identity & Access Management (IAM) para Farutech SaaS Orchestrator.
 - **Multi-tenancy**: Context selection con TenantMemberships
 - **Caching**: Redis (30 minutos para permisos)
 - **Eventos**: NATS (UserLoggedInEvent, TenantContextSelectedEvent)
+- **Documentación**: OpenAPI 3.0 + Scalar UI
+- **Tests**: xUnit + Moq + FluentAssertions
 
 ## 📦 Estructura del Proyecto
 
@@ -28,11 +30,15 @@ IAM/
 │   │   ├── Migrations/
 │   │   ├── IamDbContext.cs
 │   │   └── IamDbContextSeed.cs  ⭐ Seed data en C#
-│   ├── Caching/
-│   ├── Messaging/
-│   └── Security/
-└── API/                  # Controllers y endpoints
-    └── Controllers/
+│   ├── Caching/          # Redis caching
+│   ├── Messaging/        # NATS event publishing
+│   └── Security/         # BCrypt password hashing
+├── API/                  # Controllers y endpoints
+│   └── Controllers/
+└── Tests/                # Tests unitarios
+    └── Farutech.IAM.UnitTests/
+        ├── Services/
+        └── Security/
 ```
 
 ## 🚀 Inicio Rápido
@@ -41,26 +47,50 @@ IAM/
 
 - .NET 10 SDK (Preview)
 - PostgreSQL 16 (via Podman/Docker)
-- Redis (para caching)
-- NATS (para eventos)
+- Redis (para caching - opcional)
+- NATS (para eventos - opcional)
 
-### 2. Configuración de Base de Datos
+### 2. Ejecutar Infraestructura (PostgreSQL + Redis + NATS)
+
+```bash
+# Desde la raíz del proyecto
+podman compose up -d
+
+# Verificar servicios
+podman ps
+```
+
+### 3. Iniciar el Servicio IAM
 
 **IMPORTANTE**: Este proyecto usa **EF Core Migrations + C# Seed Data**. No hay scripts SQL manuales.
 
 ```bash
 # Desde la raíz del proyecto IAM
-cd src/01.Core/Farutech/IAM
+cd src/01.Core/Farutech/IAM/API
 
-# Aplicar migrations y seed data (automático al iniciar la app)
-dotnet ef database update --project Infrastructure --startup-project API
+# Ejecutar con HTTP (puerto 5152)
+dotnet run --launch-profile http
 
-# O iniciar la aplicación (aplica migrations y seed automáticamente)
-cd API
-dotnet run
+# Ejecutar con HTTPS (puerto 7001)
+dotnet run --launch-profile https
 ```
 
-### 3. Seed Data Incluido
+Al iniciar, el servicio automáticamente:
+1. ✅ Aplica migrations de EF Core
+2. ✅ Ejecuta seed data (roles, permisos, tenant, usuario admin)
+3. ✅ Inicia el servidor en HTTP/HTTPS
+
+### 4. Acceder a la Documentación
+
+**Scalar UI (Recomendado)**:
+- HTTP: http://localhost:5152/scalar/v1
+- HTTPS: https://localhost:7001/scalar/v1
+
+**OpenAPI JSON**:
+- HTTP: http://localhost:5152/openapi/v1.json
+- HTTPS: https://localhost:7001/openapi/v1.json
+
+### 5. Seed Data Incluido
 
 Al ejecutar las migrations, se crean automáticamente:
 
@@ -149,6 +179,27 @@ dotnet test Tests/Farutech.IAM.IntegrationTests
 - `GET /api/permissions` - Listar permisos
 - `GET /api/users/{userId}/permissions` - Obtener permisos de usuario
 
+## 🧪 Tests
+
+### Ejecutar Tests Unitarios
+
+```bash
+cd Tests/Farutech.IAM.UnitTests
+dotnet test
+```
+
+**Tests Implementados**:
+- ✅ Domain Entities (User, Tenant, Role, Permission)
+- ✅ PasswordHasher (hash, verify, salt)
+
+**Cobertura Actual**: 10 tests pasando
+
+### Ejecutar Tests con Reporte
+
+```bash
+dotnet test --logger "console;verbosity=detailed"
+```
+
 ## 🔐 Seguridad
 
 - **Password Hashing**: BCrypt con work factor 12
@@ -197,6 +248,8 @@ dotnet ef database drop --force --project Infrastructure --startup-project API
 3. **Scripts SQL**: NO crear scripts SQL manuales para estructura o datos iniciales
 4. **Producción**: Cambiar credenciales por defecto antes de desplegar
 5. **Testing**: Ejecutar tests antes de hacer merge a main
+6. **OpenAPI**: Documentación disponible en `/scalar/v1` (desarrollo)
+7. **HTTPS**: Certificado dev auto-firmado (aceptar en navegador)
 
 ## 🐛 Troubleshooting
 
