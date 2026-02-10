@@ -15,6 +15,10 @@ public interface IIamRepository
     
     // Tenants
     Task<Tenant?> GetTenantByCodeAsync(string code);
+    Task<Tenant?> GetTenantByIdAsync(Guid tenantId);
+    Task<List<Tenant>> GetAllTenantsAsync();
+    Task AddTenantAsync(Tenant tenant);
+    Task UpdateTenantAsync(Tenant tenant);
     Task<TenantMembership?> GetMembershipAsync(Guid userId, Guid tenantId);
     Task<List<TenantMembership>> GetUserMembershipsAsync(Guid userId);
     Task AddMembershipAsync(TenantMembership membership);
@@ -59,6 +63,23 @@ public interface IIamRepository
     Task<TenantSettings?> GetTenantSettingsAsync(Guid tenantId);
     Task AddTenantSettingsAsync(TenantSettings settings);
     Task UpdateTenantSettingsAsync(TenantSettings settings);
+    
+    // Security Events
+    Task AddSecurityEventAsync(SecurityEvent securityEvent);
+    Task<List<SecurityEvent>> GetSecurityEventsByUserIdAsync(Guid userId, int pageSize, int pageNumber);
+    Task<List<SecurityEvent>> GetSecurityEventsByTenantIdAsync(Guid tenantId, int pageSize, int pageNumber);
+    Task<int> GetRecentFailedLoginAttemptsAsync(string email, string ipAddress, TimeSpan timeWindow);
+    
+    // User Devices
+    Task<UserDevice?> GetUserDeviceByHashAsync(Guid userId, string deviceHash);
+    Task AddUserDeviceAsync(UserDevice device);
+    Task UpdateUserDeviceAsync(UserDevice device);
+    Task<List<UserDevice>> GetUserDevicesAsync(Guid userId);
+    
+    // Tenant Security Policies
+    Task<TenantSecurityPolicy?> GetTenantSecurityPolicyAsync(Guid tenantId);
+    Task AddTenantSecurityPolicyAsync(TenantSecurityPolicy policy);
+    Task UpdateTenantSecurityPolicyAsync(TenantSecurityPolicy policy);
     
     // Save changes
     Task<int> SaveChangesAsync();

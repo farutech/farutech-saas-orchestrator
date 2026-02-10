@@ -50,7 +50,10 @@ public class RegisterRequest
 /// </summary>
 public class RegisterResponse
 {
-    public Guid UserId { get; set; }
+    /// <summary>
+    /// Public user identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicUserId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public bool EmailConfirmationRequired { get; set; }

@@ -5,7 +5,10 @@ namespace Farutech.IAM.Application.DTOs;
 /// </summary>
 public class LoginResponse
 {
-    public Guid UserId { get; set; }
+    /// <summary>
+    /// Public user identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicUserId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public bool RequiresContextSelection { get; set; }

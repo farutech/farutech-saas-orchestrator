@@ -47,6 +47,30 @@ public class IamRepository : IIamRepository
             .FirstOrDefaultAsync(t => t.Code.ToLower() == code.ToLower() && t.IsActive);
     }
 
+    public async Task AddTenantAsync(Tenant tenant)
+    {
+        await _context.Tenants.AddAsync(tenant);
+    }
+
+    public async Task<Tenant?> GetTenantByIdAsync(Guid tenantId)
+    {
+        return await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Id == tenantId);
+    }
+
+    public async Task<List<Tenant>> GetAllTenantsAsync()
+    {
+        return await _context.Tenants
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+    }
+
+    public Task UpdateTenantAsync(Tenant tenant)
+    {
+        _context.Tenants.Update(tenant);
+        return Task.CompletedTask;
+    }
+
     public async Task<TenantMembership?> GetMembershipAsync(Guid userId, Guid tenantId)
     {
         return await _context.TenantMemberships
@@ -236,10 +260,98 @@ public class IamRepository : IIamRepository
         await _context.TenantSettings.AddAsync(settings);
     }
 
-    public Task UpdateTenantSettingsAsync(TenantSettings settings)
+    public async Task UpdateTenantSettingsAsync(TenantSettings settings)
     {
         _context.TenantSettings.Update(settings);
-        return Task.CompletedTask;
+        await _context.SaveChangesAsync();
+    }
+
+    // Security Events
+    public async Task AddSecurityEventAsync(SecurityEvent securityEvent)
+    {
+        await _context.SecurityEvents.AddAsync(securityEvent);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<SecurityEvent>> GetSecurityEventsByUserIdAsync(Guid userId, int pageSize, int pageNumber)
+    {
+        return await _context.SecurityEvents
+            .Where(e => e.UserId == userId)
+            .OrderByDescending(e => e.OccurredAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Include(e => e.User)
+            .Include(e => e.Device)
+            .ToListAsync();
+    }
+
+    public async Task<List<SecurityEvent>> GetSecurityEventsByTenantIdAsync(Guid tenantId, int pageSize, int pageNumber)
+    {
+        return await _context.SecurityEvents
+            .Where(e => e.TenantId == tenantId)
+            .OrderByDescending(e => e.OccurredAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Include(e => e.User)
+            .Include(e => e.Device)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetRecentFailedLoginAttemptsAsync(string email, string ipAddress, TimeSpan timeWindow)
+    {
+        var cutoffTime = DateTime.UtcNow.Subtract(timeWindow);
+        return await _context.SecurityEvents
+            .Where(e => e.EventType == "LoginFailure" 
+                && e.IpAddress == ipAddress
+                && e.OccurredAt >= cutoffTime
+                && e.Details != null && e.Details.Contains(email))
+            .CountAsync();
+    }
+
+    // User Devices
+    public async Task<UserDevice?> GetUserDeviceByHashAsync(Guid userId, string deviceHash)
+    {
+        return await _context.UserDevices
+            .FirstOrDefaultAsync(d => d.UserId == userId && d.DeviceHash == deviceHash);
+    }
+
+    public async Task AddUserDeviceAsync(UserDevice device)
+    {
+        await _context.UserDevices.AddAsync(device);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateUserDeviceAsync(UserDevice device)
+    {
+        _context.UserDevices.Update(device);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<UserDevice>> GetUserDevicesAsync(Guid userId)
+    {
+        return await _context.UserDevices
+            .Where(d => d.UserId == userId)
+            .OrderByDescending(d => d.LastSeen)
+            .ToListAsync();
+    }
+
+    // Tenant Security Policies
+    public async Task<TenantSecurityPolicy?> GetTenantSecurityPolicyAsync(Guid tenantId)
+    {
+        return await _context.TenantSecurityPolicies
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId);
+    }
+
+    public async Task AddTenantSecurityPolicyAsync(TenantSecurityPolicy policy)
+    {
+        await _context.TenantSecurityPolicies.AddAsync(policy);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateTenantSecurityPolicyAsync(TenantSecurityPolicy policy)
+    {
+        _context.TenantSecurityPolicies.Update(policy);
+        await _context.SaveChangesAsync();
     }
 
     // Save changes

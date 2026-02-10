@@ -4,6 +4,8 @@ using Farutech.IAM.Application.Configuration;
 using Farutech.IAM.Application.Utilities;
 using Farutech.IAM.Domain.Entities;
 using Farutech.IAM.Domain.Events;
+using Farutech.IAM.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +21,11 @@ public class AuthenticationService : IAuthenticationService
     private readonly ITokenManagementService _tokenManagement;
     private readonly IEventPublisher _eventPublisher;
     private readonly IEmailService _emailService;
+    private readonly IPublicIdService _publicIdService;
+    private readonly ISecurityAuditService _securityAuditService;
+    private readonly IDeviceManagementService _deviceManagementService;
+    private readonly ISessionManagementService _sessionManagementService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly TokenExpirationOptions _tokenExpirationOptions;
 
@@ -28,6 +35,11 @@ public class AuthenticationService : IAuthenticationService
         ITokenManagementService tokenManagement,
         IEventPublisher eventPublisher,
         IEmailService emailService,
+        IPublicIdService publicIdService,
+        ISecurityAuditService securityAuditService,
+        IDeviceManagementService deviceManagementService,
+        ISessionManagementService sessionManagementService,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<AuthenticationService> logger,
         IOptions<TokenExpirationOptions> tokenExpirationOptions)
     {
@@ -36,8 +48,31 @@ public class AuthenticationService : IAuthenticationService
         _tokenManagement = tokenManagement;
         _eventPublisher = eventPublisher;
         _emailService = emailService;
+        _publicIdService = publicIdService;
+        _securityAuditService = securityAuditService;
+        _deviceManagementService = deviceManagementService;
+        _sessionManagementService = sessionManagementService;
+        _httpContextAccessor = httpContextAccessor;
         _logger = logger;
         _tokenExpirationOptions = tokenExpirationOptions.Value;
+    }
+
+    /// <summary>
+    /// Obtiene información del dispositivo automáticamente desde HttpContext
+    /// </summary>
+    private (string IpAddress, string UserAgent, string DeviceId) GetDeviceInfo(string? providedDeviceId = null)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null)
+        {
+            return ("unknown", "unknown", providedDeviceId ?? Guid.NewGuid().ToString("N"));
+        }
+
+        var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var userAgent = httpContext.Request.Headers["User-Agent"].ToString() ?? "unknown";
+        var deviceId = providedDeviceId ?? Guid.NewGuid().ToString("N");
+
+        return (ipAddress, userAgent, deviceId);
     }
 
     public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
@@ -79,35 +114,76 @@ public class AuthenticationService : IAuthenticationService
             // 5. Save user
             await _repository.AddUserAsync(user);
 
-            // 6. Create tenant membership if tenant provided
-            if (tenant != null)
+            // 6. Create tenant membership
+            // If no tenant provided, create a personal tenant for the user
+            if (tenant == null)
             {
-                // Get default "User" role
-                var userRole = await _repository.GetRoleByNameAsync("User");
-                
-                if (userRole != null)
+                // Create personal tenant
+                var personalTenantCode = $"personal-{Guid.NewGuid().ToString("N").Substring(0, 12)}";
+                tenant = new Tenant
                 {
-                    var membership = new TenantMembership
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = user.Id,
-                        TenantId = tenant.Id,
-                        RoleId = userRole.Id,
-                        CustomAttributes = "{}",
-                        IsActive = true,
-                        GrantedAt = DateTime.UtcNow,
-                        GrantedBy = user.Id // Self-granted
-                    };
+                    Id = Guid.NewGuid(),
+                    Code = personalTenantCode,
+                    Name = $"{user.FirstName} {user.LastName}",
+                    TaxId = null,
+                    RequireMfa = false,
+                    AllowedIpRanges = null,
+                    SessionTimeoutMinutes = 480,
+                    PasswordPolicy = @"{""minLength"":8,""requireUppercase"":true,""requireLowercase"":true,""requireDigit"":true,""requireSpecialChar"":true}",
+                    FeatureFlags = @"{""allowMultipleSessions"":true,""maxConcurrentSessions"":3}",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                
+                await _repository.AddTenantAsync(tenant);
+                await _repository.SaveChangesAsync();
+                
+                _logger.LogInformation("Created personal tenant {TenantCode} for user {Email}", personalTenantCode, user.Email);
+            }
+            
+            // Create membership with appropriate role
+            // Personal tenants get Owner role, invited users get User role
+            var roleName = string.IsNullOrEmpty(request.TenantCode) ? "Owner" : "User";
+            var role = await _repository.GetRoleByNameAsync(roleName);
+            
+            if (role != null)
+            {
+                var membership = new TenantMembership
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    TenantId = tenant.Id,
+                    RoleId = role.Id,
+                    CustomAttributes = "{}",
+                    IsActive = true,
+                    GrantedAt = DateTime.UtcNow,
+                    GrantedBy = user.Id // Self-granted
+                };
 
-                    await _repository.AddMembershipAsync(membership);
-                }
+                await _repository.AddMembershipAsync(membership);
+                _logger.LogInformation("Created tenant membership with role {Role} for user {Email}", roleName, user.Email);
             }
 
             await _repository.SaveChangesAsync();
 
             _logger.LogInformation("User registered successfully - Email: {Email}, UserId: {UserId}", request.Email, user.Id);
 
-            // 7. Send email confirmation
+            // 7. Get device info automatically
+            var (ipAddress, userAgent, _) = GetDeviceInfo();
+
+            // 7. Log security event
+            await _securityAuditService.LogEventAsync(new SecurityEventDto
+            {
+                PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
+                EventType = "UserRegistered",
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                Success = true,
+                OccurredAt = DateTime.UtcNow
+            });
+
+            // 8. Send email confirmation
             try
             {
                 // Generate email verification token
@@ -121,8 +197,8 @@ public class AuthenticationService : IAuthenticationService
                     UserId = user.Id,
                     Token = token,
                     ExpiresAt = expiresAt,
-                    IpAddress = request.IpAddress ?? "unknown",
-                    UserAgent = request.UserAgent ?? "unknown",
+                    IpAddress = ipAddress,
+                    UserAgent = userAgent,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -142,13 +218,17 @@ public class AuthenticationService : IAuthenticationService
                 // No lanzamos la excepción para que el registro se complete
             }
 
+            var registrationMessage = string.IsNullOrEmpty(request.TenantCode)
+                ? "Usuario registrado exitosamente con espacio de trabajo personal. Por favor, confirme su email."
+                : "Usuario registrado exitosamente. Por favor, confirme su email.";
+            
             return new RegisterResponse
             {
-                UserId = user.Id,
+                PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
                 Email = user.Email,
                 FullName = $"{user.FirstName} {user.LastName}",
                 EmailConfirmationRequired = true,
-                Message = "Usuario registrado exitosamente. Por favor, confirme su email."
+                Message = registrationMessage
             };
         }
         catch (InvalidOperationException ex) when (ex.Message == "USER_EXISTS")
@@ -167,13 +247,30 @@ public class AuthenticationService : IAuthenticationService
     {
         try
         {
+            // Get device info automatically (fallback to request if provided)
+            var (ipAddress, userAgent, deviceId) = GetDeviceInfo(request.DeviceId);
+            if (string.IsNullOrEmpty(request.IpAddress)) request.IpAddress = ipAddress;
+            if (string.IsNullOrEmpty(request.UserAgent)) request.UserAgent = userAgent;
+            if (string.IsNullOrEmpty(request.DeviceId)) request.DeviceId = deviceId;
+
             // 1. Find user by email with memberships
             var user = await _repository.GetUserByEmailAsync(request.Email);
 
             if (user == null)
             {
                 _logger.LogWarning("Login attempt failed: User not found - {Email}", request.Email);
-                await LogAuditEventAsync(null, null, "login", "failed", "User not found", request.IpAddress, request.UserAgent);
+                
+                // Log failed login attempt
+                await _securityAuditService.LogEventAsync(new SecurityEventDto
+                {
+                    EventType = "LoginFailed",
+                    IpAddress = request.IpAddress ?? "unknown",
+                    UserAgent = request.UserAgent ?? "unknown",
+                    Success = false,
+                    Details = "User not found",
+                    OccurredAt = DateTime.UtcNow
+                });
+                
                 return AuthenticationResult.Failed("INVALID_CREDENTIALS", "Email o contraseña incorrectos");
             }
 
@@ -181,7 +278,18 @@ public class AuthenticationService : IAuthenticationService
             if (!user.IsActive)
             {
                 _logger.LogWarning("Login attempt failed: User inactive - {UserId}", user.Id);
-                await LogAuditEventAsync(user.Id, null, "login", "failed", "User inactive", request.IpAddress, request.UserAgent);
+                
+                await _securityAuditService.LogEventAsync(new SecurityEventDto
+                {
+                    PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
+                    EventType = "LoginFailed",
+                    IpAddress = request.IpAddress ?? "unknown",
+                    UserAgent = request.UserAgent ?? "unknown",
+                    Success = false,
+                    Details = "User inactive",
+                    OccurredAt = DateTime.UtcNow
+                });
+                
                 return AuthenticationResult.Failed("USER_INACTIVE", "Usuario inactivo. Contacte al administrador.");
             }
 
@@ -189,7 +297,18 @@ public class AuthenticationService : IAuthenticationService
             if (user.IsLocked)
             {
                 _logger.LogWarning("Login attempt failed: User locked - {UserId}", user.Id);
-                await LogAuditEventAsync(user.Id, null, "login", "failed", "User locked", request.IpAddress, request.UserAgent);
+                
+                await _securityAuditService.LogEventAsync(new SecurityEventDto
+                {
+                    PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
+                    EventType = "LoginFailed",
+                    IpAddress = request.IpAddress ?? "unknown",
+                    UserAgent = request.UserAgent ?? "unknown",
+                    Success = false,
+                    Details = $"User locked until {user.LockoutEnd:yyyy-MM-dd HH:mm:ss} UTC",
+                    OccurredAt = DateTime.UtcNow
+                });
+                
                 return AuthenticationResult.Failed("USER_LOCKED", $"Usuario bloqueado hasta {user.LockoutEnd:yyyy-MM-dd HH:mm:ss} UTC");
             }
 
@@ -208,7 +327,17 @@ public class AuthenticationService : IAuthenticationService
                 
                 await _repository.UpdateUserAsync(user);
                 await _repository.SaveChangesAsync();
-                await LogAuditEventAsync(user.Id, null, "login", "failed", "Invalid password", request.IpAddress, request.UserAgent);
+                
+                await _securityAuditService.LogEventAsync(new SecurityEventDto
+                {
+                    PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
+                    EventType = "LoginFailed",
+                    IpAddress = request.IpAddress ?? "unknown",
+                    UserAgent = request.UserAgent ?? "unknown",
+                    Success = false,
+                    Details = user.AccessFailedCount >= 5 ? "User locked - too many failed attempts" : "Invalid password",
+                    OccurredAt = DateTime.UtcNow
+                });
                 
                 return AuthenticationResult.Failed("INVALID_CREDENTIALS", "Email o contraseña incorrectos");
             }
@@ -220,16 +349,25 @@ public class AuthenticationService : IAuthenticationService
             await _repository.UpdateUserAsync(user);
             await _repository.SaveChangesAsync();
 
+            // 5.1 Track device
+            var deviceHash = _deviceManagementService.GenerateDeviceHash(request.DeviceId, request.UserAgent, request.IpAddress);
+            var device = await _deviceManagementService.RegisterOrUpdateDeviceAsync(
+                user.Id,
+                deviceHash,
+                request.UserAgent ?? "unknown",
+                request.IpAddress ?? "unknown"
+            );
+
             // 6. Get available tenant contexts
             var memberships = await _repository.GetUserMembershipsAsync(user.Id);
             var availableContexts = memberships
                 .Where(tm => tm.IsActive && tm.Tenant != null && tm.Tenant.IsActive)
                 .Select(tm => new TenantContextDto
                 {
-                    TenantId = tm.TenantId,
+                    PublicTenantId = _publicIdService.ToPublicId(tm.TenantId, "Tenant"),
                     TenantCode = tm.Tenant!.Code,
                     TenantName = tm.Tenant.Name,
-                    MembershipId = tm.Id,
+                    PublicMembershipId = _publicIdService.ToPublicId(tm.Id, "TenantMembership"),
                     RoleName = tm.Role?.Name ?? "No Role",
                     IsActive = tm.IsActive
                 })
@@ -238,7 +376,7 @@ public class AuthenticationService : IAuthenticationService
             // 7. Build response
             var response = new LoginResponse
             {
-                UserId = user.Id,
+                PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
                 Email = user.Email,
                 FullName = user.FullName,
                 RequiresContextSelection = availableContexts.Count > 0,
@@ -248,21 +386,37 @@ public class AuthenticationService : IAuthenticationService
             // If user has only one tenant, auto-select it and generate tokens
             if (availableContexts.Count == 1)
             {
-                var contextResponse = await SelectContextAsync(
-                    user.Id,
-                    availableContexts[0].TenantId,
-                    request.DeviceId,
-                    request.IpAddress,
-                    request.UserAgent
-                );
-                
-                response.AccessToken = contextResponse.AccessToken;
-                response.RefreshToken = contextResponse.RefreshToken;
-                response.ExpiresAt = contextResponse.ExpiresAt;
+                // Extract tenant ID from public ID
+                var tenantId = _publicIdService.FromPublicId(availableContexts[0].PublicTenantId);
+                if (tenantId.HasValue)
+                {
+                    var contextResponse = await SelectContextAsync(
+                        user.Id,
+                        tenantId.Value,
+                        request.DeviceId,
+                        request.IpAddress,
+                        request.UserAgent
+                    );
+                    
+                    response.AccessToken = contextResponse.AccessToken;
+                    response.RefreshToken = contextResponse.RefreshToken;
+                    response.ExpiresAt = contextResponse.ExpiresAt;
+                }
             }
 
             _logger.LogInformation("User logged in successfully - {UserId}", user.Id);
-            await LogAuditEventAsync(user.Id, null, "login", "success", "User authenticated", request.IpAddress, request.UserAgent);
+            
+            await _securityAuditService.LogEventAsync(new SecurityEventDto
+            {
+                PublicUserId = _publicIdService.ToPublicId(user.Id, "User"),
+                DeviceId = device.DeviceHash,
+                EventType = "LoginSuccess",
+                IpAddress = request.IpAddress ?? "unknown",
+                UserAgent = request.UserAgent ?? "unknown",
+                Success = true,
+                Details = "User authenticated successfully",
+                OccurredAt = DateTime.UtcNow
+            });
 
             // Publish login event
             await _eventPublisher.PublishAsync(new UserLoggedInEvent
@@ -290,6 +444,17 @@ public class AuthenticationService : IAuthenticationService
 
         if (membership == null || membership.Tenant == null || membership.Role == null || !membership.IsActive)
         {
+            await _securityAuditService.LogEventAsync(new SecurityEventDto
+            {
+                PublicUserId = _publicIdService.ToPublicId(userId, "User"),
+                EventType = "ContextSelectionFailed",
+                IpAddress = ipAddress ?? "unknown",
+                UserAgent = userAgent ?? "unknown",
+                Success = false,
+                Details = "Invalid tenant context selection",
+                OccurredAt = DateTime.UtcNow
+            });
+            
             throw new InvalidOperationException("Invalid tenant context selection");
         }
 
@@ -314,22 +479,19 @@ public class AuthenticationService : IAuthenticationService
         };
         await _repository.AddRefreshTokenAsync(refreshToken);
 
-        // Create session
-        var session = new Session
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            TenantId = tenantId,
-            SessionToken = Guid.NewGuid().ToString("N"),
-            RefreshTokenId = refreshToken.Id,
-            DeviceId = deviceId,
-            IpAddress = ipAddress,
-            UserAgent = userAgent,
-            CreatedAt = DateTime.UtcNow,
-            LastActivityAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(8) // 8 hours session
-        };
-        await _repository.AddSessionAsync(session);
+        // Create session using SessionManagementService
+        var sessionId = await _sessionManagementService.CreateSessionAsync(
+            userId,
+            tenantId,
+            SessionType.Normal.ToString(),
+            ipAddress ?? "unknown",
+            userAgent ?? "unknown",
+            deviceId: null
+        );
+        
+        var session = await _sessionManagementService.GetSessionAsync(sessionId);
+        if (session == null)
+            throw new InvalidOperationException("Failed to create session");
 
         // Generate JWT access token with claims including session_id
         var accessToken = await _tokenManagement.GenerateAccessTokenAsync(user, membership.Tenant, membership, session, deviceId);
@@ -337,8 +499,17 @@ public class AuthenticationService : IAuthenticationService
         await _repository.SaveChangesAsync();
 
         _logger.LogInformation("Context selected - UserId: {UserId}, TenantId: {TenantId}", userId, tenantId);
-        await LogAuditEventAsync(userId, tenantId, "context_selected", "success", 
-            $"Selected tenant: {membership.Tenant.Name}", ipAddress, userAgent);
+        
+        await _securityAuditService.LogEventAsync(new SecurityEventDto
+        {
+            PublicUserId = _publicIdService.ToPublicId(userId, "User"),
+            EventType = "ContextSelected",
+            IpAddress = ipAddress ?? "unknown",
+            UserAgent = userAgent ?? "unknown",
+            Success = true,
+            Details = $"Selected tenant: {membership.Tenant.Name}",
+            OccurredAt = DateTime.UtcNow
+        });
 
         // Publish context selection event
         await _eventPublisher.PublishAsync(new TenantContextSelectedEvent
@@ -346,21 +517,21 @@ public class AuthenticationService : IAuthenticationService
             UserId = userId,
             TenantId = tenantId,
             RoleId = membership.RoleId ?? Guid.Empty,
-            SessionId = session.Id,
+            SessionId = sessionId,
             OccurredAt = DateTime.UtcNow
         });
 
         return new SelectContextResponse
         {
-            UserId = userId,
-            TenantId = tenantId,
+            PublicUserId = _publicIdService.ToPublicId(userId, "User"),
+            PublicTenantId = _publicIdService.ToPublicId(tenantId, "Tenant"),
             TenantCode = membership.Tenant.Code,
             TenantName = membership.Tenant.Name,
             RoleName = membership.Role.Name,
             AccessToken = accessToken,
             RefreshToken = refreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddHours(8),
-            SessionId = session.Id
+            ExpiresAt = session.ExpiresAt,
+            PublicSessionId = _publicIdService.ToPublicId(sessionId, "Session")
         };
     }
 
@@ -378,32 +549,43 @@ public class AuthenticationService : IAuthenticationService
     {
         if (sessionId.HasValue)
         {
-            // Revoke specific session
-            var session = await _repository.GetSessionByIdAsync(sessionId.Value);
-
-            if (session != null && session.UserId == userId)
+            // Revoke specific session using SessionManagementService
+            await _sessionManagementService.RevokeSessionAsync(sessionId.Value, "User logout");
+            
+            _logger.LogInformation("Session revoked - SessionId: {SessionId}", sessionId.Value);
+            
+            await _securityAuditService.LogEventAsync(new SecurityEventDto
             {
-                session.RevokedAt = DateTime.UtcNow;
-                await _repository.UpdateSessionAsync(session);
-                _logger.LogInformation("Session revoked - SessionId: {SessionId}", sessionId.Value);
-            }
+                PublicUserId = _publicIdService.ToPublicId(userId, "User"),
+                EventType = "Logout",
+                Success = true,
+                Details = "User logged out - session revoked",
+                OccurredAt = DateTime.UtcNow
+            });
         }
         else
         {
-            // Revoke all active sessions for user
-            var sessions = await _repository.GetUserSessionsAsync(userId);
+            // Revoke all active sessions for user using SessionManagementService
+            var sessions = await _sessionManagementService.GetUserActiveSessionsAsync(userId);
 
-            foreach (var session in sessions.Where(s => s.RevokedAt == null))
+            foreach (var session in sessions)
             {
-                session.RevokedAt = DateTime.UtcNow;
-                await _repository.UpdateSessionAsync(session);
+                await _sessionManagementService.RevokeSessionAsync(session.Id, "Logout all sessions");
             }
 
-            _logger.LogInformation("All sessions revoked for user - UserId: {UserId}", userId);
+            _logger.LogInformation("All sessions revoked for user - UserId: {UserId}, Count: {Count}", userId, sessions.Count);
+            
+            await _securityAuditService.LogEventAsync(new SecurityEventDto
+            {
+                PublicUserId = _publicIdService.ToPublicId(userId, "User"),
+                EventType = "LogoutAll",
+                Success = true,
+                Details = $"All sessions revoked - {sessions.Count} sessions",
+                OccurredAt = DateTime.UtcNow
+            });
         }
 
         await _repository.SaveChangesAsync();
-        await LogAuditEventAsync(userId, null, "logout", "success", "User logged out", null, null);
     }
 
     public async Task<UserInfoResponse?> GetUserInfoAsync(Guid userId)
@@ -415,7 +597,7 @@ public class AuthenticationService : IAuthenticationService
 
         return new UserInfoResponse
         {
-            Id = user.Id,
+            PublicId = _publicIdService.ToPublicId(user.Id, "User"),
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,

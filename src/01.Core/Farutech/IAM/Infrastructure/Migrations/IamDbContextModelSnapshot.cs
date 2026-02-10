@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Farutech.IAM.Infrastructure.Persistence.Migrations
+namespace Farutech.IAM.Infrastructure.Migrations
 {
     [DbContext(typeof(IamDbContext))]
     partial class IamDbContextModelSnapshot : ModelSnapshot
@@ -390,6 +390,81 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                     b.ToTable("role_permissions", "iam");
                 });
 
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.SecurityEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AlertTriggered")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("AnonymizedUserId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("GeoLocation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RiskScore")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("EventType")
+                        .HasDatabaseName("ix_security_events_event_type");
+
+                    b.HasIndex("IpAddress")
+                        .HasDatabaseName("ix_security_events_ip_address");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_security_events_occurred_at");
+
+                    b.HasIndex("Success")
+                        .HasDatabaseName("ix_security_events_success");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_security_events_tenant_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_security_events_user_id");
+
+                    b.ToTable("security_events", "iam");
+                });
+
             modelBuilder.Entity("Farutech.IAM.Domain.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -424,6 +499,10 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
+
+                    b.Property<string>("SessionType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid");
@@ -570,6 +649,81 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_tenant_memberships_user_tenant");
 
                     b.ToTable("tenant_memberships", "iam");
+                });
+
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.TenantSecurityPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccountLockoutDurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AllowedCountries")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("[]");
+
+                    b.Property<string>("BlockedIpRanges")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("[]");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ForceLogoutOnPasswordChange")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxConcurrentSessions")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxDevicesPerUser")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxFailedLoginAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinPasswordLength")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("NotifyOnNewDevice")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PasswordExpirationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PasswordHistoryCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Require2FA")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequirePasswordComplexity")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequireReauthenticationForSensitiveOperations")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SessionInactivityTimeoutSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tenant_security_policies_tenant_id");
+
+                    b.ToTable("tenant_security_policies", "iam");
                 });
 
             modelBuilder.Entity("Farutech.IAM.Domain.Entities.TenantSettings", b =>
@@ -852,6 +1006,87 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                     b.ToTable("user_claims", "iam");
                 });
 
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.UserDevice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlockReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Browser")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("DeviceHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("DeviceType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("FirstSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GeoLocation")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsTrusted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastIpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OperatingSystem")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("TrustScore")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceHash")
+                        .HasDatabaseName("ix_user_devices_device_hash");
+
+                    b.HasIndex("LastSeen")
+                        .HasDatabaseName("ix_user_devices_last_seen");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_devices_user_id");
+
+                    b.HasIndex("UserId", "DeviceHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_devices_user_device_unique");
+
+                    b.ToTable("user_devices", "iam");
+                });
+
             modelBuilder.Entity("Farutech.IAM.Domain.Entities.AuditLog", b =>
                 {
                     b.HasOne("Farutech.IAM.Domain.Entities.Tenant", "Tenant")
@@ -945,6 +1180,30 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.SecurityEvent", b =>
+                {
+                    b.HasOne("Farutech.IAM.Domain.Entities.UserDevice", "Device")
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Farutech.IAM.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Farutech.IAM.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Farutech.IAM.Domain.Entities.Session", b =>
                 {
                     b.HasOne("Farutech.IAM.Domain.Entities.RefreshToken", "RefreshToken")
@@ -1001,6 +1260,17 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.TenantSecurityPolicy", b =>
+                {
+                    b.HasOne("Farutech.IAM.Domain.Entities.Tenant", "Tenant")
+                        .WithOne()
+                        .HasForeignKey("Farutech.IAM.Domain.Entities.TenantSecurityPolicy", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Farutech.IAM.Domain.Entities.TenantSettings", b =>
                 {
                     b.HasOne("Farutech.IAM.Domain.Entities.Tenant", "Tenant")
@@ -1036,6 +1306,17 @@ namespace Farutech.IAM.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Farutech.IAM.Domain.Entities.UserDevice", b =>
+                {
+                    b.HasOne("Farutech.IAM.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

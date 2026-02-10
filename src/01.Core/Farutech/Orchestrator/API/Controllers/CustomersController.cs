@@ -18,10 +18,12 @@ namespace Farutech.Orchestrator.API.Controllers;
 [ApiExplorerSettings(GroupName = "organizations")]
 public class CustomersController(OrchestratorDbContext context,
                                  IAuthService authService,
+                                 ITenantSyncService tenantSyncService,
                                  ILogger<CustomersController> logger) : ControllerBase
 {
     private readonly OrchestratorDbContext _context = context;
     private readonly IAuthService _authService = authService;
+    private readonly ITenantSyncService _tenantSyncService = tenantSyncService;
     private readonly ILogger<CustomersController> _logger = logger;
 
     /// <summary>
@@ -234,6 +236,16 @@ public class CustomersController(OrchestratorDbContext context,
             "Usuario {UserId} asignado como Owner de empresa {CustomerId}",
             userId, customer.Id);
 
+        // 3. Sincronizar tenant con IAM
+        var iamSyncSuccess = await _tenantSyncService.CreateTenantInIamAsync(customer, userId);
+        if (!iamSyncSuccess)
+        {
+            _logger.LogWarning("No se pudo sincronizar tenant con IAM para customer {CustomerId}, pero la empresa se creó localmente", customer.Id);
+            // No hacemos rollback ya que la empresa se creó correctamente localmente
+        }
+
+        await _context.SaveChangesAsync(); // Guardar cambios finales incluyendo IamTenantId si se sincronizó
+
         return CreatedAtAction(
             nameof(GetById),
             new { id = customer.Id },
@@ -242,7 +254,11 @@ public class CustomersController(OrchestratorDbContext context,
                 CustomerId = customer.Id,
                 CompanyName = customer.CompanyName,
                 Code = customer.Code,
-                Message = "Empresa creada exitosamente. Haz logout/login para actualizar tu token con la nueva empresa."
+                IamTenantId = customer.IamTenantId,
+                IamTenantCode = customer.IamTenantCode,
+                Message = iamSyncSuccess
+                    ? "Empresa creada exitosamente. Haz logout/login para actualizar tu token con la nueva empresa."
+                    : "Empresa creada exitosamente, pero hubo un problema sincronizando con IAM. Contacta al administrador."
             });
     }
 
@@ -470,6 +486,8 @@ public record CreateCustomerResponse
     public required Guid CustomerId { get; init; }
     public required string CompanyName { get; init; }
     public required string Code { get; init; }
+    public Guid? IamTenantId { get; init; }
+    public string? IamTenantCode { get; init; }
     public required string Message { get; init; }
 }
 

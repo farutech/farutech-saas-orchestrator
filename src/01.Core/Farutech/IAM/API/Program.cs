@@ -6,6 +6,7 @@ using Farutech.IAM.Infrastructure.Email;
 using Farutech.IAM.Infrastructure.Messaging;
 using Farutech.IAM.Infrastructure.Persistence;
 using Farutech.IAM.Infrastructure.Security;
+using Farutech.IAM.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -25,13 +26,29 @@ builder.Services.Configure<EmailOptions>(
     builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<TokenExpirationOptions>(
     builder.Configuration.GetSection(TokenExpirationOptions.SectionName));
+builder.Services.Configure<PublicIdOptions>(
+    builder.Configuration.GetSection("Security:PublicId"));
+builder.Services.Configure<Farutech.IAM.Application.Configuration.SessionOptions>(
+    builder.Configuration.GetSection("Security:Session"));
+builder.Services.Configure<RateLimitingOptions>(
+    builder.Configuration.GetSection("Security:RateLimiting"));
 
 // Add DbContext
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Host=localhost;Port=5432;Database=farutec_db;Username=farutec_admin;Password=SuperSecurePassword123";
+var connectionString = builder.Configuration.GetConnectionString("PostgreSQL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Host=localhost;Port=5432;Database=farutech_iam;Username=farutech;Password=FarutechSecure2024!";
 
 builder.Services.AddDbContext<IamDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+// Add Distributed Cache (Redis)
+var redisConnection = builder.Configuration.GetConnectionString("Redis")
+    ?? "localhost:6379,password=FarutechRedis2024!,defaultDatabase=0";
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+    options.InstanceName = "iam:";
+});
 
 // Add Redis caching
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
@@ -42,15 +59,27 @@ builder.Services.AddSingleton<IEventPublisher, NatsEventPublisher>();
 // Add HttpClient for Email API transport
 builder.Services.AddHttpClient();
 
+// Add HttpContext accessor for device info
+builder.Services.AddHttpContextAccessor();
+
 // Add repositories
 builder.Services.AddScoped<IIamRepository, IamRepository>();
 
-// Add services
+// Add security services
+builder.Services.AddSingleton<IPublicIdService, PublicIdService>();
+builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+builder.Services.AddScoped<IDeviceManagementService, DeviceManagementService>();
+builder.Services.AddScoped<ISessionManagementService, SessionManagementService>();
+
+// Add core services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITokenManagementService, TokenManagementService>();
 builder.Services.AddScoped<IPermissionsCacheManager, PermissionsCacheManager>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Add Rate Limiting
+builder.Services.AddIamRateLimiting();
 
 // Add JWT Authentication
 var tokenOptions = builder.Configuration.GetSection(TokenOptions.SectionName).Get<TokenOptions>()
@@ -154,7 +183,8 @@ using (var scope = app.Services.CreateScope())
         if (!await dbContext.Roles.AnyAsync())
         {
             logger.LogInformation("Seeding database...");
-            await IamDbContextSeed.SeedAsync(dbContext);
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            await IamDbContextSeed.SeedAsync(dbContext, passwordHasher);
             logger.LogInformation("Database seeding completed successfully");
         }
         else
@@ -172,21 +202,18 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+app.MapScalarApiReference(options =>
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(options =>
-    {
-        options
-            .WithTitle("Farutech IAM API")
-            .WithTheme(ScalarTheme.BluePlanet)
-            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-            .WithSidebar(true)
-            .WithModels(true)
-            .WithSearchHotKey("k")
-            .WithDarkMode(true);
-    });
-}
+    options
+        .WithTitle("Farutech IAM API")
+        .WithTheme(ScalarTheme.BluePlanet)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+        .WithSidebar(true)
+        .WithModels(true)
+        .WithSearchHotKey("k")
+        .WithDarkMode(true);
+});
 
 // Only redirect to HTTPS in production
 if (!app.Environment.IsDevelopment())
@@ -195,6 +222,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+// Add Rate Limiting middleware
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

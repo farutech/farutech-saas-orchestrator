@@ -5,10 +5,16 @@ namespace Farutech.IAM.Application.DTOs;
 /// </summary>
 public class TenantContextDto
 {
-    public Guid TenantId { get; set; }
+    /// <summary>
+    /// Public tenant identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicTenantId { get; set; } = string.Empty;
     public string TenantCode { get; set; } = string.Empty;
     public string TenantName { get; set; } = string.Empty;
-    public Guid MembershipId { get; set; }
+    /// <summary>
+    /// Public membership identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicMembershipId { get; set; } = string.Empty;
     public string RoleName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
 }

@@ -66,10 +66,10 @@ dotnet run --launch-profile http
 ### Validación Manual
 ```bash
 # Verificar HTTP
-curl http://localhost:5152/swagger
+curl http://localhost:5152/scalar
 
 # Verificar HTTPS (ignorar certificado de desarrollo)
-curl -k https://localhost:7001/swagger
+curl -k https://localhost:7001/scalar
 ```
 
 ## 📋 Endpoints Disponibles
@@ -78,7 +78,7 @@ curl -k https://localhost:7001/swagger
 |-----------|-----|--------|
 | HTTP | http://localhost:5152 | ✅ Siempre disponible |
 | HTTPS | https://localhost:7001 | ✅ Siempre disponible |
-| Swagger UI | Ambos `/swagger` | ✅ Documentación interactiva |
+| Scalar UI | Ambos `/scalar` | ✅ Documentación interactiva |
 
 ## 🔒 Certificado HTTPS
 
@@ -114,4 +114,4 @@ Verifica que ambos URLs estén en `applicationUrl`: `"https://localhost:7001;htt
 Ahora cuando ejecutes `dotnet run`, la aplicación siempre iniciará con:
 - ✅ **HTTP**: `http://localhost:5152`
 - ✅ **HTTPS**: `https://localhost:7001`
-- ✅ **Swagger UI**: Disponible en ambos protocolos
+- ✅ **Scalar UI**: Disponible en ambos protocolos

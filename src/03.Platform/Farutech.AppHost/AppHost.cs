@@ -40,7 +40,7 @@ var natsPort = "4222";
 var api = builder
     .AddProject<Projects.Farutech_Orchestrator_API>(
         "orchestrator-api",
-        launchProfileName: "https")
+        launchProfileName: isDev ? "http" : "https")
     .WithEnvironment("ConnectionStrings__DefaultConnection", postgresConnectionString)
     .WithEnvironment("Jwt__SecretKey", jwtSecret)
     .WithEnvironment("Database__CommonName", commonDatabaseName)
@@ -56,7 +56,7 @@ var api = builder
 // IAM API (Gestión de Identidad y Acceso)
 // ====================================================
 var iamApi = builder
-    .AddProject<Projects.Farutech_IAM_API>("iam-api", launchProfileName: "https")
+    .AddProject<Projects.Farutech_IAM_API>("iam-api", launchProfileName: isDev ? "Development" : "Production")
     .WithEnvironment("ConnectionStrings__DefaultConnection", postgresConnectionString)
     .WithEnvironment("TokenOptions__Issuer", "https://localhost:7001")
     .WithEnvironment("TokenOptions__Audience", "farutech-api")
@@ -67,7 +67,7 @@ var iamApi = builder
     .WithEnvironment("EmailOptions__Enabled", "true")
     .WithEnvironment("EmailOptions__Transport", "Api")
     .WithHttpHealthCheck("/health")
-    .WithHttpEndpoint(port: 7001, name: "iam-https");
+    .WithHttpEndpoint(name: "iam-https");
 
 // ====================================================
 // ORDEON (APLICACIÓN DE NEGOCIO)

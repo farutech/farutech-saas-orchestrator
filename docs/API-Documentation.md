@@ -131,14 +131,14 @@
 
 ## 🔗 URLs de Documentación
 
-- **Swagger UI**: `http://localhost:5000/swagger`
-- **Documentos separados**:
-  - Autenticación: `/swagger/auth`
-  - Organizaciones: `/swagger/organizations`
-  - Aplicaciones: `/swagger/applications`
-  - Marketplace: `/swagger/marketplace`
-  - Facturación: `/swagger/billing`
-  - Workers: `/swagger/workers`
+- **Scalar UI**: `http://localhost:5000/scalar`
+
+  - Autenticación: `/scalar/auth`
+  - Organizaciones: `/scalar/organizations`
+  - Aplicaciones: `/scalar/applications`
+  - Marketplace: `/scalar/marketplace`
+  - Facturación: `/scalar/billing`
+  - Workers: `/scalar/workers`
 
 ## 📊 Estados de Aplicaciones
 

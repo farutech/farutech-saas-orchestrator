@@ -1,6 +1,118 @@
-@Farutech.IAM.API_HostAddress = http://localhost:5152
+@baseUrl = https://localhost:62010
 
-GET {{Farutech.IAM.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register a new user account
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": "+1234567890",
+  "tenantCode": "tenant1",
+  "ipAddress": "127.0.0.1",
+  "userAgent": "Mozilla/5.0"
+}
+
+### Authenticate user with email and password
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "deviceId": "device123",
+  "deviceName": "My Device",
+  "ipAddress": "127.0.0.1",
+  "userAgent": "Mozilla/5.0"
+}
+
+### Select tenant context for authenticated user
+POST {{baseUrl}}/api/auth/select-context?deviceId=device123
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+"550e8400-e29b-41d4-a716-446655440000"
+
+### Logout and revoke session(s)
+POST {{baseUrl}}/api/auth/logout?sessionId=550e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+### Get current user information from token
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+### Confirm user email address using verification token
+GET {{baseUrl}}/api/auth/confirm-email?token=verification_token_here&email=user@example.com
+
+### Get detailed user profile information
+GET {{baseUrl}}/api/auth/profile
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+### Initiate password reset process
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+### Reset password using token from email
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_here",
+  "newPassword": "newpassword123",
+  "confirmPassword": "newpassword123"
+}
+
+### Change password for authenticated user
+POST {{baseUrl}}/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "currentPassword": "oldpassword123",
+  "newPassword": "newpassword123",
+  "confirmPassword": "newpassword123"
+}
+
+### Resend email confirmation link
+POST {{baseUrl}}/api/auth/resend-confirmation-email
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+### Cancel an email verification token
+POST {{baseUrl}}/api/auth/cancel-email-token
+Content-Type: application/json
+
+{
+  "token": "token_to_cancel",
+  "email": "user@example.com"
+}
+
+### Refresh access token using refresh token
+POST {{baseUrl}}/api/auth/token/refresh
+Content-Type: application/json
+
+{
+  "accessToken": "your_access_token",
+  "refreshToken": "your_refresh_token"
+}
+
+### Revoke a refresh token
+POST {{baseUrl}}/api/auth/token/revoke
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token"
+}
+
+### Introspect a token
+POST {{baseUrl}}/api/auth/token/introspect
+Content-Type: application/json
+
+{
+  "token": "token_to_introspect"
+}

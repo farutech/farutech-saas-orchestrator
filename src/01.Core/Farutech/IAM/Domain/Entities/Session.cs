@@ -17,6 +17,7 @@ public class Session
     public string? DeviceName { get; set; }
     public string? UserAgent { get; set; }
     public string? IpAddress { get; set; }
+    public string SessionType { get; set; } = "Normal";
     
     // Lifecycle
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

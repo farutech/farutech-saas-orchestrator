@@ -5,7 +5,10 @@ namespace Farutech.IAM.Application.DTOs;
 /// </summary>
 public class UserInfoResponse
 {
-    public Guid Id { get; set; }
+    /// <summary>
+    /// Public user identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -22,12 +25,21 @@ public class UserInfoResponse
 /// </summary>
 public class CurrentContextResponse
 {
-    public Guid UserId { get; set; }
+    /// <summary>
+    /// Public user identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicUserId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public Guid TenantId { get; set; }
+    /// <summary>
+    /// Public tenant identifier (encrypted, not the internal GUID)
+    /// </summary>
+    public string PublicTenantId { get; set; } = string.Empty;
     public string TenantCode { get; set; } = string.Empty;
     public string TenantName { get; set; } = string.Empty;
     public string RoleName { get; set; } = string.Empty;
+    /// <summary>
+    /// Permission names only (no IDs exposed)
+    /// </summary>
     public List<string> Permissions { get; set; } = new();
 }

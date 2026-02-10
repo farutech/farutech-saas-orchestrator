@@ -216,6 +216,14 @@ builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
 builder.Services.AddScoped<IResolveService, ResolveService>();
 
+// IAM Integration
+builder.Services.AddHttpClient<ITenantSyncService, TenantSyncService>(client => {
+    // Configurar base URL de IAM API
+    var iamUrl = builder.Configuration["Services:IAM:Url"] ?? "http://iam-api:8080";
+    client.BaseAddress = new Uri(iamUrl);
+});
+builder.Services.AddScoped<ITenantSyncService, TenantSyncService>();
+
 // Metrics service
 builder.Services.AddSingleton<IMetricsService, MetricsService>();
 

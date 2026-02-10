@@ -28,6 +28,11 @@ public class IamDbContext : DbContext
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
     public DbSet<TwoFactorBackupCode> TwoFactorBackupCodes { get; set; }
     public DbSet<TenantSettings> TenantSettings { get; set; }
+    
+    // 🛡️ PHASE 1-2: Security enhancement entities
+    public DbSet<UserDevice> UserDevices { get; set; }
+    public DbSet<SecurityEvent> SecurityEvents { get; set; }
+    public DbSet<TenantSecurityPolicy> TenantSecurityPolicies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

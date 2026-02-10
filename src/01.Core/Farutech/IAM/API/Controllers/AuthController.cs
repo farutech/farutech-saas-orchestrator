@@ -50,7 +50,7 @@ public class AuthController : ControllerBase
             var response = await _authService.RegisterAsync(request);
             
             _logger.LogInformation("User registered successfully - Email: {Email}, UserId: {UserId}", 
-                request.Email, response.UserId);
+                request.Email, response.PublicUserId);
 
             return CreatedAtAction(nameof(GetMe), new { }, response);
         }
@@ -205,10 +205,10 @@ public class AuthController : ControllerBase
         // Extract information from JWT claims
         var userInfo = new CurrentContextResponse
         {
-            UserId = Guid.Parse(User.FindFirst("user_id")?.Value ?? Guid.Empty.ToString()),
+            PublicUserId = User.FindFirst("public_user_id")?.Value ?? "",
             Email = User.FindFirst("email")?.Value ?? "",
             FullName = User.FindFirst("full_name")?.Value ?? "",
-            TenantId = Guid.Parse(User.FindFirst("tenant_id")?.Value ?? Guid.Empty.ToString()),
+            PublicTenantId = User.FindFirst("public_tenant_id")?.Value ?? "",
             TenantCode = User.FindFirst("tenant_code")?.Value ?? "",
             TenantName = User.FindFirst("tenant_name")?.Value ?? "",
             RoleName = User.FindFirst("role_name")?.Value ?? "",

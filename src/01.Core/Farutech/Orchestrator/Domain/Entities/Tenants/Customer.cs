@@ -17,7 +17,11 @@ public class Customer : BaseEntity
     public string Phone { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
-    
+
+    // IAM Integration
+    public Guid? IamTenantId { get; set; }
+    public string? IamTenantCode { get; set; }
+
     // Navigation
     public ICollection<TenantInstance> TenantInstances { get; set; } = [];
     public ICollection<Subscription> Subscriptions { get; set; } = [];
