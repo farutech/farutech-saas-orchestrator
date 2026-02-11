@@ -92,6 +92,11 @@ public interface IAuthService
     Task<LoginResponse?> AuthenticateAsync(string email, string password);
 
     /// <summary>
+    /// Obtiene información del usuario actual para el frontend (sin exponer JWT).
+    /// </summary>
+    Task<CurrentUserInfoDto?> GetCurrentUserInfoAsync(Guid userId);
+
+    /// <summary>
     /// [LEGACY] Genera token JWT para empresa seleccionada.
     /// DEPRECADO: Usar SelectContextAsync en su lugar.
     /// </summary>

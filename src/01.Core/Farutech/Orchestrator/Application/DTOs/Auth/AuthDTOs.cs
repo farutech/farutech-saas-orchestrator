@@ -371,3 +371,27 @@ public record TokenResponse(
     string CompanyName,
     string Role
 );
+
+/// <summary>
+/// Response para obtener información del usuario actual autenticado.
+/// Incluye datos del usuario, contexto tenant y permisos sin exponer el JWT.
+/// </summary>
+public record CurrentUserResponse(
+    Guid UserId,
+    string Email,
+    string Name,
+    string Role,
+    Guid? TenantId,
+    string? CompanyName,
+    List<string> Permissions
+);
+
+/// <summary>
+/// DTO interno para información del usuario actual (usado por el servicio).
+/// </summary>
+public record CurrentUserInfoDto(
+    string Email,
+    string Name,
+    string? CompanyName,
+    List<string> Permissions
+);

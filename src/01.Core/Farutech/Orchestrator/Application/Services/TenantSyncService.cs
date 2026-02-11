@@ -1,5 +1,6 @@
 using Farutech.Orchestrator.Application.Interfaces;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
@@ -13,13 +14,14 @@ public class TenantSyncService : ITenantSyncService
     private readonly HttpClient _iamHttpClient;
     private readonly ILogger<TenantSyncService> _logger;
 
-    public TenantSyncService(HttpClient iamHttpClient, ILogger<TenantSyncService> logger)
+    public TenantSyncService(HttpClient iamHttpClient, ILogger<TenantSyncService> logger, IConfiguration configuration)
     {
         _iamHttpClient = iamHttpClient;
         _logger = logger;
 
-        // Configurar base address para IAM API
-        _iamHttpClient.BaseAddress = new Uri("http://iam-api:8080"); // Ajustar según configuración
+        // Configurar base address para IAM API desde configuración
+        var iamUrl = configuration["Services:IAM:Url"] ?? "http://iam-api:8080";
+        _iamHttpClient.BaseAddress = new Uri(iamUrl);
     }
 
     /// <summary>

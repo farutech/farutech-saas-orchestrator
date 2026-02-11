@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { apiClient } from '@/lib/api-client';
+import { API_CONFIG } from '@/config/app.config';
 import type {
   LoginRequest,
   SecureLoginResponse,
@@ -38,25 +39,17 @@ export const authService = {
    * POST /api/Auth/select-context
    * Select organization context after login
    * NOTA: Este endpoint NO requiere Bearer token, usa intermediateToken en el body
+   * Ahora usa el Orchestrator API como proxy seguro en lugar de llamar directamente al IAM
    */
   selectContext: async (
     request: SelectContextRequest
   ): Promise<SelectContextResponse> => {
-    // No usar apiClient que agrega el header Authorization automáticamente
-    const response = await fetch('http://localhost:5098/api/Auth/select-context', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error al seleccionar contexto' }));
-      throw new Error(error.message || 'Error al seleccionar contexto');
-    }
-
-    return response.json();
+    // Usar apiClient que apunta al Orchestrator API (más seguro que fetch directo al IAM)
+    const { data } = await apiClient.post<SelectContextResponse>(
+      '/api/Auth/select-context',
+      request
+    );
+    return data;
   },
 
   /**

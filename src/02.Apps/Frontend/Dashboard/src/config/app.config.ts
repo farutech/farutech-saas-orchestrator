@@ -10,24 +10,54 @@
 // 2. Reinicia el servidor de desarrollo
 // ============================================================================
 
+// ============================================================================
+// FARUTECH - Configuración Centralizada
+// ============================================================================
+//
+// Este archivo centraliza toda la configuración de la aplicación.
+// Los valores se leen desde variables de entorno (.env)
+//
+// Para cambiar la configuración:
+// 1. Edita el archivo .env en la raíz del proyecto
+// 2. Reinicia el servidor de desarrollo
+// ============================================================================
+
 /**
  * Configuración del API Backend
  */
 export const API_CONFIG = {
   /**
-   * URL base del API de Farutech
-   * Por defecto: http://localhost:5098
-   * 
+   * URL base del API principal (Orchestrator)
+   * Por defecto: http://localhost:8080
+   *
    * Variable de entorno: VITE_API_BASE_URL
    */
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5098',
-  
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+
+  /**
+   * URL base del API de IAM
+   * Por defecto: http://localhost:5001
+   *
+   * Variable de entorno: VITE_IAM_API_URL
+   */
+  IAM_BASE_URL: import.meta.env.VITE_IAM_API_URL || 'http://localhost:5001',
+
+  /**
+   * URL base del API de Orchestrator
+   * Por defecto: http://localhost:8080
+   *
+   * Variable de entorno: VITE_ORCHESTRATOR_API_URL
+   */
+  ORCHESTRATOR_BASE_URL: import.meta.env.VITE_ORCHESTRATOR_API_URL || 'http://localhost:8080',
+
   /**
    * Timeout para peticiones HTTP (en milisegundos)
    * Por defecto: 30 segundos
+   *
+   * Variable de entorno: VITE_API_TIMEOUT
    */
-  TIMEOUT: 30000,
-  
+  TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+
   /**
    * Swagger/OpenAPI Documentation URL
    */

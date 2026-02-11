@@ -340,6 +340,52 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
+    /// Obtener información del usuario actual autenticado.
+    /// Retorna datos del usuario y contexto tenant sin exponer el JWT completo.
+    /// </summary>
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(CurrentUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst("sub")?.Value 
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                
+            if (!Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "Token inválido o expirado" });
+            }
+
+            var tenantIdClaim = User.FindFirst("tenant_id")?.Value;
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var nameClaim = User.FindFirst("name")?.Value;
+
+            // Obtener información adicional del usuario desde el servicio
+            var userInfo = await _authService.GetCurrentUserInfoAsync(userId);
+
+            var response = new CurrentUserResponse(
+                UserId: userId,
+                Email: emailClaim ?? userInfo?.Email ?? "",
+                Name: nameClaim ?? userInfo?.Name ?? "",
+                Role: roleClaim ?? "",
+                TenantId: tenantIdClaim != null ? Guid.Parse(tenantIdClaim) : null,
+                CompanyName: userInfo?.CompanyName,
+                Permissions: userInfo?.Permissions ?? new List<string>()
+            );
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[GetCurrentUser] Exception: {ex.Message}");
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    /// <summary>
     /// Endpoint de debug para verificar si el token llega correctamente
     /// </summary>
     [HttpGet("debug-token")]
@@ -551,6 +597,22 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Registrar nuevo usuario.
+    /// </summary>
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var result = await _authService.RegisterAsync(request);
+        if (result == null)
+        {
+            return BadRequest(new { message = "Error al registrar usuario. El email ya existe o los datos son inválidos." });
+        }
+        return Ok(result);
+    }
 }
 
 /// <summary>
@@ -560,4 +622,29 @@ public record AssignUserRequest(
     Guid UserId,
     Guid CustomerId,
     string? Role // Opciónal, default "User" en controlador
+);
+
+/// <summary>
+/// DTO para solicitud de recuperación de contraseña.
+/// </summary>
+public record ForgotPasswordRequest(
+    string Email
+);
+
+/// <summary>
+/// DTO para solicitud de reset de contraseña.
+/// </summary>
+public record ResetPasswordRequest(
+    string Email,
+    string Token,
+    string NewPassword,
+    string ConfirmPassword
+);
+
+/// <summary>
+/// DTO para respuesta de confirmación de email.
+/// </summary>
+public record ConfirmEmailResponse(
+    bool Success,
+    string Message
 );

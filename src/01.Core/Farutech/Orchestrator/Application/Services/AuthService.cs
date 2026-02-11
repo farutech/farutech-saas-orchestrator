@@ -4,6 +4,9 @@ using Farutech.Orchestrator.Domain.Entities.Identity;
 using Farutech.Orchestrator.Domain.Entities.Tenants;
 using Farutech.Orchestrator.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace Farutech.Orchestrator.Application.Services;
 
@@ -15,12 +18,23 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     ITokenService tokenService,
-    IAuthRepository authRepository) : IAuthService
+    IAuthRepository authRepository,
+    IConfiguration configuration) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly ITokenService _tokenService = tokenService;
     private readonly IAuthRepository _authRepository = authRepository;
+    private readonly IConfiguration _configuration = configuration;
+
+    /// <summary>
+    /// Obtiene un HttpClient configurado para el IAM API
+    /// </summary>
+    private HttpClient GetIamHttpClient()
+    {
+        var iamUrl = _configuration["Services:IAM:Url"] ?? "http://iam-api:8080";
+        return new HttpClient { BaseAddress = new Uri(iamUrl) };
+    }
 
     /// <summary>
     /// Autentica al usuario y retorna token intermedio (si multi-tenant) o token de acceso directo (si single-tenant).
@@ -261,71 +275,30 @@ public class AuthService(
 
     public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request)
     {
-        // Validar si el email ya existe
-        var existingUser = await _userManager.FindByEmailAsync(request.Email);
-        if (existingUser != null)
+        try
         {
-            return null;
-        }
-
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            return null;
-        }
-
-        // Generar token de confirmación de email
-        var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = Uri.EscapeDataString(confirmationToken);
-        
-        // TODO: En producción, enviar email con el link de confirmación
-        // Por ahora, loguear el link para desarrollo/testing
-        var confirmationUrl = $"http://localhost:8081/confirm-email?userId={user.Id}&code={encodedToken}";
-        Console.WriteLine($"[DEV] Email Confirmation URL: {confirmationUrl}");
-
-        // Si se solicita, crear organización por defecto
-        Guid? organizationId = null;
-        string? organizationName = null;
-
-        if (request.CreateDefaultOrganization)
-        {
-            var defaultOrgName = $"{user.FirstName} {user.LastName} Organization";
-            var organization = new Customer
+            // Hacer proxy al IAM API
+            using var client = GetIamHttpClient();
+            var response = await client.PostAsJsonAsync("/api/Auth/register", request);
+            
+            if (response.IsSuccessStatusCode)
             {
-                CompanyName = defaultOrgName,
-                Email = user.Email,
-                Code = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant(),
-                TaxId = "PendingRegistration", // Placeholder - user can update later
-                IsActive = true,
-                CreatedBy = user.Id.ToString()
-            };
-
-            // Guardar organización (esto requeriría un repository de Customer)
-            // Por ahora, se deja pendiente la implementación completa
-            organizationId = organization.Id;
-            organizationName = defaultOrgName;
-
-            // Asignar el usuario como Owner de la organización
-            await AssignUserToCompanyAsync(user.Id, organization.Id, FarutechRole.Owner.ToString(), user.Id);
+                var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+                return result;
+            }
+            else
+            {
+                // Log error for debugging
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[AuthService.RegisterAsync] IAM API error: {response.StatusCode} - {errorContent}");
+                return null;
+            }
         }
-
-        return new RegisterResponse(
-            user.Id,
-            user.Email,
-            user.FullName,
-            organizationId,
-            organizationName
-        );
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AuthService.RegisterAsync] Exception: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<bool> AssignUserToCompanyAsync(Guid userId, Guid customerId, string role, Guid grantedBy)
@@ -464,40 +437,30 @@ public class AuthService(
     /// </summary>
     public async Task<ForgotPasswordResponse> ForgotPasswordAsync(string email)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        
-        // Por seguridad, siempre retornar respuesta exitosa aunque el usuario no exista
-        // para evitar revelar si un email está registrado
-        if (user == null || !user.IsActive)
+        try
         {
-            return new ForgotPasswordResponse(
-                "Si el correo existe en nuestro sistema, recibirás un enlace de recuperación."
-            );
+            // Hacer proxy al IAM API
+            using var client = GetIamHttpClient();
+            var response = await client.PostAsJsonAsync("/api/Auth/forgot-password", new { email });
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ForgotPasswordResponse>();
+                return result ?? new ForgotPasswordResponse("Si el correo existe en nuestro sistema, recibirás un enlace de recuperación.");
+            }
+            else
+            {
+                // Log error for debugging
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[AuthService.ForgotPasswordAsync] IAM API error: {response.StatusCode} - {errorContent}");
+                return new ForgotPasswordResponse("Si el correo existe en nuestro sistema, recibirás un enlace de recuperación.");
+            }
         }
-
-        // Generar token único (GUID)
-        var resetToken = Guid.NewGuid().ToString();
-        var expirationDate = DateTime.UtcNow.AddHours(2);
-
-        var passwordResetToken = new PasswordResetToken
+        catch (Exception ex)
         {
-            Id = Guid.NewGuid(),
-            Email = email,
-            Token = resetToken,
-            ExpirationDate = expirationDate,
-            IsUsed = false,
-            UserId = user.Id
-        };
-
-        await _authRepository.CreatePasswordResetTokenAsync(passwordResetToken);
-
-        // En desarrollo, retornar URL mock para facilitar testing
-        var mockResetUrl = $"http://localhost:8081/auth/reset-password?token={resetToken}&email={Uri.EscapeDataString(email)}";
-
-        return new ForgotPasswordResponse(
-            "Si el correo existe en nuestro sistema, recibirás un enlace de recuperación.",
-            mockResetUrl
-        );
+            Console.WriteLine($"[AuthService.ForgotPasswordAsync] Exception: {ex.Message}");
+            return new ForgotPasswordResponse("Si el correo existe en nuestro sistema, recibirás un enlace de recuperación.");
+        }
     }
 
     /// <summary>
@@ -506,39 +469,38 @@ public class AuthService(
     /// </summary>
     public async Task<ResetPasswordResponse> ResetPasswordAsync(string email, string token, string newPassword)
     {
-        // Buscar token en base de datos
-        var resetToken = await _authRepository.GetPasswordResetTokenAsync(token);
-
-        if (resetToken == null || 
-            resetToken.Email != email || 
-            resetToken.IsUsed || 
-            resetToken.ExpirationDate < DateTime.UtcNow)
+        try
         {
+            // Hacer proxy al IAM API
+            using var client = GetIamHttpClient();
+            var request = new
+            {
+                email,
+                token,
+                newPassword,
+                confirmPassword = newPassword // IAM API probablemente espera confirmPassword
+            };
+            
+            var response = await client.PostAsJsonAsync("/api/Auth/reset-password", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ResetPasswordResponse>();
+                return result ?? new ResetPasswordResponse("Contraseña actualizada exitosamente.");
+            }
+            else
+            {
+                // Log error for debugging
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[AuthService.ResetPasswordAsync] IAM API error: {response.StatusCode} - {errorContent}");
+                throw new InvalidOperationException("El token de recuperación es inválido o ha expirado.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AuthService.ResetPasswordAsync] Exception: {ex.Message}");
             throw new InvalidOperationException("El token de recuperación es inválido o ha expirado.");
         }
-
-        // Buscar usuario
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null || !user.IsActive)
-        {
-            throw new InvalidOperationException("Usuario no encontrado o inactivo.");
-        }
-
-        // Resetear contraseña usando Identity
-        var resetPasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await _userManager.ResetPasswordAsync(user, resetPasswordToken, newPassword);
-
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Error al resetear contraseña: {errors}");
-        }
-
-        // Marcar token como usado
-        resetToken.IsUsed = true;
-        await _authRepository.UpdatePasswordResetTokenAsync(resetToken);
-
-        return new ResetPasswordResponse("Contraseña actualizada exitosamente.");
     }
 
     /// <summary>
@@ -548,20 +510,24 @@ public class AuthService(
     {
         try
         {
-            var resetToken = await _authRepository.GetPasswordResetTokenAsync(token);
-
-            if (resetToken == null || 
-                resetToken.Email != email || 
-                resetToken.IsUsed || 
-                resetToken.ExpirationDate < DateTime.UtcNow)
+            // Hacer proxy al IAM API
+            using var client = GetIamHttpClient();
+            var response = await client.GetAsync($"/api/Auth/validate-reset-token?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}");
+            
+            if (response.IsSuccessStatusCode)
             {
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
+                return result?.GetValueOrDefault("isValid", false) ?? false;
+            }
+            else
+            {
+                Console.WriteLine($"[AuthService.ValidatePasswordResetTokenAsync] IAM API error: {response.StatusCode}");
                 return false;
             }
-
-            return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"[AuthService.ValidatePasswordResetTokenAsync] Exception: {ex.Message}");
             return false;
         }
     }
@@ -571,34 +537,30 @@ public class AuthService(
     /// </summary>
     public async Task<ConfirmEmailResponse> ConfirmEmailAsync(string userId, string code)
     {
-        if (!Guid.TryParse(userId, out var userGuid))
+        try
         {
-            return new ConfirmEmailResponse(false, "ID de usuario inválido");
+            // Hacer proxy al IAM API
+            using var client = GetIamHttpClient();
+            var response = await client.GetAsync($"/api/Auth/confirm-email?userId={Uri.EscapeDataString(userId)}&code={Uri.EscapeDataString(code)}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ConfirmEmailResponse>();
+                return result ?? new ConfirmEmailResponse(false, "Error al procesar la respuesta del servidor");
+            }
+            else
+            {
+                // Log error for debugging
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[AuthService.ConfirmEmailAsync] IAM API error: {response.StatusCode} - {errorContent}");
+                return new ConfirmEmailResponse(false, "Error al confirmar el email");
+            }
         }
-
-        var user = await _userManager.FindByIdAsync(userGuid.ToString());
-        if (user == null)
+        catch (Exception ex)
         {
-            return new ConfirmEmailResponse(false, "Usuario no encontrado");
+            Console.WriteLine($"[AuthService.ConfirmEmailAsync] Exception: {ex.Message}");
+            return new ConfirmEmailResponse(false, "Error interno del servidor");
         }
-
-        if (user.EmailConfirmed)
-        {
-            return new ConfirmEmailResponse(true, "El email ya ha sido confirmado");
-        }
-
-        // Decodificar el código (viene URI-encoded desde el email)
-        var decodedCode = Uri.UnescapeDataString(code);
-        
-        var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
-
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            return new ConfirmEmailResponse(false, $"Error al confirmar email: {errors}");
-        }
-
-        return new ConfirmEmailResponse(true, "Email confirmado exitosamente");
     }
 
     /// <summary>
@@ -807,5 +769,80 @@ public class AuthService(
         }
 
         return activeMemberships;
+    }
+
+    /// <summary>
+    /// Obtiene información del usuario actual para el frontend.
+    /// </summary>
+    public async Task<CurrentUserInfoDto?> GetCurrentUserInfoAsync(Guid userId)
+    {
+        try
+        {
+            // Obtener información básica del usuario desde IAM
+            var userResponse = await GetIamHttpClient()
+                .GetAsync($"api/auth/user/{userId}");
+
+            if (!userResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[GetCurrentUserInfoAsync] IAM API error: {userResponse.StatusCode}");
+                return null;
+            }
+
+            var userData = await userResponse.Content.ReadFromJsonAsync<dynamic>();
+            if (userData == null)
+            {
+                return null;
+            }
+
+            // Obtener membresías activas del usuario
+            var memberships = await _authRepository.GetUserMembershipsAsync(userId);
+            var activeMembership = memberships.FirstOrDefault(m => m.IsActive);
+
+            // Generar lista de permisos basada en el rol
+            var permissions = new List<string>();
+            if (activeMembership != null)
+            {
+                permissions.Add($"role:{activeMembership.Role.ToString().ToLower()}");
+                permissions.Add($"tenant:{activeMembership.CustomerId}");
+
+                // Agregar permisos específicos según el rol
+                switch (activeMembership.Role)
+                {
+                    case FarutechRole.Owner:
+                        permissions.AddRange(new[] {
+                            "manage:users", "manage:company", "manage:instances",
+                            "create:instances", "delete:instances", "manage:billing"
+                        });
+                        break;
+                    case FarutechRole.InstanceAdmin:
+                        permissions.AddRange(new[] {
+                            "manage:users", "manage:instances", "create:instances"
+                        });
+                        break;
+                    case FarutechRole.User:
+                        permissions.AddRange(new[] {
+                            "read:instances", "use:instances"
+                        });
+                        break;
+                    case FarutechRole.Guest:
+                        permissions.AddRange(new[] {
+                            "read:instances"
+                        });
+                        break;
+                }
+            }
+
+            return new CurrentUserInfoDto(
+                Email: (string)userData.email,
+                Name: $"{(string)userData.firstName} {(string)userData.lastName}",
+                CompanyName: activeMembership?.Customer?.CompanyName,
+                Permissions: permissions
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[GetCurrentUserInfoAsync] Exception: {ex.Message}");
+            return null;
+        }
     }
 }
