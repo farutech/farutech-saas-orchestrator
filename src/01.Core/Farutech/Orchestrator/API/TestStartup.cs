@@ -160,6 +160,7 @@ public class TestStartup
         services.AddScoped<IBillingService, BillingService>();
         services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
         services.AddScoped<IResolveService, ResolveService>();
+        services.AddSingleton<IUsageTrackingService, InMemoryUsageTrackingService>();
         services.AddScoped<IDatabaseProvisioner, DatabaseProvisioner>();
         services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
         services.AddMemoryCache();

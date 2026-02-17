@@ -153,6 +153,23 @@ export interface InstanceContextDto {
 }
 
 // ============================================================================
+// Usage Tracking Types
+// ============================================================================
+
+export type UsageAction = 'VIEW' | 'ACCESS' | 'SELECT';
+
+export interface UsageLogRequest {
+  organizationId: string;
+  action: UsageAction;
+}
+
+export interface MostUsedOrganization {
+  organizationId: string;
+  count: number;
+  lastAccessed: string;
+}
+
+// ============================================================================
 // Catalog Types
 // ============================================================================
 

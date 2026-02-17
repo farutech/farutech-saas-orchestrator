@@ -12,8 +12,9 @@ import {
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useInstanceNavigation } from '@/hooks/useInstanceNavigation';
-import { useCustomers, useUpdateCustomer } from '@/hooks/useApi';
+import { useCustomers, useMostUsedOrganizations, useTrackUsageEvent, useUpdateCustomer } from '@/hooks/useApi';
 import { useQueryModal } from '@/hooks/useQueryModal';
+import { toast } from 'sonner';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -143,8 +144,41 @@ export default function HomePage() {
     return [];
   }, [customersData, availableTenants, requiresContextSelection, user]);
 
+  const { data: mostUsedOrganizations = [] } = useMostUsedOrganizations(20, {
+    enabled: !requiresContextSelection
+  });
+
+  const { mutateAsync: trackUsageEvent } = useTrackUsageEvent();
+
+  const rankedOrganizations = useMemo(() => {
+    if (!Array.isArray(mostUsedOrganizations) || mostUsedOrganizations.length === 0) {
+      return organizations;
+    }
+
+    const usageCountByOrg = new Map(
+      mostUsedOrganizations.map(entry => [entry.organizationId, entry.count])
+    );
+
+    return [...organizations].sort((a, b) => {
+      const usageDiff = (usageCountByOrg.get(b.organizationId) ?? 0) - (usageCountByOrg.get(a.organizationId) ?? 0);
+      if (usageDiff !== 0) {
+        return usageDiff;
+      }
+
+      return a.organizationName.localeCompare(b.organizationName);
+    });
+  }, [organizations, mostUsedOrganizations]);
+
   // Handle Selection
   const { navigateToInstance, navigateToInstanceSelection } = useInstanceNavigation();
+
+  const registerUsageEvent = useCallback(async (organizationId: string, action: 'ACCESS' | 'SELECT') => {
+    try {
+      await trackUsageEvent({ organizationId, action });
+    } catch (error) {
+      console.warn('[HomePage] Failed to register usage event', { organizationId, action, error });
+    }
+  }, [trackUsageEvent]);
 
   const handleInstanceClick = async (
     tenantId: string,
@@ -188,6 +222,7 @@ export default function HomePage() {
 
     try {
       console.log('🚀 Llamando a navigateToInstance...');
+      void registerUsageEvent(tenantId, 'ACCESS');
       await navigateToInstance(
         tenantId,
         instanceId,
@@ -274,11 +309,11 @@ export default function HomePage() {
   // Filtrado Simple y Eficiente
   // ============================================================================
   const filteredOrgs = useMemo(() => {
-    if (!searchTerm.trim()) return organizations;
+    if (!searchTerm.trim()) return rankedOrganizations;
 
     const search = searchTerm.toLowerCase().trim();
 
-    return organizations.filter(org => {
+    return rankedOrganizations.filter(org => {
       // Buscar en nombre de organización
       if (org.organizationName.toLowerCase().includes(search)) return true;
 
@@ -295,7 +330,7 @@ export default function HomePage() {
         instance.applicationType.toLowerCase().includes(search)
       );
     });
-  }, [organizations, searchTerm]);
+  }, [rankedOrganizations, searchTerm]);
 
   // State for Accordion
   const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
@@ -326,8 +361,9 @@ export default function HomePage() {
   // Handle View All Apps
   const handleViewAll = useCallback((orgId: string) => {
     console.log('📋 Ver todas las aplicaciones para org:', orgId);
+    void registerUsageEvent(orgId, 'SELECT');
     navigateToInstanceSelection(orgId);
-  }, [navigateToInstanceSelection]);
+  }, [navigateToInstanceSelection, registerUsageEvent]);
 
 
   // Handle Create Organization

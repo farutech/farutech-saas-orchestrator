@@ -65,6 +65,32 @@ services:
       - farutech_network
 
   # ----------------------------------------------------------
+  # MongoDB - Usage logs and most-used aggregations
+  # ----------------------------------------------------------
+  mongo:
+    image: mongo:7
+    container_name: farutech_mongo
+    restart: unless-stopped
+
+    ports:
+      - "27017:27017"
+
+    environment:
+      TZ: UTC
+
+    volumes:
+      - mongo_data:/data/db
+
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping').ok\" localhost:27017/test | grep 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - farutech_network
+
+  # ----------------------------------------------------------
   # pgAdmin (solo para desarrollo / soporte)
   # ----------------------------------------------------------
   pgadmin:
@@ -158,6 +184,9 @@ volumes:
     driver: local
 
   nats_data:
+    driver: local
+
+  mongo_data:
     driver: local
 
   pgadmin_data:

@@ -146,13 +146,12 @@ public class PublicIdService : IPublicIdService
     private byte[] DeriveKey(string secret)
     {
         // Use PBKDF2 to derive a 32-byte key from the secret
-        using var pbkdf2 = new Rfc2898DeriveBytes(
-            secret,
+        return Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(secret),
             Encoding.UTF8.GetBytes("FarutechIAM-Salt-v1"), // Fixed salt for consistency
             100000,
-            HashAlgorithmName.SHA256);
-        
-        return pbkdf2.GetBytes(32); // 256 bits
+            HashAlgorithmName.SHA256,
+            32); // 256 bits
     }
 
     private byte[] EncryptAesGcm(string plaintext)

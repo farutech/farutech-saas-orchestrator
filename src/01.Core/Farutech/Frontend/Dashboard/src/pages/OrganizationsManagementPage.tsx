@@ -59,19 +59,40 @@ export default function OrganizationsManagementPage() {
   // Fetch data function
   const fetchOrganizations = async (params: FetchParams) => {
     const response = await apiClient.get<{
-      organizations: OrganizationDto[];
-      totalCount: number;
-      pageNumber: number;
-      pageSize: number;
-      totalPages: number;
-    }>('/api/Customers', {
+      organizations?: OrganizationDto[] | null;
+      totalCount?: number | null;
+      pageNumber?: number | null;
+      pageSize?: number | null;
+      totalPages?: number | null;
+    } | null>('/api/Customers', {
       params: {
         pageNumber: params.pageNumber,
         pageSize: params.pageSize,
         filter: params.filter,
       },
     });
-    return response.data;
+    const payload = response.data;
+    const rawOrganizations = Array.isArray(payload?.organizations) ? payload.organizations : [];
+    const organizations: OrganizationDto[] = rawOrganizations.map((org: any) => ({
+      id: typeof org?.id === 'string' ? org.id : '',
+      companyName: typeof org?.companyName === 'string' ? org.companyName : '',
+      email: typeof org?.email === 'string' ? org.email : '',
+      taxId: typeof org?.taxId === 'string' ? org.taxId : undefined,
+      code: typeof org?.code === 'string' ? org.code : undefined,
+      isActive: org?.isActive !== false,
+      createdAt: typeof org?.createdAt === 'string' ? org.createdAt : new Date().toISOString(),
+      instanceCount: typeof org?.instanceCount === 'number'
+        ? org.instanceCount
+        : (Array.isArray(org?.tenantInstances) ? org.tenantInstances.length : 0),
+    })).filter(org => org.id.length > 0);
+
+    return {
+      items: organizations,
+      totalCount: typeof payload?.totalCount === 'number' ? payload.totalCount : organizations.length,
+      pageNumber: typeof payload?.pageNumber === 'number' ? payload.pageNumber : params.pageNumber,
+      pageSize: typeof payload?.pageSize === 'number' ? payload.pageSize : params.pageSize,
+      totalPages: typeof payload?.totalPages === 'number' && payload.totalPages > 0 ? payload.totalPages : 1,
+    };
   };
 
   // Toggle status
@@ -154,6 +175,7 @@ export default function OrganizationsManagementPage() {
   // Render each organization as a card
   const renderOrganizationCard = (org: OrganizationDto) => {
     const canDelete = org.instanceCount === 0;
+    const companyName = org.companyName?.trim() || 'Organización';
 
     return (
       <Card className={`group transition-all duration-300 ${
@@ -163,11 +185,11 @@ export default function OrganizationsManagementPage() {
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center text-white font-bold text-sm">
-                {org.companyName.charAt(0).toUpperCase()}
+                {companyName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-slate-900 truncate">
-                  {org.companyName}
+                  {companyName}
                 </h3>
                 {org.code && (
                   <p className="text-xs text-slate-500 font-mono">{org.code}</p>

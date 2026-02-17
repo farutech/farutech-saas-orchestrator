@@ -17,8 +17,16 @@ export const customersService = {
    * Get all customers
    */
   getCustomers: async (): Promise<PagedOrganizationsResponse> => {
-    const { data } = await apiClient.get<PagedOrganizationsResponse>('/api/Customers');
-    return data;
+    const { data } = await apiClient.get<Partial<PagedOrganizationsResponse> | null | undefined>('/api/Customers');
+    const organizations = Array.isArray(data?.organizations) ? data.organizations : [];
+
+    return {
+      organizations,
+      totalCount: typeof data?.totalCount === 'number' ? data.totalCount : organizations.length,
+      pageNumber: typeof data?.pageNumber === 'number' ? data.pageNumber : 1,
+      pageSize: typeof data?.pageSize === 'number' ? data.pageSize : organizations.length,
+      totalPages: typeof data?.totalPages === 'number' ? data.totalPages : 1,
+    };
   },
 
   /**

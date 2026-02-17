@@ -87,7 +87,9 @@ const createApiClient = (): AxiosInstance => {
         '/api/Auth/available-tenants', // Listar tenants disponibles (requiere usuario, no tenant)
         '/api/Customers',  // Gestión de organizaciones
         '/api/Catalog',     // Catálogo de productos para provisioning
-        '/api/Provisioning' // Provisioning de instancias
+        '/api/Provisioning', // Provisioning de instancias
+        '/api/usage-log',
+        '/api/users/me/most-used'
       ];
       
       const isManagementEndpoint = managementEndpoints.some(endpoint => 

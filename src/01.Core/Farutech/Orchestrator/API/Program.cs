@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 using NATS.Client.Core;
 using Prometheus;
 
@@ -215,6 +216,23 @@ builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IWorkerMonitoringService, WorkerMonitoringService>();
 builder.Services.AddScoped<IResolveService, ResolveService>();
+builder.Services.AddSingleton<IUsageTrackingService, MongoUsageTrackingService>();
+builder.Services.AddHostedService<UsageIndexInitializerHostedService>();
+
+var mongoUri = builder.Configuration["MONGO_URI"]
+    ?? builder.Configuration["Mongo:Uri"]
+    ?? "mongodb://localhost:27017";
+var mongoDatabaseName = builder.Configuration["MONGO_DB_NAME"]
+    ?? builder.Configuration["Mongo:DatabaseName"]
+    ?? "farutech_orchestrator";
+
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoUri));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(mongoDatabaseName);
+});
+Console.WriteLine($"✅ MongoDB usage tracking configurado. DB: {mongoDatabaseName}");
 
 // IAM Integration
 builder.Services.AddHttpClient<ITenantSyncService, TenantSyncService>(client => {

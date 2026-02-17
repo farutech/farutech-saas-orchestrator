@@ -80,9 +80,13 @@ export function DataOrchestrator<T>({
 
     try {
       const res = await fetchData({ pageNumber, pageSize: defaultPageSize, filter: debouncedSearch || undefined });
-      setData(res.items);
-      setTotalPages(res.totalPages);
-      setTotalCount(res.totalCount);
+      const safeItems = Array.isArray(res?.items) ? res.items : [];
+      const safeTotalPages = typeof res?.totalPages === 'number' && res.totalPages > 0 ? res.totalPages : 1;
+      const safeTotalCount = typeof res?.totalCount === 'number' ? res.totalCount : safeItems.length;
+
+      setData(safeItems);
+      setTotalPages(safeTotalPages);
+      setTotalCount(safeTotalCount);
     } catch (err) {
       console.error("[DataOrchestrator] Error fetching data:", err);
       setError(err instanceof Error ? err.message : "Error al cargar datos");

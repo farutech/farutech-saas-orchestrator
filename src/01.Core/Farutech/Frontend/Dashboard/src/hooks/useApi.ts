@@ -8,6 +8,7 @@ import { authService } from '@/services/auth.service';
 import { customersService } from '@/services/customers.service';
 import { provisioningService } from '@/services/provisioning.service';
 import { instancesService } from '@/services/instances.service';
+import { usageService } from '@/services/usage.service';
 import { toast } from 'sonner';
 import type * as API from '@/types/api';
 
@@ -29,6 +30,7 @@ export const queryKeys = {
   instances: ['instances'] as const,
   instance: (id: string) => ['instances', id] as const,
   availableTenants: ['available-tenants'] as const,
+  mostUsedOrganizations: (limit: number) => ['users', 'me', 'most-used', limit] as const,
 };
 
 // ============================================================================
@@ -329,6 +331,35 @@ export const useDeleteCustomer = (options?: UseMutationOptions<void, Error, stri
     onError: (error: unknown) => {
       const err = error as { message?: string };
       toast.error(err.message || 'Error al eliminar cliente');
+    },
+    ...options,
+  });
+};
+
+// ============================================================================
+// USAGE TRACKING
+// ============================================================================
+
+export const useMostUsedOrganizations = (
+  limit = 10,
+  options?: Omit<UseQueryOptions<API.MostUsedOrganization[]>, 'queryKey' | 'queryFn'>
+) => {
+  return useQuery({
+    queryKey: queryKeys.mostUsedOrganizations(limit),
+    queryFn: () => usageService.getMostUsed(limit),
+    ...options,
+  });
+};
+
+export const useTrackUsageEvent = (
+  options?: UseMutationOptions<void, Error, { organizationId: string; action: API.UsageAction }>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ organizationId, action }) => usageService.trackUsage(organizationId, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'me', 'most-used'] });
     },
     ...options,
   });
